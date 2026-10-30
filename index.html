@@ -708,7 +708,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 <div id="city" class="screen"><div class="top"><button id="cityBack"></button><div class="star" id="cityT"></div><button class="star" id="cityN" style="border:0"></button><div id="cityWho"></div></div>
  <div id="cityWrap"><svg id="citySvg" viewBox="0 0 1200 690" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><g id="cityMap"></g><g id="cityFx"></g><g id="cityChars"></g></svg></div>
  <div id="cityP"><div class="cpbox"><button id="cpX">✕</button><div class="cphead"><div id="cpAv" class="cpav"></div><div><b id="cpNm"></b><div id="cpSt"></div></div></div><div id="cpBody"></div></div></div>
- <div id="cityBar"><span id="cityHint"></span><b id="cityPrompt"></b><button id="cityDog"></button><button id="cityBall"></button><button id="cityHi"></button></div></div>
+ <div id="cityBar"><span id="cityHint"></span><b id="cityPrompt"></b><button id="cityDog"></button><button id="cityBall"></button><button id="cityHi"></button><button id="cityJoin"></button><button id="cityMeet"></button><button id="cityChief" style="display:none;background:#ef476f;color:#fff"></button></div></div>
 
 <div id="fxPick"></div>
 <div id="sport" class="screen"><div class="top"><button id="spBack"></button><div class="star" id="spT"></div><div class="star" id="spScore"></div></div><div id="spMsg"></div><div id="spStage"></div><div id="spCtl"></div></div>
@@ -787,18 +787,23 @@ function merge(a,b){ // fusion type JSON merge-patch
   for(const k in b){if(b[k]===null)delete o[k];else o[k]=merge(o[k],b[k])}
   return o;
 }
-function connect(opts){ // essaie plusieurs serveurs publics
+function connect(opts){ // se connecte à PLUSIEURS serveurs publics en même temps (tout le monde se retrouve même si les serveurs diffèrent)
   return new Promise((resolve,reject)=>{
-    const custom=LS('elias_broker').trim(),list=custom?[custom]:BROKERS;let i=0,done=false;
-    const next=()=>{
-      if(i>=list.length){if(!done){done=true;reject(new Error('no broker'))}return}
-      const url=list[i++];let c;
-      try{c=mqtt.connect(url,{clientId:'elias_'+myId+'_'+Math.random().toString(36).slice(2,6),clean:true,keepalive:30,reconnectPeriod:4000,connectTimeout:6000,will:opts.will})}catch(e){return next()}
-      let ok=false;
-      c.once('connect',()=>{ok=true;if(!done){done=true;resolve(c)}});
-      c.once('error',()=>{if(!ok&&!done){try{c.end(true)}catch(e){}next()}});
-      c.once('close',()=>{if(!ok&&!done){try{c.end(true)}catch(e){}next()}});
-    };next();
+    const custom=LS('elias_broker').trim(),all=custom?custom.split(',').map(x=>x.trim()).filter(Boolean):BROKERS;
+    const mk=url=>{try{return mqtt.connect(url,{clientId:'elias_'+myId+'_'+Math.random().toString(36).slice(2,6),clean:true,keepalive:30,reconnectPeriod:4000,connectTimeout:6000,will:opts.will})}catch(e){return null}};
+    const clients=[];let done=false,extra=false;
+    const MC={
+      get connected(){return clients.some(c=>c.connected)},
+      publish(t,pl,o,cb){const on=clients.filter(c=>c.connected);if(!on.length){if(cb)cb();return}let n=on.length;on.forEach(c=>{try{c.publish(t,pl,o,()=>{if(--n===0&&cb)cb()})}catch(e){if(--n===0&&cb)cb()}})},
+      subscribe(t,o){clients.forEach(c=>{try{c.subscribe(t,o)}catch(e){}})},
+      on(ev,f){clients.forEach(c=>c.on(ev,(...a)=>f(...a)));MC._h=(MC._h||[]).concat([[ev,f]])},
+      end(force){clients.forEach(c=>{try{c.end(force)}catch(e){}})}
+    };
+    const add=url=>{const c=mk(url);if(!c)return;clients.push(c);(MC._h||[]).forEach(([ev,f])=>c.on(ev,(...a)=>f(...a)));
+      c.once('connect',()=>{if(!done){done=true;resolve(MC)}})};
+    (custom?all:all.slice(0,2)).forEach(add);
+    setTimeout(()=>{if(!done&&!custom&&!extra){extra=true;add(all[2])}},7000);
+    setTimeout(()=>{if(!done){done=true;reject(new Error('no broker'))}},20000);
   });
 }
 async function makeRoom(name){
@@ -812,7 +817,7 @@ async function makeRoom(name){
     const id=topic.split('/').pop();if(id===myId)return;
     const s=buf.toString();
     if(!s){if(peers.delete(id))notify();return}
-    try{const m=JSON.parse(s);if(!m||typeof m.p!=='object')return;if(Math.abs(Date.now()-(+m.ts||0))>150000)return;peers.set(id,{id,ts:Date.now(),presence:m.p});notify()}catch(e){}
+    try{const m=JSON.parse(s);if(!m||typeof m.p!=='object')return;if(Math.abs(Date.now()-(+m.ts||0))>43200000)return;peers.set(id,{id,ts:Date.now(),presence:m.p});notify()}catch(e){}
   });
   c.on('connect',()=>{pub();c.subscribe(base+'/p/+',{qos:0})});
   const hb=setInterval(()=>{pub();const now=Date.now();let ch=false;peers.forEach((v,k)=>{if(now-v.ts>110000){peers.delete(k);ch=true}});if(ch)notify()},25000);
@@ -3289,7 +3294,7 @@ function pushPresence(extra){
   if(!SO.room)return;if(SO.full&&!SAFE.locked){SO.room.presence({app:'full',msgs:[]}).catch(()=>{});return}
   if(SAFE.locked){SO.room.presence({app:'locked',msgs:[]}).catch(()=>{});return}const hv=HVOICE[HERO.id]||{g:'m',p:1.2};
   const cityOn=typeof CITY!=='undefined'&&CITY.me&&document.getElementById('city')&&document.getElementById('city').classList.contains('on');
-  SO.room.presence({app:'elias',id:SO.myId,hero:HERO.id,rp:scHero(HERO.id).pts,name:SAFE.cleanName(HERO.name),vp:hv.p,vg:hv.g,play:SO.playKey,og:SO.og||'',code:SO.code||'',msgs:SO.msgs,jt:SO.jt,fl:(typeof flatEnc==='function')?flatEnc():'',ac:cityOn&&CITY.me.act?CITY.me.act.type:'',dg:cityOn&&CITY.dogOn?1:0,cn:cityOn?1:0,cx:cityOn?Math.round(CITY.me.x):0,cy:cityOn?Math.round(CITY.me.y):0,...extra}).catch(()=>{});
+  SO.room.presence({app:'elias',id:SO.myId,hero:HERO.id,rp:scHero(HERO.id).pts,name:SAFE.cleanName(HERO.name),vp:hv.p,vg:hv.g,play:SO.playKey,og:SO.og||'',code:SO.code||'',msgs:SO.msgs,jt:SO.jt,fl:(typeof flatEnc==='function')?flatEnc():'',ac:cityOn&&CITY.me.act?CITY.me.act.type:'',dg:cityOn&&CITY.dogOn?1:0,cn:cityOn?1:0,ti:(window.TM&&TM.pubInt)?TM.pubInt():0,ch:(window.TM&&TM.isChief&&TM.isChief())?1:0,cx:cityOn?Math.round(CITY.me.x):0,cy:cityOn?Math.round(CITY.me.y):0,...extra}).catch(()=>{});
 }
 function socialScreen(id){
   const m={game:()=>'m_'+mode,bgame:()=>BG.g,duel:()=>'duel',cgame:()=>'cards',arc:()=>AR.key,sport:()=>SP.g,flat:()=>'flat',bldg:()=>'flat',story:()=>'story',draw:()=>'draw',geo:()=>'geo',shop:()=>'shop'};
@@ -4662,11 +4667,12 @@ function kidHero(i){
 function openCity(){
   if(!CITY.grid)CITY.grid=cityGrid();
   $('#bgend').classList.remove('on');$('#end')&&$('#end').classList.remove('on');
-  const T=CTY[lang];$('#cityBack').textContent=L().menu;$('#cityT').textContent='🏙️ '+T.t;$('#cityHint').textContent=T.hint;$('#cityHi').textContent=T.hello+' '+T.hi;
+  const T=CTY[lang];$('#cityBack').textContent=L().menu;$('#cityT').textContent='🏙️ '+T.t;$('#cityHint').textContent=T.hint;$('#cityJoin').textContent=CTGT().join;{const cb=$('#cityChief');cb.textContent=CTGT().chief;cb.style.display=(window.TM&&TM.isChief&&TM.isChief())?'':'none'}$('#cityMeet').textContent=CTGT().meet;$('#cityHi').textContent=T.hello+' '+T.hi;
   cityDraw();
   CITY.ents.forEach(e=>e.g.remove());CITY.ents.clear();CITY.dogs.forEach(d=>d.g.remove());CITY.dogs.clear();CITY.ball=null;
-  const sp=CITY.spawn||{x:600,y:430};
-  CITY.me=mkEnt('me',HERO,HERO.name,{x:sp.x,y:sp.y,speed:190});CITY.cool=1.2;CITY.goal=null;CITY.talk=null;
+  let sp=CITY.spawn||{x:600,y:430};
+  if(!CITY.spawn){const fh=cityFriendsHere();if(fh.length)sp={x:fh[0].cx+40,y:fh[0].cy+36}}
+  CITY.me=mkEnt('me',HERO,HERO.name,{x:Math.max(30,Math.min(WW-30,sp.x)),y:Math.max(30,Math.min(WH-20,sp.y)),speed:190});CITY.cool=1.2;CITY.goal=null;CITY.talk=null;
   const used=new Set([HERO.id]);const pre=shufA(HEROES.filter(h=>!used.has(h.id))).slice(0,2);
   const kids=pre.concat([0,1,2,3,4,5].map(i=>kidHero(i)));
   kids.forEach((h,i)=>{
@@ -4679,6 +4685,25 @@ function openCity(){
   if(window.TM&&TM.active)TM.attach();
   CITY.open=true;CITY.last=performance.now();cancelAnimationFrame(CITY.raf);CITY.raf=requestAnimationFrame(cityLoop);
   show('city');
+}
+const CTG={fr:{join:'👥 Rejoindre mes amis',meet:'📍 Tous ensemble',none:'Aucun ami n’est dans la ville pour l’instant.',asked:'📍 Tes amis sont appelés ici !',ask:(n)=>`${n} veut qu’on se retrouve ici !`,go:'J’y vais',no:'Non',here:'On est ensemble ! 🎉',chief:'🚨 Appeler les parents'},
+ en:{join:'👥 Join my friends',meet:'📍 All together',none:'No friend is in the city right now.',asked:'📍 Your friends are called here!',ask:(n)=>`${n} wants everyone to meet here!`,go:'I’m coming',no:'No',here:'We are together! 🎉',chief:'🚨 Call the parents'},
+ ln:{join:'👥 Kokutana na baninga',meet:'📍 Biso nyonso esika moko',none:'Moninga moko azali na engumba te sikoyo.',asked:'📍 Baninga bazali kobanda awa !',ask:(n)=>`${n} alingi tokutana awa !`,go:'Nakei',no:'Te',here:'Tozali esika moko ! 🎉',chief:'🚨 Benga baboti'}};
+const CTGT=()=>CTG[lang]||CTG.fr;
+function cityTP(x,y,k){
+  const me=CITY.me;if(!me)return;const n=k||0,a=n*2.4,r=44+16*Math.floor(n/6);
+  me.x=Math.max(30,Math.min(WW-30,x+Math.cos(a)*r));me.y=Math.max(30,Math.min(WH-20,y+Math.sin(a)*r*.6+34));me.path=[];me.target=null;me.act=null;
+  CITY.cam=Math.max(0,Math.min(WH-VH,me.y-VH*.38));cityBubble('me','👋');beep(760,.08,'triangle');try{pushPresence()}catch(e){}
+}
+function cityFriendsHere(){return [...SO.friends.values()].filter(p=>p.cn&&Number.isFinite(p.cx)&&Number.isFinite(p.cy))}
+let cityJoinI=0;
+function cityJoin(){
+  const fr=cityFriendsHere();if(!fr.length){toast({hero:HERO.id,text:CTGT().none});return}
+  const p=fr[cityJoinI++%fr.length];cityTP(p.cx,p.cy,cityJoinI);
+}
+function cityMeet(){
+  if(!CITY.me)return;const ok=sendAct('all',{a:'meet',x:Math.round(CITY.me.x),y:Math.round(CITY.me.y)});
+  cityBubble('me','📍');beep(700,.08);toast({hero:HERO.id,text:CTGT().asked});
 }
 function cityDogUI(){const T=CTY[lang];$('#cityDog').textContent='🐕 '+T.dog+(CITY.dogOn?' ✓':'');$('#cityDog').classList.toggle('on',CITY.dogOn);$('#cityBall').textContent='🎾 '+T.ball;$('#cityBall').style.display=CITY.dogOn?'':'none'}
 function cityDogToggle(){
@@ -4870,6 +4895,7 @@ function cityLoop(ts){
 }
 $('#citySvg').addEventListener('wheel',e=>{e.preventDefault();CITY.pan=Math.max(-WH,Math.min(WH,(CITY.pan||0)+e.deltaY*.8))},{passive:false});
 $('#cityBack').onclick=()=>{CITY.open=false;cancelAnimationFrame(CITY.raf);CITY.ret=false;cancelAct(CITY.me);buildMenu();show('home')};
+$('#cityChief').onclick=()=>{if(window.TM)TM.chief()};$('#cityJoin').onclick=()=>cityJoin();$('#cityMeet').onclick=()=>cityMeet();
 $('#cityHi').onclick=()=>{cityBubble('me','👋');if(SO.room){SO.sel='all';sendMsg('👋')}beep(700,.08)};
 function cityWhoDraw(){
   const w=$('#cityWho'),en=lang==='en';w.innerHTML='';
@@ -4932,7 +4958,11 @@ function handleAct(pr,m){
     const b=CITYB.find(x=>x.id===m.b);if(!b||!fresh)return;
     toast({hero:pr.hero,text:T.rgo(nm,b.ico+' '+bName(b)),btns:[{label:T.okb,fn:()=>{cityGoTo(b.id);ans('gook',{})}},{label:T.no,fn:()=>{}}]});
   }else if(m.a==='gook'){cityBubble(pr.id,T.yesN)}
-  else if(m.a==='par'&&fresh){if(SAFE.cfg.friendAlerts!==false&&window.TM&&!TM.active&&Date.now()-TM.lastRemote>120000){TM.lastRemote=Date.now();if(m.w==='time'){TM.start('',true)}else{try{toast({hero:pr.hero,text:TXT_PAR(nm)})}catch(e){}TM.start(nm,true)}}}
+  else if(m.a==='meet'&&fresh&&Number.isFinite(+m.x)&&Number.isFinite(+m.y)&&CITY&&CITY.me){
+    const x=+m.x,y=+m.y,C=CTGT();
+    toast({hero:pr.hero,text:C.ask(nm),btns:[{label:C.go,fn:()=>{if(!CITY.open)return;cityTP(x,y,SO.friends.size);cityBubble('me','🎉');toast({hero:HERO.id,text:C.here})}},{label:C.no,fn:()=>{}}]});
+  }
+  else if(m.a==='par'&&fresh){if(SAFE.cfg.friendAlerts!==false&&window.TM&&!TM.active&&(m.w==='chief'||Date.now()-TM.lastRemote>120000)){TM.lastRemote=Date.now();if(m.w==='time'){TM.start('',true,'time')}else if(m.w==='chief'){TM.start(nm,true,'chief')}else{try{toast({hero:pr.hero,text:TXT_PAR(nm)})}catch(e){}TM.start(nm,true,'rank')}}}
   else if(m.a==='gift'&&n>0&&fresh){giveCoins(n);toast({hero:pr.hero,text:T.rgift(nm,n)});cityBubble(pr.id,'🎁');sfx&&sfx('win')}
   else if(m.a==='loan'&&n>0&&fresh){
     toast({hero:pr.hero,text:T.rloan(nm,n),btns:[{label:T.okb,fn:()=>{giveCoins(n);debtOf(nm).owe+=n;saveDebt();ans('lok',{n});cityBubble('me',T.thx)}},{label:T.no,fn:()=>ans('lno',{n})}]});
@@ -5392,14 +5422,19 @@ function flatAdd(c){
 (function(){
 const LS=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
 const TXT={
- fr:{ban:'TEMPS D’ÉCRAN DÉPASSÉ !',ban2:'Les parents arrivent !',say:'Attention ! Trente minutes d’écran ! Les parents arrivent !',sayBy:n=>`Alerte ! ${n} est premier du classement et appelle les parents !`,banBy:n=>`${n} est 1er du classement : les parents arrivent !`,pw:'🚨 Tu es 1er du classement ! Tu peux appeler les parents !',pwB:'🚨 Appeler les parents',fromF:n=>`🚨 <b>${n}</b> est 1er du classement et appelle les parents !`,w5:'⏱ Plus que 5 minutes de jeu !',w1:'⏱ Plus qu’une minute de jeu !',caught:'Tes parents t’ont attrapé ! C’est l’heure de la pause 💕',end:'Les parents sont repartis… Va faire une pause : bois un verre d’eau et va jouer dehors ! 💧',chip:'⏱',min:'min',
+ fr:{ban:'TEMPS D’ÉCRAN DÉPASSÉ !',ban2:'Les parents arrivent !',say:'Attention ! Trente minutes d’écran ! Les parents arrivent !',sayChief:n=>`Alerte ! ${n}, le chef du groupe, appelle les parents !`,banChief:n=>`${n}, chef du groupe : les parents arrivent !`,sayBy:n=>`Alerte ! ${n} est premier du classement et appelle les parents !`,banBy:n=>`${n} est 1er du classement : les parents arrivent !`,pw:'🚨 Tu es 1er du classement ! Tu peux appeler les parents !',pwB:'🚨 Appeler les parents',fromF:n=>`🚨 <b>${n}</b> est 1er du classement et appelle les parents !`,w5:'⏱ Plus que 5 minutes de jeu !',w1:'⏱ Plus qu’une minute de jeu !',caught:'Tes parents t’ont attrapé ! C’est l’heure de la pause 💕',end:'Les parents sont repartis… Va faire une pause : bois un verre d’eau et va jouer dehors ! 💧',chip:'⏱',min:'min',
   sc:['😱 Aaaah !','🏃 Au secours !','Pas déjà !','😭 Nooon !','Cours !!','Une minute !','Ils arrivent !'],par:['Maman','Papa','Mamie','Tonton'],hug:['❤️ Pause !','Viens ici !','Assez joué !','Attrapé !'],lim:'Temps d’écran avant l’alerte',off:'Désactivé'},
- en:{ban:'SCREEN TIME IS UP!',ban2:'The parents are coming!',say:'Warning! Thirty minutes of screen time! The parents are coming!',sayBy:n=>`Alert! ${n} is first in the ranking and calls the parents!`,banBy:n=>`${n} is #1 in the ranking: the parents are coming!`,pw:'🚨 You are #1 in the ranking! You can call the parents!',pwB:'🚨 Call the parents',fromF:n=>`🚨 <b>${n}</b> is #1 in the ranking and calls the parents!`,w5:'⏱ Only 5 minutes of play left!',w1:'⏱ Only one minute of play left!',caught:'Your parents caught you! Time for a break 💕',end:'The parents have gone… Take a break: drink some water and go play outside! 💧',chip:'⏱',min:'min',
+ en:{ban:'SCREEN TIME IS UP!',ban2:'The parents are coming!',say:'Warning! Thirty minutes of screen time! The parents are coming!',sayChief:n=>`Alert! ${n}, the group leader, calls the parents!`,banChief:n=>`${n}, group leader: the parents are coming!`,sayBy:n=>`Alert! ${n} is first in the ranking and calls the parents!`,banBy:n=>`${n} is #1 in the ranking: the parents are coming!`,pw:'🚨 You are #1 in the ranking! You can call the parents!',pwB:'🚨 Call the parents',fromF:n=>`🚨 <b>${n}</b> is #1 in the ranking and calls the parents!`,w5:'⏱ Only 5 minutes of play left!',w1:'⏱ Only one minute of play left!',caught:'Your parents caught you! Time for a break 💕',end:'The parents have gone… Take a break: drink some water and go play outside! 💧',chip:'⏱',min:'min',
   sc:['😱 Aaaah!','🏃 Help!','Not yet!','😭 Nooo!','Run!!','One minute!','They are coming!'],par:['Mum','Dad','Gran','Uncle'],hug:['❤️ Break time!','Come here!','Enough play!','Got you!'],lim:'Screen time before the alert',off:'Off'}
 };
 TXT.ln=TXT.fr;const T=()=>TXT[lang];
 const TM=window.TM={used:parseInt(LS('elias_tm'))||0,active:false,endAt:0,lastInput:Date.now(),w5:false,w1:false,dur:90000};
-const limitMin=()=>{const l=SAFE.cfg.limit;return l===undefined?30:l};
+const ownInt=()=>{const l=SAFE.cfg.limit;return l===undefined?30:l};
+const inGroup=()=>{try{return !!localStorage.getItem('elias_grpname')}catch(e){return false}};
+TM.gInt=(()=>{try{const v=localStorage.getItem('elias_gti');return v===null?undefined:parseInt(v)}catch(e){return undefined}})();
+TM.pubInt=ownInt;
+/* même minuterie pour tout le groupe : celle du chef (sinon la sienne) */
+const limitMin=()=>{if(inGroup()&&!(TM.isChief&&TM.isChief())&&TM.gInt!==undefined)return TM.gInt;return ownInt()};
 const save=()=>{try{localStorage.setItem('elias_tm',String(TM.used))}catch(e){}};
 ['pointerdown','keydown','touchstart','pointermove'].forEach(ev=>document.addEventListener(ev,()=>{TM.lastInput=Date.now()},{capture:true,passive:true}));
 /* bandeau + pastille */
@@ -5409,7 +5444,7 @@ const cnt=document.createElement('div');cnt.id='tmCount';document.body.append(cn
 function cntShow(rem){if(rem===cntLast)return;cntLast=rem;cnt.innerHTML=`<span>${lang==='en'?'⚠️ The parents are coming in…':'⚠️ Les parents arrivent dans…'}</span><b>${rem}</b>`;cnt.classList.add('on');try{beep(rem<=3?1040:700,.14,'square')}catch(e){}}
 function cntHide(){if(cntLast!==-1){cntLast=-1;cnt.classList.remove('on')}}
 const chip=document.createElement('div');chip.id='tmChip';$('#home').append(chip);
-const drawChip=()=>{const l=limitMin(),m=Math.floor(TM.used/60);const s=l?`${T().chip} ${m} / ${l} ${T().min}`:'';chip.textContent=s;chip.style.display=s?'':'none';const cc=document.getElementById('cityHint');if(cc&&!TM.active&&l)cc.dataset.tm=s};
+const drawChip=()=>{const l=limitMin(),m=(l&&inGroup())?Math.floor((Date.now()%(l*60000))/60000):Math.floor(TM.used/60);const s=l?`${T().chip} ${m} / ${l} ${T().min}`:'';chip.textContent=s;chip.style.display=s?'':'none';const cc=document.getElementById('cityHint');if(cc&&!TM.active&&l)cc.dataset.tm=s};
 /* sirène */
 function siren(n){try{const c=auInit();if(!c)return;const t=c.currentTime;for(let i=0;i<(n||8);i++)toneAt(AU.sg,t+i*.4,i%2?640:900,.36,'triangle',.09,.05,0)}catch(e){}}
 /* parents */
@@ -5436,10 +5471,10 @@ function detach(){
   $('#city').classList.remove('tmalert');ban.classList.remove('on');
   CITY.ents.forEach((e,id)=>{if(e.parent){e.g.remove();CITY.ents.delete(id)}else if(e.npc&&e.sp0){e.speed=e.sp0;e.path=[];e.wait=1+Math.random()*2;e.target=null;e.caughtT=0}});
 }
-TM.start=function(by,remote){
-  if(TM.active)return;
+TM.start=function(by,remote,mode){
+  if(TM.active)return;TM.mode=mode||(by?'rank':'time');
   /* l'alarme concerne tout le groupe, en même temps */
-  if(!remote){try{if(typeof sendAct==='function')sendAct('all',{a:'par',w:by?'rank':'time'})}catch(e){}}
+  if(!remote){try{if(typeof sendAct==='function')sendAct('all',{a:'par',w:TM.mode})}catch(e){}}
   cntHide();TM.by=by||'';TM.active=true;try{TM.clip=alRec()}catch(e){}TM.endAt=Date.now()+TM.dur;TM.used=0;save();
   try{AR.run=false;cancelAnimationFrame(AR.raf)}catch(e){}
   try{spStop&&spStop()}catch(e){}
@@ -5447,7 +5482,7 @@ TM.start=function(by,remote){
   try{speechSynthesis.cancel()}catch(e){}
   ['bgend','end','cityP','vm','nmM','rdQuiz','msgr'].forEach(i=>{const x=document.getElementById(i);if(x)x.classList.remove('on')});
   CITY.ret=false;openCity();
-  siren(10);setTimeout(()=>{try{speak(TM.by?T().sayBy(TM.by):T().say)}catch(e){}},500);
+  siren(10);setTimeout(()=>{try{speak(TM.by?(TM.mode==='chief'?T().sayChief(TM.by):T().sayBy(TM.by)):T().say)}catch(e){}},500);
   setTimeout(()=>{if(TM.active)siren(6)},12000);
 };
 function end(){
@@ -5465,6 +5500,9 @@ TM.grant=function(){
   TM.lastGrant=Date.now();TM.power={until:Date.now()+15*60000};alDraw();
   try{toast({hero:HERO.id,text:T().pw,btns:[{label:T().pwB,fn:()=>TM.fire()}]});sfx('line')}catch(e){}
 };
+const isChief=()=>{try{const g=(localStorage.getItem('elias_grpname')||'').toLowerCase();return !!g&&localStorage.getItem('elias_gown')===g}catch(e){return false}};
+TM.isChief=isChief;
+TM.chief=function(){if(!isChief()||TM.active)return false;TM.start(HERO.name,false,'chief');return true};
 TM.fire=function(){
   if(!TM.power||Date.now()>=TM.power.until||TM.active)return;
   TM.power=null;alDraw();const nm=HERO.name;
@@ -5499,7 +5537,7 @@ window.TMCLIP=async function(st,my){
 window.TMCITY=function(dt){
   if(!TM.active)return;
   const left=Math.max(0,TM.endAt-Date.now());
-  ban.innerHTML=`${TM.by?'🚨 '+T().banBy(TM.by):'⚠️ '+T().ban+' '+T().ban2} <span>⏳ ${Math.floor(Math.ceil(left/1000)/60)}:${String(Math.ceil(left/1000)%60).padStart(2,'0')}</span>`;
+  ban.innerHTML=`${TM.by?'🚨 '+(TM.mode==='chief'?T().banChief(TM.by):T().banBy(TM.by)):'⚠️ '+T().ban+' '+T().ban2} <span>⏳ ${Math.floor(Math.ceil(left/1000)/60)}:${String(Math.ceil(left/1000)%60).padStart(2,'0')}</span>`;
   if(left<=0){end();return}
   if(CITY.freeze>0)CITY.freeze-=dt;
   const ps=[...CITY.ents.values()].filter(e=>e.parent),ks=kids();
@@ -5543,8 +5581,20 @@ let n=0;
 setInterval(()=>{
   const vis=document.visibilityState==='visible',act=Date.now()-TM.lastInput<120000;
   if(vis&&act&&!TM.active&&!TM.paused)TM.used++;
+  try{SO.friends.forEach(p=>{if(p.ch===1&&Number.isFinite(+p.ti)&&+p.ti!==TM.gInt){TM.gInt=+p.ti;try{localStorage.setItem('elias_gti',String(TM.gInt))}catch(e){}}})}catch(e){}
   const l=limitMin();
-  if(l&&!TM.active){
+  if(l&&!TM.active&&inGroup()){
+    /* groupe : les parents arrivent à heure fixe pour tout le monde (multiples de l'intervalle) */
+    const iv=l*60000,now=Date.now(),k=Math.floor(now/iv);
+    if(TM.kIv!==iv){TM.kIv=iv;TM.lastK=k;TM.w5=TM.w1=false}
+    if(k>TM.lastK){TM.lastK=k;TM.w5=TM.w1=false;if(TM.paused)cntHide();else TM.start()}
+    else{
+      const rem=Math.ceil(((k+1)*iv-now)/1000);
+      if(rem<=10&&rem>0&&!TM.paused)cntShow(rem);else cntHide();
+      if(!TM.w5&&iv>600000&&rem<=300){TM.w5=true;try{toast({hero:HERO.id,text:T().w5})}catch(e){}}
+      if(!TM.w1&&rem<=60){TM.w1=true;try{toast({hero:HERO.id,text:T().w1})}catch(e){}}
+    }
+  }else if(l&&!TM.active){
     const lim=l*60;
     if(TM.used>=lim)TM.start();
     else{
@@ -6092,15 +6142,16 @@ async function pbk(pw,saltHex){
 }
 function dirConnect(){
   if(dc||typeof mqtt==='undefined')return;
-  const custom=LS('elias_broker').trim(),urls=custom?[custom]:(window.ELIAS_BROKERS||['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt']);let i=0;
-  const next=()=>{
-    if(i>=urls.length||dc)return;let c;
-    try{c=mqtt.connect(urls[i++],{clientId:'elias_dir_'+Math.random().toString(36).slice(2,8),reconnectPeriod:5000,connectTimeout:6000,keepalive:30})}catch(e){return next()}
-    let ok=false;
-    c.once('connect',()=>{ok=true;dc=c;dcReady=true;c.subscribe('eliasblocs/v1/dir/+',{qos:1});cbs.forEach(f=>f())});
+  const custom=LS('elias_broker').trim(),urls=custom?custom.split(',').map(x=>x.trim()).filter(Boolean):(window.ELIAS_BROKERS||['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt']).slice(0,2);
+  const cl=[];
+  dc={get connected(){return cl.some(c=>c.connected)},publish(t,pl,o,cb){const on=cl.filter(c=>c.connected);if(!on.length){if(cb)cb();return}let n=on.length;on.forEach(c=>{try{c.publish(t,pl,o,()=>{if(--n===0&&cb)cb()})}catch(e){if(--n===0&&cb)cb()}})}};
+  urls.forEach(u=>{
+    let c;try{c=mqtt.connect(u,{clientId:'elias_dir_'+Math.random().toString(36).slice(2,8),reconnectPeriod:5000,connectTimeout:6000,keepalive:30})}catch(e){return}
+    cl.push(c);
+    c.on('connect',()=>{dcReady=true;c.subscribe('eliasblocs/v1/dir/+',{qos:1});cbs.forEach(f=>f())});
     c.on('message',(topic,buf)=>{const id=topic.split('/').pop(),s=buf.toString();if(!s){dir.delete(id)}else{try{const r=JSON.parse(s);if(r&&r.n&&r.s&&r.v)dir.set(id,r)}catch(e){return}}cbs.forEach(f=>f())});
-    c.once('error',()=>{if(!ok){try{c.end(true)}catch(e){}next()}});c.once('close',()=>{if(!ok&&!dc){try{c.end(true)}catch(e){}next()}});
-  };next();
+  });
+  if(!cl.length)dc=null;
 }
 const failOK=()=>{try{const f=JSON.parse(LS('elias_gfail')||'{}');return !(f.until&&Date.now()<f.until)}catch(e){return true}};
 const failAdd=()=>{try{const f=JSON.parse(LS('elias_gfail')||'{}');f.n=(f.n||0)+1;if(f.n>=5){f.until=Date.now()+60000;f.n=0}SET('elias_gfail',JSON.stringify(f))}catch(e){}};
@@ -6169,7 +6220,7 @@ function viewCreate(){
     try{
       const salt=hex(crypto.getRandomValues(new Uint8Array(16))),v=await pbk(p1,salt);
       dc.publish('eliasblocs/v1/dir/'+key,JSON.stringify({n,s:salt,v,ts:Date.now(),mx:15}),{retain:true,qos:1},()=>{
-        SET('elias_fam',n.toLowerCase()+'|'+p1.toLowerCase());SET('elias_grpname',n);SET('elias_grpnew','1');location.reload();
+        SET('elias_fam',n.toLowerCase()+'|'+p1.toLowerCase());SET('elias_grpname',n);SET('elias_gown',n.toLowerCase());SET('elias_grpnew','1');location.reload();
       });
     }catch(e){m.textContent=t.noNet;go.disabled=false}
   });
@@ -6186,6 +6237,7 @@ function viewIn(){
     const cp=B(t.cp,'',async()=>{try{await navigator.clipboard.writeText(link)}catch(e){li.select();try{document.execCommand('copy')}catch(_){}}cp.textContent=t.cpd});box.append(cp);
     if(navigator.share)box.append(B(t.sh,'g',()=>{try{navigator.share({title:'Elias et les Blocs Magiques',url:link})}catch(e){}}));
   }
+  try{const gl=(LS('elias_grpname')||'').toLowerCase();if(gl&&LS('elias_gown')===gl&&window.TM&&TM.chief){const cl={fr:'🚨 Appeler les parents maintenant',en:'🚨 Call the parents now',ln:'🚨 Benga baboti sikoyo'}[lang]||'🚨';box.append(B(cl,'r',()=>{close();TM.chief()}))}}catch(e){}
   box.append(el('<p></p>'));
   box.append(B(t.leave,'o',()=>{try{localStorage.removeItem('elias_fam');localStorage.removeItem('elias_grpname')}catch(e){}location.reload()}));
   if(LS('elias_grpname'))box.append(B(t.del,'r',()=>delStart()));
@@ -6197,7 +6249,7 @@ function delStart(){
   const run=()=>{try{document.getElementById('safeM').style.display='none'}catch(e){}
     box.innerHTML='';box.append(el(`<h2>${t.del}</h2><p>${t.delQ}</p>`),B(t.yes,'r',async()=>{
       dirConnect();const key=await nameKey(LS('elias_grpname'));
-      const fin=()=>{try{localStorage.removeItem('elias_fam');localStorage.removeItem('elias_grpname')}catch(e){}location.reload()};
+      const fin=()=>{try{localStorage.removeItem('elias_fam');localStorage.removeItem('elias_grpname');localStorage.removeItem('elias_gown')}catch(e){}location.reload()};
       if(dc)dc.publish('eliasblocs/v1/dir/'+key,'',{retain:true,qos:1},fin);else fin();
     }),B(t.no,'o',viewIn));open();};
   if(typeof SAFE!=='undefined'&&SAFE.askPin){close();SAFE.askPin(run)}else run();
