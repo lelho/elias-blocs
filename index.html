@@ -160,6 +160,9 @@ button:active{transform:scale(.94)}
 .tvsub{position:absolute;left:0;right:0;bottom:6px;text-align:center;color:#fff;background:#000a;font-size:clamp(13px,2.2vw,22px);padding:4px 10px}
 .tvscreen .prog{position:absolute;left:0;right:0;top:0;height:5px;background:#fff3;border-radius:0}.tvscreen .prog i{display:block;height:100%;background:#ffd23f;margin:0}
 .tvempty{color:#fff;display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:20px;font-size:20px}
+.tvset.tvfull{position:fixed;inset:0;z-index:70;width:auto;border-radius:0;background:#000;padding:8px 8px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:none}
+.tvset.tvfull .tvscreen{width:min(100vw - 16px,calc((100vh - 74px)*1.7778));border-radius:10px}
+.tvset.tvfull .tvbar{padding-top:8px}
 .tvbar{display:flex;gap:10px;justify-content:center;padding-top:10px}.tvbar button{background:#d62828;border-radius:16px;padding:8px 18px;font-size:22px;box-shadow:0 5px 0 rgba(27,37,89,.16),0 11px 18px -7px rgba(27,37,89,.28)}
 #tvList{display:flex;flex-direction:column;gap:8px;width:min(94vw,360px)}
 .tvblk{--c:#3b6ed8;display:flex;align-items:center;gap:10px;background:var(--c);border-radius:18px;padding:6px 12px;color:#fff;text-align:left;box-shadow:0 6px 0 rgba(27,37,89,.16),0 12px 20px -8px rgba(27,37,89,.28);border:4px solid transparent}
@@ -721,7 +724,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 <div id="fix" class="screen"><div class="top"><button id="fxBack"></button><div class="star" id="fxRound"></div><div class="star" id="fxScore"></div></div><div id="fxMsg"></div><div id="fxScene"></div><div id="fxTools"></div></div>
 
 <div id="tv" class="screen"><div class="top"><button id="tvBack"></button><div class="star" id="tvT"></div><div style="width:100px"></div></div>
- <div class="tvbody"><div class="tvset"><div class="tvscreen" id="tvScreen"></div><div class="tvbar"><button id="tvPrev">⏮</button><button id="tvPlay">⏸</button><button id="tvNext">⏭</button></div></div><div id="tvList"></div></div></div>
+ <div class="tvbody"><div class="tvset"><div class="tvscreen" id="tvScreen"></div><div class="tvbar"><button id="tvPrev">⏮</button><button id="tvPlay">⏸</button><button id="tvNext">⏭</button><button id="tvFull" title="Plein écran">⛶</button></div></div><div id="tvList"></div></div></div>
 
 <div id="lib" class="screen"><div class="top"><button id="libBack"></button><div class="star" id="libT"></div><div style="width:100px"></div></div><div id="libTabs"></div><div id="libGrid"></div></div>
 
@@ -2259,10 +2262,57 @@ function openArcade(){
 }
 function startArcade(k){
   try{speechSynthesis.cancel()}catch(e){}
-  AR.g=GAMES[k];AR.key=k;AR.score=0;AR.over=false;AR.paused=false;AR.cv=$('#acv');AR.cx=AR.cv.getContext('2d');
+  filmReset();AR.g=GAMES[k];AR.key=k;AR.score=0;AR.over=false;AR.paused=false;AR.cv=$('#acv');AR.cx=AR.cv.getContext('2d');
   $('#aback').textContent=L().menu;$('#ahint').textContent=ATT()['hint'+({tet:'T',maze:'M',space:'S',rhythm:'R',train:'V',race:'C'})[k]];
   clearHolds();$('#actl').innerHTML='';
   AR.g.init();show('arc');audioUI();musicStart(k);{const cv=AR.cv,r=cv.width/cv.height,h=Math.min(innerHeight*.58,innerWidth*.94/r);cv.style.height=h+'px';cv.style.width=(h*r)+'px'}AR.run=true;AR.last=performance.now();cancelAnimationFrame(AR.raf);AR.raf=requestAnimationFrame(arcLoop);
+}
+const FILM={f:[],fps:4,src:'',busy:false,oc:null,last:0};
+function filmReset(){FILM.f=[];FILM.src='';FILM.last=0}
+function filmSource(){
+  const sc=document.querySelector('.screen.on');if(!sc||!sc.id||sc.id==='home'||sc.id==='arcMenu')return null;
+  if(sc.id==='arc'&&AR.run&&AR.cv)return {k:'cv',id:'arc',el:AR.cv,fps:4};
+  if(sc.id==='bgame'||sc.id==='city'||sc.id==='tv'||sc.id==='lobby'||sc.id==='heroes')return null;
+  const sv=sc.querySelector('#spSvg,#skSvg,#fxSvg,svg.game')||[...sc.querySelectorAll('svg')].filter(x=>x.getBoundingClientRect().width>200).sort((a,b)=>b.getBoundingClientRect().width-a.getBoundingClientRect().width)[0];
+  if(sv&&sc.id!=='geo'&&sc.id!=='draw')return {k:'svg',id:sc.id,el:sv,fps:2};
+  if(sc.id==='geo'||sc.id==='draw'||sc.id==='shop'||sc.id==='duel'||sc.id==='cgame'||sc.id==='reader')return {k:'dom',id:sc.id,el:sc,fps:1.5};
+  return null;
+}
+function filmImg(url){return new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=ko;i.src=url})}
+function inlineStyles(src,dst){const cs=getComputedStyle(src);let t='';for(const k of cs){t+=k+':'+cs.getPropertyValue(k)+';'}dst.setAttribute('style',t);
+  for(let i=0;i<src.children.length&&i<dst.children.length;i++)inlineStyles(src.children[i],dst.children[i])}
+async function filmCap(sr,w,h,o){
+  const ctx=o.getContext('2d');
+  if(sr.k==='cv'){ctx.drawImage(sr.el,0,0,w,h);return}
+  const r=sr.el.getBoundingClientRect();if(r.width<50||r.height<50)throw 0;
+  let svg;
+  if(sr.k==='svg'){const c=sr.el.cloneNode(true);c.setAttribute('xmlns','http://www.w3.org/2000/svg');c.setAttribute('width',r.width);c.setAttribute('height',r.height);svg=new XMLSerializer().serializeToString(c)}
+  else{const c=sr.el.cloneNode(true);inlineStyles(sr.el,c);c.querySelectorAll('script,video,canvas').forEach(x=>x.remove());
+    svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${r.width}" height="${r.height}"><foreignObject width="100%" height="100%">${new XMLSerializer().serializeToString(c)}</foreignObject></svg>`}
+  const img=await filmImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg));
+  ctx.fillStyle='#1b2559';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+}
+async function filmTick(){
+  if(FILM.busy)return;const sr=filmSource();
+  if(!sr){return}
+  if(FILM.src!==sr.id){FILM.f=[];FILM.src=sr.id;FILM.last=0}
+  const now=performance.now();if(now-FILM.last<1000/sr.fps-30)return;FILM.last=now;FILM.fps=sr.fps;FILM.busy=true;
+  try{
+    const el=sr.k==='cv'?sr.el:sr.el.getBoundingClientRect();const aw=sr.k==='cv'?sr.el.width:el.width,ah=sr.k==='cv'?sr.el.height:el.height;
+    const w=sr.k==='cv'?200:260,h=Math.round(w*ah/aw);
+    if(!FILM.oc)FILM.oc=document.createElement('canvas');const o=FILM.oc;if(o.width!==w||o.height!==h){o.width=w;o.height=h}
+    await filmCap(sr,w,h,o);FILM.f.push(o.toDataURL('image/jpeg',.42));
+    const cap=Math.round(25*sr.fps);while(FILM.f.length>cap)FILM.f.shift();
+  }catch(e){}
+  FILM.busy=false;
+}
+setInterval(filmTick,200);
+function arcFilm(){
+  let f=FILM.f.slice(),fps=FILM.fps;if(f.length<Math.round(3*fps))return null;/* au moins ~3 s */
+  const tot=a=>a.reduce((n,x)=>n+x.length,0);
+  while(tot(f)>250000&&f.length>Math.round(12*fps/2)){f=f.filter((_,i)=>i%2===0);fps=fps/2}
+  if(tot(f)>250000)return null;
+  return {fps,f};
 }
 function arcLoop(ts){
   if(!AR.run)return;if(AR.paused){AR.last=ts;AR.raf=requestAnimationFrame(arcLoop);return}
@@ -3790,7 +3840,7 @@ const GICO={race:'🏎️',train:'🚂',geo:'🌍',draw:'🎨',read:'📚',pen:'
 const PUBL={fr:{btn:'📺 Publier sur la Blocs TV',done:'✅ Publié !',pts:'points',won:'victoire',stars:'étoiles',game:'Jeu',res:'Résultat',moves:'coups',score:'Score',ok:'Ton jeu passe à la Blocs TV !'},en:{btn:'📺 Publish on Blocks TV',done:'✅ Published!',pts:'points',won:'win',stars:'stars',game:'Game',res:'Result',moves:'moves',score:'Score',ok:'Your game is on Blocks TV!'}};
 PUBL.ln=PUBL.fr;
 let PENDING_PUB=null;
-function setPub(o){PENDING_PUB=o}
+function setPub(o){if(o&&!o.film){o.film=arcFilm();filmReset()}PENDING_PUB=o}
 function arcShot(){try{let d=AR.cv.toDataURL('image/jpeg',.6);if(d.length>60000)d=AR.cv.toDataURL('image/jpeg',.35);return d.length<=60000?d:''}catch(e){return ''}}
 const MOVE_RE=/^[a-h][1-8][a-h][1-8][qrbn]?$/;
 function cleanGame(s){
@@ -3798,6 +3848,8 @@ function cleanGame(s){
   const o={id:String(s.id).replace(/[^a-z0-9_-]/gi,'').slice(0,24),type:'game',game:s.game,title:String(s.title||'').slice(0,40),author:String(s.author||'').slice(0,14),hero:String(s.hero||'elias'),ts:+s.ts||0,
    score:Math.max(0,Math.min(99999,+s.score||0)),total:Math.max(0,Math.min(99,+s.total||0)),result:String(s.result||'').slice(0,60),opp:Math.max(0,Math.min(99,+s.opp||0)),
    shot:(typeof s.shot==='string'&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s.shot)&&s.shot.length<=60000)?s.shot:''};
+  if(s.film&&Array.isArray(s.film.f)&&s.film.f.length<=100){const ok=s.film.f.every(x=>typeof x==='string'&&x.length<=16000&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(x));
+   if(ok&&s.film.f.reduce((n,x)=>n+x.length,0)<=260000)o.film={fps:Math.max(.25,Math.min(5,+s.film.fps||2)),f:s.film.f.slice()}}
   if((s.game==='chess'||s.game==='dames')&&Array.isArray(s.moves))o.moves=s.moves.filter(m=>typeof m==='string'&&MOVE_RE.test(m)).slice(0,160);
   return o;
 }
@@ -3805,10 +3857,11 @@ function publishGame(o,btn){
   const T=PUBL[lang],id='g'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
   const st={id,type:'game',game:o.game,title:(GNAME[lang][o.game]||o.game),author:HERO.name,hero:HERO.id,ts:Date.now(),score:o.score||0,total:o.total||0,result:(o.result||'').slice(0,60),opp:o.extra||0,shot:o.shot||''};
   if(o.moves)st.moves=o.moves.slice(0,160);
+  if(o.film)st.film=o.film;
   STORIES.push(st);STORIES=STORIES.slice(-30);
-  STORIES.forEach((x,i)=>{if(x.shot&&i<STORIES.length-8)x.shot=''});
-  try{localStorage.setItem('elias_stories',JSON.stringify(STORIES))}catch(e){try{STORIES.forEach(x=>x.shot='');localStorage.setItem('elias_stories',JSON.stringify(STORIES))}catch(e2){}}
-  if(DBS){try{DBS.collection('stories').doc(st.id).set(st).catch(()=>{})}catch(e){}}
+  STORIES.forEach((x,i)=>{if(x.shot&&i<STORIES.length-8)x.shot='';if(x.film&&i<STORIES.length-3)delete x.film});
+  try{localStorage.setItem('elias_stories',JSON.stringify(STORIES))}catch(e){try{STORIES.forEach(x=>{x.shot='';delete x.film});localStorage.setItem('elias_stories',JSON.stringify(STORIES))}catch(e2){}}
+  if(DBS){try{DBS.collection('stories').doc(st.id).set(st).catch(()=>{if(!st.film)return;const s2={...st};delete s2.film;try{DBS.collection('stories').doc(st.id).set(s2).catch(()=>{})}catch(e){}})}catch(e){}}
   addPts(3);fanfare();confetti();
   if(btn){btn.textContent=T.done;btn.disabled=true}
   toast({hero:HERO.id,text:T.ok,btns:[{label:'📺',fn:()=>{$('#bgend').classList.remove('on');$('#end').classList.remove('on');openTV(st.id)}}]});
@@ -3817,6 +3870,7 @@ function wirePub(btn,o){
   if(!btn)return;const T=PUBL[lang];
   if(!o){btn.style.display='none';return}
   btn.style.display='';btn.disabled=false;btn.textContent=T.btn;btn.onclick=()=>publishGame(o,btn);
+  if(!o.auto&&(o.score>0||o.film)&&!SAFE.locked&&SAFE.cfg.online!==false){o.auto=1;setTimeout(()=>{if(!btn.disabled)publishGame(o,btn)},900)}
 }
 /* replay d'une partie d'échecs/dames sur la TV */
 function boardGridHTML(g,st,last){
@@ -3849,10 +3903,13 @@ async function tvPlayGame(st,my){
     if(TVS.token!==my)return;
     mv.textContent=st.result||'';await tvPres(PRT[lang].game(st,gname,''),my);
   }else{
-    const detail=st.shot?`<img class="tvshot" src="${st.shot}">`:`<div class="tvico">${ico}</div>`;
+    const detail=st.film?`<img class="tvshot" id="tvFilm" src="${st.film.f[0]}">`:st.shot?`<img class="tvshot" src="${st.shot}">`:`<div class="tvico">${ico}</div>`;
     const scoreTxt=st.total?`${st.score}/${st.total} ${P.stars}`:(st.game==='chess'||st.game==='dames'||st.game==='cards')?(st.result||''):`${st.score} ${P.pts}`;
     scr.innerHTML=`<div class="tvgame cardg">${detail}<div class="tvinfo"><div class="pav"></div><b></b><small></small><div class="big2"></div></div></div>`;
     scr.querySelector('.tvinfo .pav').innerHTML=av.replace('viewBox="0 0 130 175"','viewBox="18 0 94 108"');scr.querySelector('.tvinfo b').textContent=gname;scr.querySelector('.tvinfo small').textContent=`${T.by} ${st.author}`;scr.querySelector('.big2').textContent=scoreTxt;
+    if(st.film){const im=scr.querySelector('#tvFilm'),bd=document.createElement('div');bd.className='live';bd.textContent='🎬 '+(lang==='en'?'GAMEPLAY':'EN JEU');scr.append(bd);
+      for(let i=0;i<st.film.f.length&&TVS.token===my;i++){im.src=st.film.f[i];await sleepT(1000/st.film.fps,my)}
+      if(TVS.token!==my)return;if(st.shot)im.src=st.shot;bd.remove()}
     confetti();await tvPres(PRT[lang].game(st,gname,scoreTxt),my);if(TVS.token!==my)return;await sleepT(1200,my);
   }
   if(TVS.token!==my)return;
@@ -3899,7 +3956,8 @@ function allStories(){
 async function tvDbInit(){
   try{DBS=(window.claude&&window.claude.use)?await window.claude.use('db'):null}catch(e){DBS=null}
   if(!DBS)return;
-  try{DBS.collection('stories').orderBy('ts','desc').limit(60).onSnapshot(sn=>{SHARED=sn.docs.map(d=>d.data()).filter(Boolean).filter(x=>SAFE.okStory(x));if(TVS.open)tvRefresh()},()=>{})}catch(e){}
+  try{DBS.collection('stories').orderBy('ts','desc').limit(60).onSnapshot(sn=>{const old=new Set(SHARED.map(x=>x.id)),first=!tvDbInit.done;tvDbInit.done=1;SHARED=sn.docs.map(d=>d.data()).filter(Boolean).filter(x=>SAFE.okStory(x));if(TVS.open)tvRefresh();
+   if(!first&&!TVS.open&&Date.now()-(tvDbInit.nt||0)>20000){const nw=SHARED.find(x=>!old.has(x.id)&&x.author!==HERO.name&&x.type==='game'&&Date.now()-x.ts<60000);if(nw){tvDbInit.nt=Date.now();try{toast({hero:nw.hero,text:(lang==='en'?`📺 ${nw.author} just played ${GNAME[lang][nw.game]||''}! Watch!`:`📺 ${nw.author} vient de jouer à ${GNAME[lang][nw.game]||''} ! Regarde !`),btns:[{label:'📺',fn:()=>openTV(nw.id)}]})}catch(e){}}}},()=>{})}catch(e){}
 }
 function publishStory(){
   const T=TVT[lang];if(!pages.length){status(S().empty);return}
@@ -3973,7 +4031,7 @@ function tvRefresh(){
     const b=document.createElement('button');b.className='tvblk'+(i===TVS.idx?' on':'');b.style.setProperty('--c',COL[(i)%10]);
     const h=HEROES.find(x=>x.id===s.hero);
     b.innerHTML=`<span class="n"></span><div class="pav"></div><div class="tt"><b></b><small></small></div>`;
-    b.querySelector('.n').textContent=i+1;b.querySelector('b').textContent=(s.type==='alarm'?'🚨 ':s.type==='music'?'🎵 ':s.type==='game'?(GICO[s.game]||'🎮')+' ':'')+s.title;b.querySelector('small').textContent=`${T.by} ${s.author}`;
+    b.querySelector('.n').textContent=i+1;b.querySelector('b').textContent=(s.type==='alarm'?'🚨 ':s.film?'🎬 ':s.type==='music'?'🎵 ':s.type==='game'?(GICO[s.game]||'🎮')+' ':'')+s.title;b.querySelector('small').textContent=`${T.by} ${s.author}`;
     if(h)b.querySelector('.pav').innerHTML=heroSVG({...h,forceOutfit:'hero'}).replace('viewBox="0 0 130 175"','viewBox="18 0 94 108"');
     b.onclick=()=>{TVS.idx=i;tvRun();tvRefresh()};
     box.append(b);
@@ -4026,7 +4084,13 @@ async function tvPlay(st,my){
 $('#tvPlay').onclick=()=>{if(TVS.playing){stopSong();TVS.playing=false;TVS.token++;try{speechSynthesis.cancel()}catch(e){}$('#tvPlay').textContent='▶'}else tvRun()};
 $('#tvNext').onclick=()=>{stopSong();TVS.idx=(TVS.idx+1)%Math.max(1,allStories().length);tvRun();tvRefresh()};
 $('#tvPrev').onclick=()=>{stopSong();const n=Math.max(1,allStories().length);TVS.idx=(TVS.idx-1+n)%n;tvRun();tvRefresh()};
-$('#tvBack').onclick=()=>{stopSong();TVS.open=false;TVS.playing=false;TVS.token++;try{speechSynthesis.cancel()}catch(e){}buildMenu();show('home')};
+function tvFull(on){const set=document.querySelector('.tvset');if(!set)return;if(on===undefined)on=!set.classList.contains('tvfull');set.classList.toggle('tvfull',on);$('#tvFull').textContent=on?'🗗':'⛶';
+  try{if(on&&!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{});else if(!on&&document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(e){}
+  const sc=$('#tvScreen');const bs=sc.querySelector('.tvboard');setTimeout(()=>{if(bs)bs.style.setProperty('--bs',Math.floor(sc.clientHeight*.88)+'px')},120)}
+$('#tvFull').onclick=()=>tvFull();
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.querySelector('.tvset.tvfull'))tvFull(false)});
+document.addEventListener('keydown',e=>{if(TVS.open&&(e.key==='f'||e.key==='F')&&!/INPUT|TEXTAREA/.test((e.target||{}).tagName||''))tvFull();else if(TVS.open&&e.key==='Escape')tvFull(false)});
+$('#tvBack').onclick=()=>{tvFull(false);stopSong();TVS.open=false;TVS.playing=false;TVS.token++;try{speechSynthesis.cancel()}catch(e){}buildMenu();show('home')};
 tvDbInit();
 
 /* ===== Lecture : 20 livres + les histoires de la Blocs TV ===== */
