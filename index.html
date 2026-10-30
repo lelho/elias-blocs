@@ -273,10 +273,11 @@ body:not(.kbd) :focus{outline:none}
 .cent.walk .bob{animation:cwalk .35s ease-in-out infinite}@keyframes cwalk{50%{transform:translateY(-5px)}}
 .bld{cursor:pointer}
 #cityBar{display:flex;gap:10px;align-items:center;justify-content:center;padding:6px 10px calc(8px + env(safe-area-inset-bottom));flex-wrap:wrap;color:#25326b;font-size:clamp(14px,2.2vw,20px);background:#fff8}
-#cityBar b{min-width:1px}#cityDog,#cityBall{background:#2ec4b6;border-radius:16px;padding:8px 14px;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.2);color:#25326b}#cityDog.on{background:#06d6a0}.dogc{pointer-events:none}.dogc.walk .bob{animation:cwalk .25s ease-in-out infinite}
+#cityBar b{min-width:1px}#cityN{cursor:pointer;color:#25326b}#cityWho{display:none;position:absolute;right:8px;top:62px;z-index:25;background:#fff;border-radius:18px;padding:8px;box-shadow:0 8px 0 rgba(0,0,0,.25);max-width:min(92vw,380px);max-height:60%;overflow:auto;color:#25326b}#cityWho.on{display:block}.cwe{padding:10px;font-size:16px}.cwr{display:flex;align-items:center;gap:8px;padding:4px 2px}.cwr b{flex:1}.cwr small{opacity:.7}.cwa{width:34px;height:46px;display:inline-block}.cwa svg{width:100%;height:100%}.cwr button{background:#4cc9f0;border-radius:12px;padding:8px 12px;font-size:16px;color:#25326b}
+#cityDog,#cityBall{background:#2ec4b6;border-radius:16px;padding:8px 14px;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.2);color:#25326b}#cityDog.on{background:#06d6a0}.dogc{pointer-events:none}.dogc.walk .bob{animation:cwalk .25s ease-in-out infinite}
 #cityHi{background:#ff8c42;border-radius:16px;padding:8px 16px;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.2)}
 
-#city{position:relative}#cityP{display:none;position:absolute;inset:0;background:rgba(20,30,70,.45);z-index:20;align-items:center;justify-content:center;padding:12px}#cityP.on{display:flex}
+#city{position:relative}#city .top{position:relative}#cityP{display:none;position:absolute;inset:0;background:rgba(20,30,70,.45);z-index:20;align-items:center;justify-content:center;padding:12px}#cityP.on{display:flex}
 .cpbox{position:relative;background:#fff;border-radius:24px;padding:16px;max-width:620px;width:100%;max-height:92%;overflow:auto;box-shadow:0 10px 0 rgba(0,0,0,.25);color:#25326b}
 #cpX{position:absolute;right:10px;top:10px;background:#ef476f;border-radius:50%;width:40px;height:40px;font-size:20px;color:#fff}
 .cphead{display:flex;gap:12px;align-items:center;margin-bottom:10px;font-size:22px}.cpav{width:70px;height:90px}.cpav svg{width:100%;height:100%}#cpSt{font-size:15px;opacity:.7}
@@ -615,7 +616,7 @@ html{--ks:1}html[data-ks=s]{--ks:.8}html[data-ks=xs]{--ks:.62}
  <div class="bqwrap"><div class="bqleft"><div id="bqPrev"></div><div class="bqhero"><button id="bqPrevH" class="mini" style="background:#25326b">◀</button><button id="bqNextH" class="mini" style="background:#25326b">▶</button></div></div>
  <div class="bqright"><div id="bqTabs"></div><div id="bqGrid"></div><div id="bqAct"></div></div></div></div>
 
-<div id="city" class="screen"><div class="top"><button id="cityBack"></button><div class="star" id="cityT"></div><div class="star" id="cityN"></div></div>
+<div id="city" class="screen"><div class="top"><button id="cityBack"></button><div class="star" id="cityT"></div><button class="star" id="cityN" style="border:0"></button><div id="cityWho"></div></div>
  <div id="cityWrap"><svg id="citySvg" viewBox="0 0 1200 690" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><g id="cityMap"></g><g id="cityFx"></g><g id="cityChars"></g></svg></div>
  <div id="cityP"><div class="cpbox"><button id="cpX">✕</button><div class="cphead"><div id="cpAv" class="cpav"></div><div><b id="cpNm"></b><div id="cpSt"></div></div></div><div id="cpBody"></div></div></div>
  <div id="cityBar"><span id="cityHint"></span><b id="cityPrompt"></b><button id="cityDog"></button><button id="cityBall"></button><button id="cityHi"></button></div></div>
@@ -758,6 +759,7 @@ window.claude={async use(cap){
   if(cap==='db'){return makeDb()}
   throw new Error('unsupported');
 }};
+window.ELIAS_BROKERS=BROKERS;
 window.ELIAS_ONLINE={myId,hasCode:()=>LS('elias_fam').trim().length>=4};
 })();
 </script>
@@ -1953,7 +1955,7 @@ const SAFE=(function(){
     if(S.locked)return;S.locked=true;S.rec={...rec,t:Date.now()};S.log.unshift(S.rec);S.log=S.log.slice(0,30);save();
     try{SO.open=false;$('#msgr').classList.remove('on')}catch(e){}
     try{SO.friends=new Map();pushPresence()}catch(e){}
-    S.ui();S.openLock();
+    S.ui();S.openLock();try{window.ELIAS_REG&&window.ELIAS_REG.send(true)}catch(e){}
   };
   S.ui=function(){
     const b=document.getElementById('msgBtn');if(!b)return;
@@ -1963,8 +1965,8 @@ const SAFE=(function(){
   return S;
 })();
 const SAFET={
- fr:{lockT:'🛡️ Pause sécurité',lockD:'Un message n’était pas adapté pour un jeu d’enfants. Les messages et les amis en ligne sont bloqués. Demande à un adulte de vérifier.',adult:'👨‍👩‍👧 Je suis un adulte',ok:'D’accord',pinT:'Code parent',pinNew:'Crée un code parent (4 chiffres)',pinAgain:'Retape le code',pinBad:'Code incorrect',pinMis:'Les deux codes sont différents',wait:'Trop d’essais. Réessaie dans une minute.',mathT:'Question pour les adultes',mathD:'Pour créer le code parent, réponds à ce calcul :',reviewT:'Message bloqué',who:{in:'Reçu de',out:'Écrit par'},cat:{contact:'demande de contact ou d’infos personnelles',rencontre:'proposition de rencontre',secret:'demande de garder un secret',photo:'demande de photo ou de vidéo',seul:'question pour savoir si l’enfant est seul',inapproprie:'mot inapproprié',cadeau:'cadeau ou argent'},unlock:'✅ C’est bon, débloquer',block:'🚫 Bloquer ce contact et débloquer',keep:'Rester bloqué',parentT:'🛡️ Contrôle parental',textMode:'Messages écrits',free:'Texte libre (filtré)',phr:'Phrases toutes faites seulement',online:'Jeu en ligne',on:'Activé',off:'Désactivé',log:'Messages bloqués',none:'Aucun',blockedL:'Contacts bloqués',unb:'Débloquer',chg:'Changer le code',close:'Fermer',phrasesOnly:'Les phrases toutes faites seulement.',hint:'Code oublié ? Efface les données du site dans Réglages > Safari.',del:'⌫',explain:'Les messages avec demande de rencontre, d’adresse, de numéro, de photo, de secret ou de réseau social sont bloqués automatiquement.'},
- en:{lockT:'🛡️ Safety pause',lockD:'A message was not suitable for a kids’ game. Messages and online friends are blocked. Ask a grown-up to check.',adult:'👨‍👩‍👧 I am an adult',ok:'OK',pinT:'Parent code',pinNew:'Create a parent code (4 digits)',pinAgain:'Type the code again',pinBad:'Wrong code',pinMis:'The two codes are different',wait:'Too many tries. Try again in a minute.',mathT:'Question for adults',mathD:'To create the parent code, answer this sum:',reviewT:'Blocked message',who:{in:'Received from',out:'Written by'},cat:{contact:'request for contact or personal info',rencontre:'suggestion to meet',secret:'request to keep a secret',photo:'request for a photo or video',seul:'question about whether the child is alone',inapproprie:'inappropriate word',cadeau:'gift or money'},unlock:'✅ It is fine, unlock',block:'🚫 Block this contact and unlock',keep:'Stay blocked',parentT:'🛡️ Parental controls',textMode:'Written messages',free:'Free text (filtered)',phr:'Ready-made phrases only',online:'Online play',on:'On',off:'Off',log:'Blocked messages',none:'None',blockedL:'Blocked contacts',unb:'Unblock',chg:'Change code',close:'Close',phrasesOnly:'Ready-made phrases only.',hint:'Forgot the code? Clear the site data in Settings > Safari.',del:'⌫',explain:'Messages asking to meet, for an address, a number, a photo, a secret or a social network are blocked automatically.'}
+ fr:{lockT:'🛡️ Pause sécurité',lockD:'Un message n’était pas adapté pour un jeu d’enfants. Les messages et les amis en ligne sont bloqués. Demande à un adulte de vérifier.',adult:'👨‍👩‍👧 Je suis un adulte',ok:'D’accord',pinT:'Code parent',pinNew:'Crée un code parent (4 chiffres)',pinAgain:'Retape le code',pinBad:'Code incorrect',pinMis:'Les deux codes sont différents',wait:'Trop d’essais. Réessaie dans une minute.',mathT:'Question pour les adultes',mathD:'Pour créer le code parent, réponds à ce calcul :',reviewT:'Message bloqué',who:{in:'Reçu de',out:'Écrit par'},cat:{contact:'demande de contact ou d’infos personnelles',rencontre:'proposition de rencontre',secret:'demande de garder un secret',photo:'demande de photo ou de vidéo',seul:'question pour savoir si l’enfant est seul',inapproprie:'mot inapproprié',cadeau:'cadeau ou argent'},unlock:'✅ C’est bon, débloquer',block:'🚫 Bloquer ce contact et débloquer',keep:'Rester bloqué',parentT:'🛡️ Contrôle parental',textMode:'Messages écrits',free:'Texte libre (filtré)',phr:'Phrases toutes faites seulement',online:'Jeu en ligne',on:'Activé',off:'Désactivé',log:'Messages bloqués',none:'Aucun',blockedL:'Contacts bloqués',unb:'Débloquer',chg:'Changer le code',close:'Fermer',phrasesOnly:'Les phrases toutes faites seulement.',hint:'Code oublié ? Efface les données du site dans Réglages > Safari.',del:'⌫',explain:'Les messages avec demande de rencontre, d’adresse, de numéro, de photo, de secret ou de réseau social sont bloqués automatiquement.',lim:'Temps d’écran avant l’alerte parents',min:'min',reg:'Suivi par l’administrateur',regD:'Envoie à l’administrateur du jeu, de façon chiffrée : prénom, personnage, niveau, points, activité et alertes de sécurité. Jamais les conversations.'},
+ en:{lockT:'🛡️ Safety pause',lockD:'A message was not suitable for a kids’ game. Messages and online friends are blocked. Ask a grown-up to check.',adult:'👨‍👩‍👧 I am an adult',ok:'OK',pinT:'Parent code',pinNew:'Create a parent code (4 digits)',pinAgain:'Type the code again',pinBad:'Wrong code',pinMis:'The two codes are different',wait:'Too many tries. Try again in a minute.',mathT:'Question for adults',mathD:'To create the parent code, answer this sum:',reviewT:'Blocked message',who:{in:'Received from',out:'Written by'},cat:{contact:'request for contact or personal info',rencontre:'suggestion to meet',secret:'request to keep a secret',photo:'request for a photo or video',seul:'question about whether the child is alone',inapproprie:'inappropriate word',cadeau:'gift or money'},unlock:'✅ It is fine, unlock',block:'🚫 Block this contact and unlock',keep:'Stay blocked',parentT:'🛡️ Parental controls',textMode:'Written messages',free:'Free text (filtered)',phr:'Ready-made phrases only',online:'Online play',on:'On',off:'Off',log:'Blocked messages',none:'None',blockedL:'Blocked contacts',unb:'Unblock',chg:'Change code',close:'Close',phrasesOnly:'Ready-made phrases only.',hint:'Forgot the code? Clear the site data in Settings > Safari.',del:'⌫',explain:'Messages asking to meet, for an address, a number, a photo, a secret or a social network are blocked automatically.',lim:'Screen time before the parent alert',min:'min',reg:'Reporting to the administrator',regD:'Sends to the game administrator, encrypted: first name, character, level, points, activity and safety alerts. Never conversations.'}
 };
 SAFET.ln=SAFET.fr;
 const ST=()=>SAFET[lang];
@@ -2955,7 +2957,7 @@ function toast(o){
 function gname(k){return (MST().g[k])||(typeof GNAME!=='undefined'&&GNAME[lang]&&GNAME[lang][k])||k}
 function notifyFriend(pr,type){
   const T=MST();
-  if(type==='joined')return toast({hero:pr.hero,text:T.joined(pr.name)});
+  if(type==='joined')return toast({hero:pr.hero,text:T.joined(pr.name),btns:(typeof CITY!=='undefined'&&CITY.open&&pr.cn)?[{label:'👋',fn:()=>{CITY.talk=pr.id;CITY.rt=0}}]:[]});
   if(type==='play'){
     const btns=[];if(pr.og&&pr.code)btns.push({label:T.join,fn:()=>{lobbyGame=pr.og;onlineStart(pr.og,pr.code,t=>{})}});
     toast({hero:pr.hero,text:T.plays(pr.name,gname(pr.play)),btns});
@@ -4240,6 +4242,7 @@ function openCity(){
   if(CITY.dogOn)mkDog('me',3);
   CITY.cam=Math.max(0,Math.min(WH-VH,CITY.me.y-VH*.38));
   cityDogUI();
+  if(window.TM&&TM.active)TM.attach();
   CITY.open=true;CITY.last=performance.now();cancelAnimationFrame(CITY.raf);CITY.raf=requestAnimationFrame(cityLoop);
   show('city');
 }
@@ -4288,7 +4291,7 @@ function cityDraw(){
 function cityPoint(e){const svg=$('#citySvg'),r=svg.getBoundingClientRect(),vb=svg.viewBox.baseVal,s=Math.min(r.width/vb.width,r.height/vb.height),ox=r.left+(r.width-vb.width*s)/2,oy=r.top+(r.height-vb.height*s)/2;return [(e.clientX-ox)/s+vb.x,(e.clientY-oy)/s+vb.y]}
 $('#citySvg').addEventListener('pointerdown',e=>{
   if(!CITY.me)return;e.preventDefault();const [x,y]=cityPoint(e);
-  for(const en of CITY.ents.values()){if(en.id!=='me'&&Math.abs(x-(en.x+en.ox))<34&&y>en.y+en.oy-80&&y<en.y+en.oy+14){CITY.goal=null;CITY.talk=en.id;CITY.rt=0;return}}
+  for(const en of CITY.ents.values()){if(en.id!=='me'&&!en.parent&&Math.abs(x-(en.x+en.ox))<34&&y>en.y+en.oy-80&&y<en.y+en.oy+14){CITY.goal=null;CITY.talk=en.id;CITY.rt=0;return}}
   CITY.talk=null;cancelAct(CITY.me);
   const sp=CITYS.find(s=>Math.hypot(x-s.dx,y-s.dy)<42);
   if(sp){CITY.goal=sp.id;CITY.me.path=cityPath(CITY.me.x,CITY.me.y,sp.dx,sp.dy);return}
@@ -4364,7 +4367,7 @@ function citySync(){
   friends.forEach((pr,id)=>{
     seen.add(id);let e=CITY.ents.get(id);const h=heroOf(pr.hero);
     if(!e){const b=CITYB.find(x=>x.id===PLAYB[pr.play])||CITYB[0];e=mkEnt(id,h,pr.name,{x:pr.cn?pr.cx:b.dx,y:pr.cn?pr.cy:b.dy,other:true,speed:260})}
-    e.name=pr.name;e.g.querySelector('.nm').textContent=pr.name;
+    e.name=pr.name;e.g.querySelector('.nm').textContent='🟢 '+pr.name;{const sh=e.g.querySelector('ellipse');if(sh&&!sh.dataset.on){sh.dataset.on=1;sh.setAttribute('stroke','#06d6a0');sh.setAttribute('stroke-width','4');sh.setAttribute('rx','24');sh.setAttribute('ry','9')}}
     if(pr.cn&&Number.isFinite(pr.cx)&&Number.isFinite(pr.cy)){e.tx=Math.max(20,Math.min(WW-20,pr.cx));e.ty=Math.max(20,Math.min(WH-10,pr.cy));e.alpha=1;e.tag=''}
     else{const b=CITYB.find(x=>x.id===PLAYB[pr.play]);if(b){e.tx=b.dx;e.ty=b.dy;e.alpha=.6;e.tag=b.ico}else{e.tx=e.x;e.ty=e.y;e.alpha=.35;e.tag='💤'}}
     const ac=pr.cn?String(pr.ac||''):'';
@@ -4372,10 +4375,13 @@ function citySync(){
     if(pr.cn&&pr.dg){if(!CITY.dogs.has(id))mkDog(id,id.charCodeAt(0))}else if(CITY.dogs.has(id))rmDog(id);
   });
   CITY.ents.forEach((e,id)=>{if(e.other&&!seen.has(id)){e.g.remove();CITY.ents.delete(id);rmDog(id)}});
-  const n=[...CITY.ents.values()].filter(e=>e.other).length;
-  $('#cityN').textContent=n?`🟢 ${n} ${CTY[lang].friends}`:'';
+  const n=[...CITY.ents.values()].filter(e=>e.other).length,en=lang==='en';
+  const noCode=window.ELIAS_ONLINE&&!window.ELIAS_ONLINE.hasCode();
+  $('#cityN').textContent=SAFE.locked?'🔒':n?`🟢 ${n} ${CTY[lang].friends}`:noCode?(en?'🔑 Family code':'🔑 Code famille'):(en?'⚪ Nobody online':'⚪ Personne en ligne');
+  if($('#cityWho').classList.contains('on'))cityWhoDraw();
 }
 function npcThink(e,dt){
+  if(window.TM&&TM.active){if(e.act)e.act=null;fleeThink(e,dt);return}
   if(e.act||e.path.length)return;e.moving=false;
   if(e.target){const t=e.target;e.target=null;if(t.park&&Math.hypot(e.x-t.dx,e.y-t.dy)<40)startAct(e,t.type,true);e.wait=2+Math.random()*4;return}
   e.wait-=dt;if(e.wait>0)return;
@@ -4386,13 +4392,14 @@ function cityLoop(ts){
   if(!CITY.open||!$('#city').classList.contains('on'))return;
   const dt=Math.min(.05,(ts-CITY.last)/1000);CITY.last=ts;CITY.t+=dt;CITY.cool=Math.max(0,CITY.cool-dt);
   const me=CITY.me;
-  let vx=0,vy=0;const pOn=$('#cityP').classList.contains('on');if(KEYS.ArrowLeft||KEYS.a||KEYS.A||KEYS.q||KEYS.Q)vx-=1;if(KEYS.ArrowRight||KEYS.d||KEYS.D)vx+=1;if(KEYS.ArrowUp||KEYS.w||KEYS.W||KEYS.z||KEYS.Z)vy-=1;if(KEYS.ArrowDown||KEYS.s||KEYS.S)vy+=1;if(pOn){vx=0;vy=0}
+  let vx=0,vy=0;const pOn=$('#cityP').classList.contains('on');if(KEYS.ArrowLeft||KEYS.a||KEYS.A||KEYS.q||KEYS.Q)vx-=1;if(KEYS.ArrowRight||KEYS.d||KEYS.D)vx+=1;if(KEYS.ArrowUp||KEYS.w||KEYS.W||KEYS.z||KEYS.Z)vy-=1;if(KEYS.ArrowDown||KEYS.s||KEYS.S)vy+=1;if(pOn||CITY.freeze>0){vx=0;vy=0}
   if(vx||vy){cancelAct(me);me.path=[];CITY.goal=null;CITY.talk=null;if(vx)CITY.face=vx>0?1:-1;const l=Math.hypot(vx,vy),nx=me.x+vx/l*me.speed*dt,ny=me.y+vy/l*me.speed*dt,[c,r]=cellOf(nx,ny);if(!CITY.grid[r][c]){me.x=nx;me.y=ny;me.moving=true}
     else{const [c2,r2]=cellOf(nx,me.y);if(!CITY.grid[r2][c2]){me.x=nx;me.moving=true}else{const [c3,r3]=cellOf(me.x,ny);if(!CITY.grid[r3][c3]){me.y=ny;me.moving=true}}}}
   CITY.ents.forEach(e=>{
     if(e.other){const dx=(e.tx??e.x)-e.x,dy=(e.ty??e.y)-e.y,d=Math.hypot(dx,dy);e.moving=d>3;if(d>1){const s=Math.min(d,e.speed*dt);e.x+=dx/d*s;e.y+=dy/d*s}}
+    else if(e.parent)parentThink(e,dt);
     else if(e.npc)npcThink(e,dt);
-    if(!e.other&&e.path.length&&!e.act){
+    if(!e.other&&e.path.length&&!e.act&&!(e===me&&CITY.freeze>0)){
       const [px,py]=e.path[0],dx=px-e.x,dy=py-e.y,d=Math.hypot(dx,dy),s=e.speed*dt;e.moving=true;
       if(e===me&&Math.abs(dx)>2)CITY.face=dx>0?1:-1;if(e.npc&&Math.abs(dx)>2)e.fc=dx>0?1:-1;
       if(d<=s){e.x=px;e.y=py;e.path.shift()}else{e.x+=dx/d*s;e.y+=dy/d*s}
@@ -4407,6 +4414,7 @@ function cityLoop(ts){
   });
   // balle du chien
   const bl=CITY.ball;if(bl&&bl.st==='fly'){bl.t+=dt/.8;const u=Math.min(1,bl.t);bl.x=bl.x0+(bl.tx-bl.x0)*u;bl.y=bl.y0+(bl.ty-bl.y0)*u-Math.sin(u*Math.PI)*70;if(u>=1){bl.st='ground';bl.y=bl.ty;const d=CITY.dogs.get('me');if(d)d.mode='fetch'}}
+  if(window.TMCITY)TMCITY(dt);
   CITY.dogs.forEach(d=>dogTick(d,dt));
   actFx();
   // profondeur
@@ -4427,6 +4435,20 @@ function cityLoop(ts){
 }
 $('#cityBack').onclick=()=>{CITY.open=false;cancelAnimationFrame(CITY.raf);CITY.ret=false;cancelAct(CITY.me);buildMenu();show('home')};
 $('#cityHi').onclick=()=>{cityBubble('me','👋');if(SO.room){SO.sel='all';sendMsg('👋')}beep(700,.08)};
+function cityWhoDraw(){
+  const w=$('#cityWho'),en=lang==='en';w.innerHTML='';
+  const list=[...CITY.ents.values()].filter(e=>e.other);
+  if(!list.length){w.innerHTML=`<div class="cwe">${en?'Nobody else is online yet. Ask a friend to open the game with the same code!':'Personne d’autre n’est en ligne pour l’instant. Demande à un ami d’ouvrir le jeu avec le même code !'}</div>`;return}
+  list.forEach(e=>{
+    const pr=SO.friends.get(e.id),inCity=pr&&pr.cn,row=document.createElement('div');row.className='cwr';
+    row.innerHTML=`<span class="cwa">${heroSVG(e.hero)}</span><b></b><small></small>`;
+    row.querySelector('b').textContent=e.name;row.querySelector('small').textContent=inCity?(en?'in the city':'en ville'):(pr&&pr.play?gname(pr.play):'');
+    const go=document.createElement('button');go.textContent=inCity?(en?'👋 Meet':'👋 Aller la voir'):'💬';
+    go.onclick=()=>{if(inCity){CITY.talk=e.id;CITY.rt=0;w.classList.remove('on')}else{SO.sel=e.id;openMsgr(e.id);w.classList.remove('on')}};
+    row.append(go);w.append(row);
+  });
+}
+$('#cityN').onclick=()=>{const w=$('#cityWho');if(window.ELIAS_ONLINE&&!window.ELIAS_ONLINE.hasCode()){const k=$('#famBtn');if(k)k.click();return}if(SAFE.locked){SAFE.openLock();return}w.classList.toggle('on');if(w.classList.contains('on'))cityWhoDraw()};
 $('#cityDog').onclick=cityDogToggle;$('#cityBall').onclick=cityBall;
 
 /* ===== Jeu de rôle : parler, défier, jouer ensemble, prêter ===== */
@@ -4543,7 +4565,7 @@ function cityGoTo(id){
   if(!(CITY.open&&$('#city').classList.contains('on')))openCity();
   CITY.goal=b.id;CITY.me.path=cityPath(CITY.me.x,CITY.me.y,b.dx,b.dy);
 }
-function cityNearChar(r){let best=null,bd=r;CITY.ents.forEach((e,id)=>{if(id==='me')return;const d=Math.hypot(e.x-CITY.me.x,e.y-CITY.me.y);if(d<bd){bd=d;best=id}});return best}
+function cityNearChar(r){let best=null,bd=r;CITY.ents.forEach((e,id)=>{if(id==='me'||e.parent)return;const d=Math.hypot(e.x-CITY.me.x,e.y-CITY.me.y);if(d<bd){bd=d;best=id}});return best}
 $('#cpX').onclick=cityPanelClose;
 document.addEventListener('keydown',ev=>{
   if(!$('#cityP').classList.contains('on'))return;
@@ -4906,6 +4928,8 @@ function flatAdd(c){
       box.innerHTML='';m._key=null;box.append(el(`<h2>${T.parentT}</h2><p style="font-size:.85em">${T.explain}</p>`));
       let r=el(`<div class="srow"><b>${T.textMode}</b></div>`);r.append(B(S.cfg.mode==='free'?T.free:T.phr,'',()=>{S.cfg.mode=S.cfg.mode==='free'?'phrases':'free';S.save();draw()}));box.append(r);
       r=el(`<div class="srow"><b>${T.online}</b></div>`);r.append(B(S.cfg.online?T.on:T.off,S.cfg.online?'g':'r',()=>{S.cfg.online=!S.cfg.online;S.save();draw();toast({text:'🔄'});setTimeout(()=>location.reload(),900)}));box.append(r);
+      {const L=S.cfg.limit===undefined?60:S.cfg.limit,OPT=[30,45,60,90,120,0];r=el(`<div class="srow"><b>${T.lim}</b></div>`);r.append(B(L?L+' '+T.min:T.off,L?'g':'o',()=>{S.cfg.limit=OPT[(OPT.indexOf(L)+1)%OPT.length];S.save();try{TM.used=Math.min(TM.used,(S.cfg.limit||1)*60-1)}catch(e){}draw()}));box.append(r)}
+      if(window.ELIAS_REG){const on=window.ELIAS_REG.on();r=el(`<div class="srow"><b>${T.reg}</b></div>`);r.append(B(on?T.on:T.off,on?'g':'r',()=>{S.cfg.reg=!on;S.save();draw();try{if(S.cfg.reg)window.ELIAS_REG.start()}catch(e){}}));box.append(r);box.append(el(`<p style="font-size:.78em;margin:0 0 6px;text-align:left">${T.regD}</p>`))}
       box.append(el(`<div class="srow"><b>${T.log}</b></div>`));
       if(!S.log.length)box.append(el(`<p>${T.none}</p>`));
       S.log.slice(0,5).forEach(l=>box.append(el(`<div class="safemsg" style="font-size:.8em">${new Date(l.t).toLocaleString()} · ${T.who[l.dir==='out'?'out':'in']} ${String(l.from||'?').replace(/</g,'&lt;')} : « ${String(l.text||'').replace(/</g,'&lt;')} » (${T.cat[l.cat]||l.cat})</div>`)));
@@ -4918,11 +4942,136 @@ function flatAdd(c){
 })();
 
 
+/* ===== Compteur d'écran : 1 h de jeu -> alerte « les parents arrivent » (30 s) sur la carte ===== */
+(function(){
+const LS=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
+const TXT={
+ fr:{ban:'TEMPS D’ÉCRAN DÉPASSÉ !',ban2:'Les parents arrivent !',say:'Attention ! Une heure d’écran ! Les parents arrivent !',w5:'⏱ Plus que 5 minutes de jeu !',w1:'⏱ Plus qu’une minute de jeu !',caught:'Tes parents t’ont attrapé ! C’est l’heure de la pause 💕',end:'Les parents sont repartis… Va faire une pause : bois un verre d’eau et va jouer dehors ! 💧',chip:'⏱',min:'min',
+  sc:['😱 Aaaah !','🏃 Au secours !','Pas déjà !','😭 Nooon !','Cours !!','Une minute !','Ils arrivent !'],par:['Maman','Papa','Mamie','Tonton'],hug:['❤️ Pause !','Viens ici !','Assez joué !','Attrapé !'],lim:'Temps d’écran avant l’alerte',off:'Désactivé'},
+ en:{ban:'SCREEN TIME IS UP!',ban2:'The parents are coming!',say:'Warning! One hour of screen time! The parents are coming!',w5:'⏱ Only 5 minutes of play left!',w1:'⏱ Only one minute of play left!',caught:'Your parents caught you! Time for a break 💕',end:'The parents have gone… Take a break: drink some water and go play outside! 💧',chip:'⏱',min:'min',
+  sc:['😱 Aaaah!','🏃 Help!','Not yet!','😭 Nooo!','Run!!','One minute!','They are coming!'],par:['Mum','Dad','Gran','Uncle'],hug:['❤️ Break time!','Come here!','Enough play!','Got you!'],lim:'Screen time before the alert',off:'Off'}
+};
+TXT.ln=TXT.fr;const T=()=>TXT[lang];
+const TM=window.TM={used:parseInt(LS('elias_tm'))||0,active:false,endAt:0,lastInput:Date.now(),w5:false,w1:false,dur:30000};
+const limitMin=()=>{const l=SAFE.cfg.limit;return l===undefined?60:l};
+const save=()=>{try{localStorage.setItem('elias_tm',String(TM.used))}catch(e){}};
+['pointerdown','keydown','touchstart','pointermove'].forEach(ev=>document.addEventListener(ev,()=>{TM.lastInput=Date.now()},{capture:true,passive:true}));
+/* bandeau + pastille */
+const css=document.createElement('style');css.textContent='#tmBanner{display:none;position:absolute;left:8px;right:8px;top:58px;z-index:30;border-radius:16px;padding:10px 14px;text-align:center;color:#fff;font-size:clamp(16px,3vw,26px);font-weight:bold;text-shadow:0 2px 0 #0007;background:repeating-linear-gradient(45deg,#ef476f 0 16px,#c1121f 16px 32px);box-shadow:0 6px 0 rgba(0,0,0,.3);animation:tmp .5s infinite alternate}#tmBanner.on{display:block}@keyframes tmp{from{transform:scale(1)}to{transform:scale(1.03)}}#city.tmalert::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 120px 30px rgba(239,71,111,.6);animation:tmv 1s infinite alternate;pointer-events:none;z-index:29}@keyframes tmv{from{opacity:.25}to{opacity:1}}#tmChip{position:absolute;right:12px;top:calc(62px + env(safe-area-inset-top));background:#fff;color:#25326b;border-radius:16px;padding:4px 12px;font-size:15px;box-shadow:0 3px 0 rgba(0,0,0,.18);z-index:3}';document.head.append(css);
+const ban=document.createElement('div');ban.id='tmBanner';$('#city').append(ban);
+const chip=document.createElement('div');chip.id='tmChip';$('#home').append(chip);
+const drawChip=()=>{const l=limitMin(),m=Math.floor(TM.used/60);const s=l?`${T().chip} ${m} / ${l} ${T().min}`:'';chip.textContent=s;chip.style.display=s?'':'none';const cc=document.getElementById('cityHint');if(cc&&!TM.active&&l)cc.dataset.tm=s};
+/* sirène */
+function siren(n){try{const c=auInit();if(!c)return;const t=c.currentTime;for(let i=0;i<(n||8);i++)toneAt(AU.sg,t+i*.4,i%2?640:900,.36,'triangle',.09,.05,0)}catch(e){}}
+/* parents */
+const PS=[{n:0,skin:'#8d5a3c',hair:'bun',hairC:'#1a110d',top:'#e8509f',girl:true},{n:1,skin:'#6f4430',hair:'short',hairC:'#140d0a',top:'#25326b'},{n:2,skin:'#7a4b33',hair:'bob',hairC:'#9ca3af',top:'#8e44ad',girl:true,glasses:true},{n:3,skin:'#8d5a3c',hair:'spiky',hairC:'#1a110d',top:'#06b67f'}];
+const POS=[[50,210],[1150,210],[50,430],[1150,430]];
+function spawnParents(){
+  PS.forEach((p,i)=>{
+    const id='par'+i;if(CITY.ents.has(id))return;
+    const h={id:'par'+i,name:T().par[i],age:35,skin:p.skin,hair:p.hair,hairC:p.hairC,top:p.top,band:p.top,acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#37474f',shoe:'#222',s:1.12,girl:p.girl,glasses:p.glasses,forceOutfit:'hero'};
+    const e=mkEnt(id,h,h.name,{x:POS[i][0],y:POS[i][1],speed:150});e.parent=true;e.safe=0;e.caught=0;
+    const sv=e.g.querySelector('.bob svg');if(sv){sv.setAttribute('x','-36');sv.setAttribute('y','-98');sv.setAttribute('width','72');sv.setAttribute('height','100')}
+    e.g.querySelector('.nm').textContent='👨‍👩‍👧 '+h.name;
+  });
+}
+function kids(){return [...CITY.ents.values()].filter(e=>e.npc||e===CITY.me)}
+TM.attach=function(){
+  if(!TM.active)return;
+  $('#city').classList.add('tmalert');ban.classList.add('on');
+  spawnParents();
+  CITY.ents.forEach(e=>{if(e.npc){e.sp0=e.sp0||e.speed;e.speed=e.sp0*2.6}});
+  const q=document.getElementById('cityPrompt');
+};
+function detach(){
+  $('#city').classList.remove('tmalert');ban.classList.remove('on');
+  CITY.ents.forEach((e,id)=>{if(e.parent){e.g.remove();CITY.ents.delete(id)}else if(e.npc&&e.sp0){e.speed=e.sp0;e.path=[];e.wait=1+Math.random()*2;e.target=null;e.caughtT=0}});
+}
+TM.start=function(){
+  if(TM.active)return;
+  TM.active=true;TM.endAt=Date.now()+TM.dur;TM.used=0;save();
+  try{AR.run=false;cancelAnimationFrame(AR.raf)}catch(e){}
+  try{spStop&&spStop()}catch(e){}
+  try{TVS.playing=false;TVS.token++}catch(e){}
+  try{speechSynthesis.cancel()}catch(e){}
+  ['bgend','end','cityP','vm','nmM','rdQuiz','msgr'].forEach(i=>{const x=document.getElementById(i);if(x)x.classList.remove('on')});
+  CITY.ret=false;openCity();
+  siren(10);setTimeout(()=>{try{speak(T().say)}catch(e){}},500);
+  setTimeout(()=>{if(TM.active)siren(6)},12000);
+};
+function end(){
+  TM.active=false;detach();TM.w5=TM.w1=false;
+  try{toast({hero:HERO.id,text:T().end})}catch(e){}
+  setTimeout(()=>{try{speak(T().end.replace(/[💧]/g,''))}catch(e){}},300);
+}
+/* appelé à chaque image de la carte */
+window.TMCITY=function(dt){
+  if(!TM.active)return;
+  const left=Math.max(0,TM.endAt-Date.now());
+  ban.innerHTML=`⚠️ ${T().ban} ${T().ban2} <span>⏳ 0:${String(Math.ceil(left/1000)).padStart(2,'0')}</span>`;
+  if(left<=0){end();return}
+  if(CITY.freeze>0)CITY.freeze-=dt;
+  const ps=[...CITY.ents.values()].filter(e=>e.parent),ks=kids();
+  ks.forEach(k=>{if(k.safe>0)k.safe-=dt;if(k.caughtT>0)k.caughtT-=dt});
+  ps.forEach(p=>{
+    if(p.caught>0){p.caught-=dt;return}
+    ks.forEach(k=>{
+      if(p.caught>0||k.safe>0)return;
+      if(Math.hypot(k.x-p.x,k.y-p.y)<30){
+        p.caught=2.6;k.safe=6;k.caughtT=2.6;k.path=[];p.path=[];
+        cityBubble(p.id,T().hug[Math.floor(Math.random()*4)]);
+        if(k===CITY.me){CITY.freeze=2.6;cityBubble('me','💕');try{toast({hero:HERO.id,text:T().caught});speak(T().caught.replace(/💕/g,''))}catch(e){}}
+        else cityBubble(k.id,'💕');
+      }
+    });
+  });
+};
+window.parentThink=function(e,dt){
+  if(e.caught>0){e.path=[];e.moving=false;return}
+  e.rt=(e.rt||0)-dt;
+  if(e.rt>0&&e.path.length)return;
+  e.rt=.45;let best=null,bd=1e9;
+  kids().forEach(k=>{if(k.safe>0)return;const d=Math.hypot(k.x-e.x,k.y-e.y);if(d<bd){bd=d;best=k}});
+  if(best)e.path=cityPath(e.x,e.y,best.x,best.y);
+};
+window.fleeThink=function(e,dt){
+  if(e.caughtT>0){e.path=[];e.moving=false;return}
+  e.fr=(e.fr||0)-dt;
+  if(Math.random()<dt*.8)cityBubble(e.id,T().sc[Math.floor(Math.random()*T().sc.length)]);
+  if(e.fr>0&&e.path.length)return;
+  e.fr=.6+Math.random()*.4;let p=null,pd=1e9;
+  CITY.ents.forEach(q=>{if(q.parent){const d=Math.hypot(q.x-e.x,q.y-e.y);if(d<pd){pd=d;p=q}}});
+  let tx,ty;
+  if(p){const dx=e.x-p.x,dy=e.y-p.y,l=Math.hypot(dx,dy)||1;tx=e.x+dx/l*260+(Math.random()-.5)*180;ty=e.y+dy/l*260+(Math.random()-.5)*180}
+  else{tx=e.x+(Math.random()-.5)*400;ty=e.y+(Math.random()-.5)*400}
+  tx=Math.max(60,Math.min(WW-60,tx));ty=Math.max(60,Math.min(WH-60,ty));
+  e.path=cityPath(e.x,e.y,tx,ty);
+};
+/* compteur */
+let n=0;
+setInterval(()=>{
+  const vis=document.visibilityState==='visible',act=Date.now()-TM.lastInput<120000;
+  if(vis&&act&&!TM.active)TM.used++;
+  const l=limitMin();
+  if(l&&!TM.active){
+    const lim=l*60;
+    if(TM.used>=lim)TM.start();
+    else{
+      if(!TM.w5&&lim>600&&TM.used>=lim-300){TM.w5=true;try{toast({hero:HERO.id,text:T().w5})}catch(e){}}
+      if(!TM.w1&&TM.used>=lim-60){TM.w1=true;try{toast({hero:HERO.id,text:T().w1})}catch(e){}}
+    }
+  }
+  if(++n%10===0)save();drawChip();
+},1000);
+drawChip();
+})();
+
+
 /* ===== Code famille (mode autonome) ===== */
 (function(){
 const T={
- fr:{t:'🔑 Code famille',d:'Tape le même code secret sur tous les iPad de la famille pour jouer ensemble en ligne : amis dans la ville, messages, défis et Blocs TV partagée. Choisis au moins 6 lettres ou chiffres, sans le dire à d’autres personnes.',ph:'ex : lionbleu42',ok:'Valider',alone:'Jouer seul',off:'Pas de code : tu joues seul sur cet iPad.',on:'Code actif : ',conn:'🟢 connecté',wait:'⏳ connexion…',bad:'Au moins 6 caractères (lettres ou chiffres).'},
- en:{t:'🔑 Family code',d:'Type the same secret code on every family iPad to play together online: friends in the city, messages, challenges and shared Blocks TV. Pick at least 6 letters or numbers and keep it private.',ph:'e.g. bluelion42',ok:'Save',alone:'Play alone',off:'No code: you play alone on this iPad.',on:'Active code: ',conn:'🟢 connected',wait:'⏳ connecting…',bad:'At least 6 characters (letters or numbers).'}
+ fr:{t:'🔑 Code famille',d:'Tape le même code secret sur tous les iPad de la famille pour jouer ensemble en ligne : amis dans la ville, messages, défis et Blocs TV partagée. Choisis au moins 6 lettres ou chiffres, sans le dire à d’autres personnes. L’administrateur du jeu voit ton prénom, ton niveau et ce que tu joues (jamais tes conversations) : les parents peuvent l’arrêter avec le bouton 🛡️.',ph:'ex : lionbleu42',ok:'Valider',alone:'Jouer seul',off:'Pas de code : tu joues seul sur cet iPad.',on:'Code actif : ',conn:'🟢 connecté',wait:'⏳ connexion…',bad:'Au moins 6 caractères (lettres ou chiffres).'},
+ en:{t:'🔑 Family code',d:'Type the same secret code on every family iPad to play together online: friends in the city, messages, challenges and shared Blocks TV. Pick at least 6 letters or numbers and keep it private. The game administrator sees your first name, level and what you play (never your conversations): parents can switch this off with the 🛡️ button.',ph:'e.g. bluelion42',ok:'Save',alone:'Play alone',off:'No code: you play alone on this iPad.',on:'Active code: ',conn:'🟢 connected',wait:'⏳ connecting…',bad:'At least 6 characters (letters or numbers).'}
 };
 T.ln=T.fr;
 const b=document.createElement('button');b.id='famBtn';b.textContent='🔑';b.style.cssText='position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;background:#fff;color:#25326b;border-radius:20px;padding:8px 14px;font-size:20px;box-shadow:0 4px 0 rgba(0,0,0,.18);z-index:3';
@@ -4941,6 +5090,60 @@ setInterval(()=>{if(m.style.display==='flex')draw()},1500);
 if(!cur()&&!localStorage.getItem('elias_famseen')){try{localStorage.setItem('elias_famseen','1')}catch(e){}}
 })();
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+
+/* ===== Inscription / suivi pour l'administrateur (chiffré : seul l'admin peut lire) ===== */
+(function(){
+const PUB={"key_ops":["encrypt"],"ext":true,"alg":"RSA-OAEP-256","kty":"RSA","n":"jMZDy6fUV9d_l7_MPEPNf6ELpO0QnD1l8lCFOBPBywv2oJ8oCzZ99_n5E7pt44avlBvczFfN7FuSM9pPuaADvcvMUPhzCPVdJHdjdrCtBj35t5up_vmP1sg5BlfYxnP0Qf--oaMhj7TMRGbrLJwzFLJf7EJTyypAwF9h2jvwvOM6qCNo1wrYna4tyEma_WSfff9fZWIl9Xqd9Idfh6qSYuSFphR8a1SUF5E1I5pQcS1oetLCXQPI_E1MgjNcBOvfsZyi2l5iQhgbxVFtWhHSsrmbG_nbb6Spx-k0TGjJ2oLTkR57KP4Z0FF7NbUJ5NbJ_irqjzmlsnzKZwjhcBgggw","e":"AQAB"};
+const LS=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
+const b64=a=>btoa(String.fromCharCode(...new Uint8Array(a)));
+let pubKey=null,tag='',client=null,ready=false,timer=null,lastSend=0,me='';
+const BR=()=>{const c=LS('elias_broker').trim();return c?[c]:(window.ELIAS_BROKERS||['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'])};
+const on=()=>{const code=LS('elias_fam').trim().length>=4,r=SAFE.cfg.reg;return r===true||(r!==false&&code)};
+async function init(){
+  if(pubKey)return;
+  pubKey=await crypto.subtle.importKey('jwk',PUB,{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);
+  const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(PUB.n));tag=[...new Uint8Array(d)].slice(0,8).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function enc(obj){
+  const aes=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt']),iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},aes,new TextEncoder().encode(JSON.stringify(obj)));
+  const wk=await crypto.subtle.encrypt({name:'RSA-OAEP'},pubKey,await crypto.subtle.exportKey('raw',aes));
+  return JSON.stringify({k:b64(wk),i:b64(iv),c:b64(ct)});
+}
+async function famHash(){const c=LS('elias_fam').trim().toLowerCase();if(!c)return '';const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('fam|'+c));return [...new Uint8Array(d)].slice(0,4).map(b=>b.toString(16).padStart(2,'0')).join('')}
+function dev(){const u=navigator.userAgent;return /iPad/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)?'iPad':/iPhone/.test(u)?'iPhone':/Android/.test(u)?'Android':/Mac/.test(u)?'Mac':/Windows/.test(u)?'Windows':'?'}
+async function record(online){
+  let first=LS('elias_first');if(!first){first=String(Date.now());try{localStorage.setItem('elias_first',first)}catch(e){}}
+  let all=0;try{Object.values(SC).forEach(h=>all+=h.pts||0)}catch(e){}
+  const h=scHero(HERO.id),scr=document.querySelector('.screen.on');
+  return {v:1,id:me,name:String(HERO.name).slice(0,16),hero:HERO.id,age:HERO.age||0,lvl:heroLevel(),pts:h.pts,all,coins:WALLET,lang,dev:dev(),fam:await famHash(),first:+first,ts:Date.now(),on:online,act:(scr?scr.id:'')+(SO.playKey?':'+SO.playKey:''),alerts:SAFE.log.length,last:SAFE.log.slice(0,3).map(l=>({t:l.t,d:l.dir,c:l.cat,x:String(l.text||'').slice(0,100),f:String(l.from||'').slice(0,16)})),ver:'2026-10-30'};
+}
+async function send(force){
+  if(!on()||!client||!client.connected||!ready)return;
+  const now=Date.now();if(!force&&now-lastSend<4000)return;lastSend=now;
+  try{client.publish(`eliasblocs/v1/admin/${tag}/${me}`,await enc(await record(true)),{retain:true,qos:1})}catch(e){}
+}
+async function start(){
+  if(client||!on())return;
+  try{await init()}catch(e){return}
+  me=(window.ELIAS_ONLINE&&window.ELIAS_ONLINE.myId)||LS('elias_peer')||Math.random().toString(36).slice(2,10);
+  const off=await enc({v:1,id:me,on:false,ts:Date.now()});
+  const urls=BR();let i=0;
+  const next=()=>{
+    if(i>=urls.length||client)return;const url=urls[i++];let c;
+    try{c=mqtt.connect(url,{clientId:'eliasreg_'+me+'_'+Math.random().toString(36).slice(2,5),keepalive:30,reconnectPeriod:5000,connectTimeout:6000,will:{topic:`eliasblocs/v1/admin/${tag}/${me}`,payload:off,retain:true,qos:1}})}catch(e){return next()}
+    let ok=false;
+    c.once('connect',()=>{ok=true;client=c;ready=true;send(true);timer=setInterval(()=>send(true),60000)});
+    c.on('connect',()=>{ready=true;send(true)});
+    c.once('error',()=>{if(!ok){try{c.end(true)}catch(e){}next()}});c.once('close',()=>{if(!ok){try{c.end(true)}catch(e){}if(!client)next()}});
+  };next();
+}
+window.ELIAS_REG={send,start,on};
+setTimeout(start,2500);
+let lastScr='';setInterval(()=>{const s=(document.querySelector('.screen.on')||{}).id+'|'+SO.playKey+'|'+HERO.id+'|'+SAFE.log.length+'|'+heroLevel();if(s!==lastScr){lastScr=s;send(false)}},3000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')send(true)});
+})();
 
 buildMenu();
 document.addEventListener('gesturestart',e=>e.preventDefault());
