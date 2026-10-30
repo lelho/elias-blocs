@@ -724,7 +724,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 <div id="fix" class="screen"><div class="top"><button id="fxBack"></button><div class="star" id="fxRound"></div><div class="star" id="fxScore"></div></div><div id="fxMsg"></div><div id="fxScene"></div><div id="fxTools"></div></div>
 
 <div id="tv" class="screen"><div class="top"><button id="tvBack"></button><div class="star" id="tvT"></div><div style="width:100px"></div></div>
- <div class="tvbody"><div class="tvset"><div class="tvscreen" id="tvScreen"></div><div class="tvbar"><button id="tvPrev">⏮</button><button id="tvPlay">⏸</button><button id="tvNext">⏭</button><button id="tvFull" title="Plein écran">⛶</button></div></div><div id="tvList"></div></div></div>
+ <div class="tvbody"><div class="tvset"><div class="tvscreen" id="tvScreen"></div><div class="tvbar"><button id="tvPrev">⏮</button><button id="tvPlay">⏸</button><button id="tvNext">⏭</button><button id="tvFull" title="Plein écran">⛶</button><button id="tvRec" title="MP4">⏺</button></div></div><div id="tvList"></div></div></div>
 
 <div id="lib" class="screen"><div class="top"><button id="libBack"></button><div class="star" id="libT"></div><div style="width:100px"></div></div><div id="libTabs"></div><div id="libGrid"></div></div>
 
@@ -2041,8 +2041,29 @@ const SAFE=(function(){
   S.cleanName=n=>{n=String(n||'').slice(0,16);return S.check(n)?'Ami':n};
   S.isBlocked=pr=>!!pr&&S.blocked.includes(String(pr.name||'').toLowerCase());
   S.phrases=()=>{const T=MST();return new Set([...(T.stick||[]),...(T.quick||[]),'👋'])};
+  /* anti-spam d'emojis : trop d'emojis = messagerie bloquée 5 minutes */
+  const EMO=/\p{Extended_Pictographic}/gu;let emoHist=[];
+  const muteLeft=()=>{try{return Math.max(0,(parseInt(localStorage.getItem('elias_mute'))||0)-Date.now())}catch(e){return 0}};
+  S.muteLeft=muteLeft;
+  S.muteMsg=function(first){const l=Math.ceil(muteLeft()/1000),m=Math.floor(l/60),x=String(l%60).padStart(2,'0');
+    const T={fr:first?'🛡️ Trop d’emojis pareils (max 10) ! La messagerie est bloquée 5 minutes.':`🛡️ Messagerie bloquée encore ${m}:${x}`,en:first?'🛡️ Too many identical emojis (max 10)! Messaging is blocked for 5 minutes.':`🛡️ Messaging blocked for ${m}:${x} more`,ln:first?'🛡️ Ba emoji mingi ! Messagerie ekangami miniti 5.':`🛡️ Messagerie ekangami naino ${m}:${x}`}[lang]||'';
+    try{toast({hero:HERO.id,text:T})}catch(e){}};
+  S.emojiGuard=function(text){
+    const m=String(text||'').match(EMO)||[];if(!m.length)return false;
+    const now=Date.now();emoHist=emoHist.filter(h=>now-h.t<60000);
+    const cnt={};m.forEach(e=>{cnt[e]=(cnt[e]||0)+1});
+    emoHist.forEach(h=>{for(const k in h.c)cnt[k]=(cnt[k]||0)+h.c[k]});
+    const c1={};m.forEach(e=>{c1[e]=(c1[e]||0)+1});emoHist.push({t:now,c:c1});
+    /* maximum 10 emojis identiques (dans un message ou sur 1 minute) */
+    if(Math.max(...Object.values(cnt))>10||m.length>30){try{localStorage.setItem('elias_mute',String(now+300000))}catch(e){}emoHist=[];
+      try{S.log.unshift({dir:'out',text:String(text).slice(0,60),from:HERO.name,cat:'emoji',t:now});S.log=S.log.slice(0,30);save()}catch(e){}
+      S.muteMsg(true);return true}
+    return false;
+  };
   S.allowOut=function(text){
     if(S.locked){S.openLock();return false}
+    if(muteLeft()>0){S.muteMsg(false);return false}
+    if(S.emojiGuard(text))return false;
     if(S.phrases().has(text))return true;
     if(S.cfg.mode==='phrases'){toast({text:'🛡️ '+ST().phrasesOnly});return false}
     const c=S.check(text);
@@ -2062,6 +2083,7 @@ const SAFE=(function(){
   S.save=save;
   return S;
 })();
+window.SAFE=SAFE;
 const SAFET={
  fr:{lockT:'🛡️ Pause sécurité',lockD:'Un message n’était pas adapté pour un jeu d’enfants. Les messages et les amis en ligne sont bloqués. Demande à un adulte de vérifier.',adult:'👨‍👩‍👧 Je suis un adulte',ok:'D’accord',pinT:'Code parent',pinNew:'Crée un code parent (4 chiffres)',pinAgain:'Retape le code',pinBad:'Code incorrect',pinMis:'Les deux codes sont différents',wait:'Trop d’essais. Réessaie dans une minute.',mathT:'Question pour les adultes',mathD:'Pour créer le code parent, réponds à ce calcul :',reviewT:'Message bloqué',who:{in:'Reçu de',out:'Écrit par'},cat:{contact:'demande de contact ou d’infos personnelles',rencontre:'proposition de rencontre',secret:'demande de garder un secret',photo:'demande de photo ou de vidéo',seul:'question pour savoir si l’enfant est seul',inapproprie:'mot inapproprié',cadeau:'cadeau ou argent'},unlock:'✅ C’est bon, débloquer',block:'🚫 Bloquer ce contact et débloquer',keep:'Rester bloqué',parentT:'🛡️ Contrôle parental',textMode:'Messages écrits',free:'Texte libre (filtré)',phr:'Phrases toutes faites seulement',online:'Jeu en ligne',on:'Activé',off:'Désactivé',log:'Messages bloqués',none:'Aucun',blockedL:'Contacts bloqués',unb:'Débloquer',chg:'Changer le code',close:'Fermer',phrasesOnly:'Les phrases toutes faites seulement.',hint:'Code oublié ? Efface les données du site dans Réglages > Safari.',del:'⌫',explain:'Les messages avec demande de rencontre, d’adresse, de numéro, de photo, de secret ou de réseau social sont bloqués automatiquement.',lim:'Temps d’écran avant l’alerte parents',min:'min',fa:'Alertes parents des autres joueurs',reg:'Suivi par l’administrateur',regD:'Envoie à l’administrateur du jeu, de façon chiffrée : prénom, personnage, niveau, points, activité et alertes de sécurité. Jamais les conversations.'},
  en:{lockT:'🛡️ Safety pause',lockD:'A message was not suitable for a kids’ game. Messages and online friends are blocked. Ask a grown-up to check.',adult:'👨‍👩‍👧 I am an adult',ok:'OK',pinT:'Parent code',pinNew:'Create a parent code (4 digits)',pinAgain:'Type the code again',pinBad:'Wrong code',pinMis:'The two codes are different',wait:'Too many tries. Try again in a minute.',mathT:'Question for adults',mathD:'To create the parent code, answer this sum:',reviewT:'Blocked message',who:{in:'Received from',out:'Written by'},cat:{contact:'request for contact or personal info',rencontre:'suggestion to meet',secret:'request to keep a secret',photo:'request for a photo or video',seul:'question about whether the child is alone',inapproprie:'inappropriate word',cadeau:'gift or money'},unlock:'✅ It is fine, unlock',block:'🚫 Block this contact and unlock',keep:'Stay blocked',parentT:'🛡️ Parental controls',textMode:'Written messages',free:'Free text (filtered)',phr:'Ready-made phrases only',online:'Online play',on:'On',off:'Off',log:'Blocked messages',none:'None',blockedL:'Blocked contacts',unb:'Unblock',chg:'Change code',close:'Close',phrasesOnly:'Ready-made phrases only.',hint:'Forgot the code? Clear the site data in Settings > Safari.',del:'⌫',explain:'Messages asking to meet, for an address, a number, a photo, a secret or a social network are blocked automatically.',lim:'Screen time before the parent alert',min:'min',fa:'Parent alerts from other players',reg:'Reporting to the administrator',regD:'Sends to the game administrator, encrypted: first name, character, level, points, activity and safety alerts. Never conversations.'}
@@ -3378,7 +3400,7 @@ function sendMsg(text){
   addChat(SO.sel,{from:SO.myId,name:HERO.name,hero:HERO.id,text,ts:e.ts,me:true});if(typeof cityBubble==='function')cityBubble('me',text);
   beep(700,.06);renderMsgr();
 }
-$('#msgBtn').onclick=()=>{if(SAFE.locked)SAFE.openLock();else openMsgr()};
+$('#msgBtn').onclick=()=>{if(SAFE.locked)SAFE.openLock();else{if(SAFE.muteLeft()>0)SAFE.muteMsg(false);openMsgr()}};
 $('#mgClose').onclick=()=>{SO.open=false;$('#msgr').classList.remove('on')};
 $('#mgSend').onclick=()=>{const i=$('#mgIn');sendMsg(i.value);i.value=''};
 $('#mgIn').addEventListener('keydown',e=>{if(e.key==='Enter'){sendMsg($('#mgIn').value);$('#mgIn').value=''}});
@@ -4084,10 +4106,55 @@ async function tvPlay(st,my){
 $('#tvPlay').onclick=()=>{if(TVS.playing){stopSong();TVS.playing=false;TVS.token++;try{speechSynthesis.cancel()}catch(e){}$('#tvPlay').textContent='▶'}else tvRun()};
 $('#tvNext').onclick=()=>{stopSong();TVS.idx=(TVS.idx+1)%Math.max(1,allStories().length);tvRun();tvRefresh()};
 $('#tvPrev').onclick=()=>{stopSong();const n=Math.max(1,allStories().length);TVS.idx=(TVS.idx-1+n)%n;tvRun();tvRefresh()};
+/* ===== Enregistrement vidéo MP4 sur l'ordinateur ===== */
+const VREC={rec:null};
+const VRT={
+ fr:{save:'💾 Enregistrer la vidéo MP4 sur l’ordinateur',no:'Cet appareil ne peut pas enregistrer la vidéo ici. Sur ordinateur (Chrome ou Edge), ça marche. Sur iPad, utilise l’enregistrement d’écran.',denied:'Enregistrement non lancé : choisis « Cet onglet » quand le navigateur le demande.',got:'🎞️ Vidéo enregistrée :',dl:'⬇ Télécharger la vidéo MP4',mb:'Mo',webm:'(format WebM : YouTube l’accepte aussi)',tvrec:'⏺ Enregistrer en MP4',tvsave:'Vidéo téléchargée !',hint:'Une fenêtre va demander quoi enregistrer : choisis « Cet onglet » et coche « Partager le son de l’onglet ».'},
+ en:{save:'💾 Save the MP4 video on the computer',no:'This device cannot record video here. It works on a computer (Chrome or Edge). On iPad, use screen recording.',denied:'Recording not started: pick “This tab” when the browser asks.',got:'🎞️ Video saved:',dl:'⬇ Download the MP4 video',mb:'MB',webm:'(WebM format: YouTube accepts it too)',tvrec:'⏺ Record as MP4',tvsave:'Video downloaded!',hint:'A window will ask what to record: pick “This tab” and tick “Share tab audio”.'},
+ ln:{save:'💾 Kobomba video MP4 na ordinateur',no:'Esaleli oyo ekoki te kobomba video awa. Esalaka na ordinateur (Chrome to Edge). Na iPad, salela enregistrement ya écran.',denied:'Enregistrement ebandaki te : pona « Onglet oyo » tango navigateur ekotuna.',got:'🎞️ Video ebombami :',dl:'⬇ Zwa video MP4',mb:'Mo',webm:'(format WebM : YouTube endimaka yango mpe)',tvrec:'⏺ Kobomba na MP4',tvsave:'Video ebimi !',hint:'Fenêtre ekotuna : pona « Onglet oyo » mpe tia son ya onglet.'}
+};
+const VTT=()=>VRT[lang]||VRT.fr;
+function vrecMime(){if(typeof MediaRecorder==='undefined')return null;for(const [m,e] of [['video/mp4;codecs=avc1.42E01E,mp4a.40.2','mp4'],['video/mp4;codecs=avc1','mp4'],['video/mp4','mp4'],['video/webm;codecs=vp9,opus','webm'],['video/webm','webm']]){try{if(MediaRecorder.isTypeSupported(m))return {m,e}}catch(_){}}return null}
+const vrecOK=()=>!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia&&vrecMime());
+async function vrecStart(name,useFile){
+  if(!vrecOK())return {err:'no'};const mm=vrecMime();let w=null;
+  if(useFile&&window.showSaveFilePicker){try{const h=await window.showSaveFilePicker({suggestedName:name+'.'+mm.e,types:[{description:'Video',accept:{[mm.e==='mp4'?'video/mp4':'video/webm']:['.'+mm.e]}}]});w=await h.createWritable()}catch(e){if(e&&e.name==='AbortError')return {err:'denied'}}}
+  let st;try{st=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:true,preferCurrentTab:true,selfBrowserSurface:'include',systemAudio:'include'})}catch(e){try{w&&await w.abort()}catch(_){}return {err:'denied'}}
+  let rec;try{rec=new MediaRecorder(st,{mimeType:mm.m,videoBitsPerSecond:3500000,audioBitsPerSecond:128000})}catch(e){try{st.getTracks().forEach(t=>t.stop())}catch(_){}return {err:'no'}}
+  Object.assign(VREC,{rec,stream:st,chunks:[],w,name,ext:mm.e,mime:mm.m,size:0,q:Promise.resolve()});
+  rec.ondataavailable=e=>{if(!e.data||!e.data.size)return;VREC.size+=e.data.size;if(VREC.w)VREC.q=VREC.q.then(()=>VREC.w.write(e.data)).catch(()=>{});else VREC.chunks.push(e.data)};
+  const vt=st.getVideoTracks()[0];if(vt)vt.addEventListener('ended',()=>{if(VREC.onEnd)VREC.onEnd()});
+  rec.start(4000);return {ok:1,file:!!w,ext:mm.e};
+}
+function vdownload(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href)},1500)}
+function vrecStop(){
+  return new Promise(res=>{const r=VREC.rec;if(!r||r.state==='inactive'){res(null);return}
+    r.onstop=async()=>{try{VREC.stream.getTracks().forEach(t=>t.stop())}catch(_){}
+      const out={name:VREC.name+'.'+VREC.ext,ext:VREC.ext,size:VREC.size,saved:false,blob:null};
+      if(VREC.w){try{await VREC.q;await VREC.w.close();out.saved=true}catch(e){}}else{out.blob=new Blob(VREC.chunks,{type:VREC.mime.split(';')[0]});VREC.chunks=[]}
+      VREC.rec=null;res(out)};
+    try{r.requestData()}catch(_){}try{r.stop()}catch(_){res(null)}});
+}
+async function tvRecord(){
+  const T0=VTT();if(!vrecOK()){toast({hero:HERO.id,text:T0.no});return}
+  const L0=allStories();const st=L0[TVS.idx];if(!st)return;
+  const r=await vrecStart('blocs-tv-'+(st.game||st.type||'video')+'-'+new Date().toISOString().slice(0,10),false);
+  if(r.err){toast({hero:HERO.id,text:r.err==='no'?T0.no:T0.denied});return}
+  const my=++TVS.token;TVS.playing=false;try{speechSynthesis.cancel()}catch(e){}
+  const wm=document.getElementById('recWm');const wmOld=wm?wm.style.display:'';if(wm)wm.style.display='block';
+  VREC.onEnd=()=>{TVS.token++};
+  tvFull(true);await new Promise(x=>setTimeout(x,900));
+  try{await tvPlay(st,my)}catch(e){}
+  if(TVS.token===my)await sleepT(1500,my);
+  const out=await vrecStop();VREC.onEnd=null;if(wm)wm.style.display=wmOld;tvFull(false);
+  if(out&&out.blob&&out.blob.size>1000){vdownload(out.name,out.blob);toast({hero:HERO.id,text:T0.tvsave+' '+out.name})}
+  TVS.playing=true;tvRun();
+}
+window.tvRecord=tvRecord;window.vrecOK=vrecOK;window.vrecMime=vrecMime;
 function tvFull(on){const set=document.querySelector('.tvset');if(!set)return;if(on===undefined)on=!set.classList.contains('tvfull');set.classList.toggle('tvfull',on);$('#tvFull').textContent=on?'🗗':'⛶';
   try{if(on&&!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{});else if(!on&&document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(e){}
   const sc=$('#tvScreen');const bs=sc.querySelector('.tvboard');setTimeout(()=>{if(bs)bs.style.setProperty('--bs',Math.floor(sc.clientHeight*.88)+'px')},120)}
-$('#tvFull').onclick=()=>tvFull();
+$('#tvFull').onclick=()=>tvFull();$('#tvRec').onclick=()=>tvRecord();
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.querySelector('.tvset.tvfull'))tvFull(false)});
 document.addEventListener('keydown',e=>{if(TVS.open&&(e.key==='f'||e.key==='F')&&!/INPUT|TEXTAREA/.test((e.target||{}).tagName||''))tvFull();else if(TVS.open&&e.key==='Escape')tvFull(false)});
 $('#tvBack').onclick=()=>{tvFull(false);stopSong();TVS.open=false;TVS.playing=false;TVS.token++;try{speechSynthesis.cancel()}catch(e){}buildMenu();show('home')};
@@ -5501,7 +5568,7 @@ const TX={
 };
 TX.ln=TX.fr;const T=()=>TX[lang];
 const IDS=['home','game','calcm','heroes','city','arcMenu','tv','lib','reader','boutique','bldg','flat','fix','sport','story','karaoke','piano','rankS','hub','bgame','cgame','duel','shop','seek','astro','creator','draw','geo'];
-const REC=window.REC={active:false,phase:'',t0:0,dur:0,marks:[],cfg:{hours:1,logo:true,chrono:true},wake:null,last:null};
+const REC=window.REC={active:false,phase:'',t0:0,dur:0,marks:[],cfg:{hours:1,logo:true,chrono:true,save:true},wake:null,last:null};
 try{const o=JSON.parse(LS('elias_rec')||'null');if(o&&o.last)REC.last=o.last;if(o&&o.cfg)Object.assign(REC.cfg,o.cfg);if(o&&o.active&&Date.now()<o.t0+o.dur+30000){Object.assign(REC,{active:true,phase:'live',t0:o.t0,dur:o.dur,marks:o.marks||[]})}}catch(e){}
 const persist=()=>{try{localStorage.setItem('elias_rec',JSON.stringify({active:REC.active&&REC.phase==='live',t0:REC.t0,dur:REC.dur,marks:REC.marks,cfg:REC.cfg,last:REC.last}))}catch(e){}};
 /* styles */
@@ -5535,8 +5602,10 @@ async function lockOn(){try{if(navigator.wakeLock)REC.wake=await navigator.wakeL
 function lockOff(){try{REC.wake&&REC.wake.release()}catch(e){}REC.wake=null}
 function setPaused(v){try{TM.paused=v}catch(e){}}
 function overlay(html){ov.innerHTML=html;ov.classList.add('on')}
-function begin(){
-  closeM();REC.active=true;REC.phase='intro';REC.dur=REC.cfg.hours*3600000;REC.marks=[];persist();
+async function begin(){
+  closeM();REC.vid=null;
+  if(REC.cfg.save&&vrecOK()){const d=new Date().toISOString().slice(0,10),r=await vrecStart(`blocs-tv-${REC.cfg.hours}h-${d}`,true);if(r.err){try{toast({hero:HERO.id,text:r.err==='no'?VTT().no:VTT().denied})}catch(e){}}else REC.recOn=true}
+  REC.active=true;REC.phase='intro';REC.dur=REC.cfg.hours*3600000;REC.marks=[];persist();
   const n=HERO.name;
   overlay(`<img src="${LOGOT}" alt=""><h2>${T().intro}</h2><p>${T().sess(REC.cfg.hours,n)}</p><p id="recCd" style="font-size:clamp(40px,8vw,80px)">5</p>`);
   ui();lockOn();setPaused(true);
@@ -5553,7 +5622,8 @@ function end(){
   overlay(`<img src="${LOGOT}" alt=""><h2>${T().outro1}</h2><p>${T().outro2}</p><p style="font-size:.8em">${SITE||''}</p>`);
   setTimeout(()=>{finish()},10000);
 }
-function finish(){
+async function finish(){
+  if(REC.recOn){REC.recOn=false;try{REC.vid=await vrecStop()}catch(e){REC.vid=null}}
   const total=Math.floor((Date.now()-REC.t0)/1000),hrs=REC.cfg.hours;
   REC.last={ts:Date.now(),hours:hrs,name:HERO.name,hero:HERO.id,marks:REC.marks.slice(),total,site:SITE};
   REC.active=false;REC.phase='';ov.classList.remove('on');persist();ui();lockOff();setPaused(false);
@@ -5576,6 +5646,7 @@ function openSetup(){
   const seg=document.createElement('div');seg.className='seg';[1,2,4,6].forEach(h=>{const b=document.createElement('button');b.textContent=t.h(h);if(REC.cfg.hours===h)b.className='on';b.onclick=()=>{REC.cfg.hours=h;persist();openSetup()};seg.append(b)});box.append(seg);
   const tg=(label,key)=>{const d=document.createElement('div');d.className='seg';d.innerHTML=`<span style="align-self:center;min-width:170px">${label}</span>`;[[true,t.on],[false,t.off]].forEach(([v,l])=>{const b=document.createElement('button');b.textContent=l;if(REC.cfg[key]===v)b.className='on';b.onclick=()=>{REC.cfg[key]=v;persist();openSetup()};d.append(b)});box.append(d)};
   tg(t.logo,'logo');tg(t.chrono,'chrono');
+  if(vrecOK()){tg(VTT().save,'save');box.append(el(`<p><small>${VTT().hint}</small></p>`))}else box.append(el(`<p><small>⚠️ ${VTT().no}</small></p>`));
   box.append(el(`<b>${t.how}</b><ol>${t.steps.map(s=>`<li>${s}</li>`).join('')}</ol>`));
   box.append(B(t.start,'g',begin),B(t.cancel,'o',closeM));
   if(REC.last)box.append(B(t.last,'',()=>openDone()));
@@ -5607,6 +5678,7 @@ function openDone(){
   const ta=document.createElement('textarea');ta.rows=9;ta.value=I.description;box.append(ta,copyBtn('',()=>ta.value));
   box.append(el(`<br><b>${t.tags}</b><br><small>${I.tags.join(', ')}</small><p></p>`));
   if(!L.site)box.append(el(`<p><small>${t.noSite}</small></p>`));
+  if(REC.vid){const v=REC.vid,mb=(v.size/1048576).toFixed(1);box.append(el(`<p><b>${VTT().got}</b> ${v.name} · ${mb} ${VTT().mb} ${v.ext==='webm'?VTT().webm:''}</p>`));if(v.blob)box.append(B(VTT().dl,'g',()=>download(v.name,v.blob)))}
   box.append(B(t.thumb,'',async()=>{download('vignette-blocs-tv.png',await thumb(L))}));
   box.append(B(t.json,'',()=>{const o={...I,title:ti.value,description:ta.value};download('video-blocs-tv.json',new Blob([JSON.stringify(o,null,2)],{type:'application/json'}))}));
   box.append(B(t.yt,'g',()=>window.open('https://studio.youtube.com','_blank')));box.append(B(t.close,'o',closeM));
