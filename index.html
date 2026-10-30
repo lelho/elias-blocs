@@ -596,6 +596,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 #geSvg{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:pointer}
 #geSvg .cn{stroke:#fff;stroke-width:1.4;vector-effect:non-scaling-stroke;transition:fill .15s}#geSvg .cn.hl{fill:#ffb703!important}#geSvg .cn.ok{fill:#4ad66d!important}#geSvg .cn.ko{fill:#ff5d73!important}#geSvg .gf.miss{stroke:#ff5d73}#geSvg .gf.good{stroke:#1fc8a0}
 #geChoices{display:none;gap:10px;justify-content:center;flex-wrap:wrap}.gch{background:#fff;color:var(--ink);border-radius:18px;padding:12px 22px;font-size:clamp(17px,2.6vw,24px);box-shadow:0 4px 0 var(--edge)}.gch.ok{background:#4ad66d;color:#fff}.gch.ko{background:#ff5d73;color:#fff}.gch.on2{background:var(--ink);color:#fff}
+.tvalarm{position:absolute;inset:0;overflow:hidden;background:linear-gradient(#9bd6ff 0 55%,#8bc34a 55% 62%,#6b6f7a 62%)}
+.tvalarm .flash{position:absolute;left:0;right:0;top:0;background:#d62828;color:#fff;text-align:center;font-weight:900;padding:6px;font-size:clamp(14px,2.6vw,26px);animation:tvfl .5s infinite alternate}
+@keyframes tvfl{to{background:#ff7a00}}
+.tvalarm .run{position:absolute;bottom:8%;width:13%;animation:tvrun var(--d) linear infinite,tvbob .25s ease-in-out infinite alternate}
+.tvalarm .run svg{width:100%;height:auto;display:block}
+@keyframes tvrun{from{left:-20%}to{left:110%}}@keyframes tvbob{to{transform:translateY(-10px)}}
+.tvalarm .shout{position:absolute;top:14%;font-size:clamp(16px,3vw,30px);font-weight:900;color:#fff;text-shadow:0 2px 0 #000;animation:tvbob .4s infinite alternate}
 </style>
 </head>
 <body>
@@ -3715,6 +3722,7 @@ function cleanSpec(sp){
    buddies:(Array.isArray(sp.buddies)?sp.buddies:[]).map(n=>Math.max(1,Math.min(10,+n||1))).slice(0,3)};
 }
 function cleanStory(s){
+  if(s&&s.type==='alarm'&&s.id)return {id:String(s.id).replace(/[^a-z0-9_-]/gi,'').slice(0,24),type:'alarm',title:String(s.title||'').slice(0,40),author:String(s.author||'').slice(0,14),hero:String(s.hero||'elias'),ts:+s.ts||0,why:s.why==='rank'?'rank':'time'};
   if(s&&s.type==='music')return cleanSong(s);
   if(s&&s.type==='game')return cleanGame(s);
   if(!s||typeof s!=='object'||!Array.isArray(s.pages)||!s.id)return null;
@@ -3727,7 +3735,7 @@ function demoStories(){
           mk('demo2','Choco au village','Choco','choco',['Choco dans un village africain avec une maison et un chameau','Choco dans la jungle équatoriale avec 4 blocs','Choco devant les pyramides avec un chat'])];
 }
 function allStories(){
-  const m=new Map();[...demoStories(),...songsDemo(),...demoGames(),...STORIES,...SHARED].forEach(s=>{const c=cleanStory(s);if(c)m.set(c.id,c)});
+  const m=new Map();[...demoStories(),...songsDemo(),...demoGames(),...STORIES,...SHARED,...(window.TMCLIPS?window.TMCLIPS():[])].forEach(s=>{const c=cleanStory(s);if(c)m.set(c.id,c)});
   return [...m.values()].sort((a,b)=>a.ts-b.ts);
 }
 async function tvDbInit(){
@@ -3807,7 +3815,7 @@ function tvRefresh(){
     const b=document.createElement('button');b.className='tvblk'+(i===TVS.idx?' on':'');b.style.setProperty('--c',COL[(i)%10]);
     const h=HEROES.find(x=>x.id===s.hero);
     b.innerHTML=`<span class="n"></span><div class="pav"></div><div class="tt"><b></b><small></small></div>`;
-    b.querySelector('.n').textContent=i+1;b.querySelector('b').textContent=(s.type==='music'?'🎵 ':s.type==='game'?(GICO[s.game]||'🎮')+' ':'')+s.title;b.querySelector('small').textContent=`${T.by} ${s.author}`;
+    b.querySelector('.n').textContent=i+1;b.querySelector('b').textContent=(s.type==='alarm'?'🚨 ':s.type==='music'?'🎵 ':s.type==='game'?(GICO[s.game]||'🎮')+' ':'')+s.title;b.querySelector('small').textContent=`${T.by} ${s.author}`;
     if(h)b.querySelector('.pav').innerHTML=heroSVG({...h,forceOutfit:'hero'}).replace('viewBox="0 0 130 175"','viewBox="18 0 94 108"');
     b.onclick=()=>{TVS.idx=i;tvRun();tvRefresh()};
     box.append(b);
@@ -3839,6 +3847,7 @@ async function tvPlaySong(st,my){
 async function tvPlay(st,my){
   if(st.type==='music')return tvPlaySong(st,my);
   if(st.type==='game')return tvPlayGame(st,my);
+  if(st.type==='alarm')return window.TMCLIP(st,my);
   const T=TVT[lang],scr=$('#tvScreen'),h=HEROES.find(x=>x.id===st.hero);
   const av=h?heroSVG({...h,forceOutfit:'hero'}):'';
   scr.innerHTML=`<div class="tvcard"><div class="live">● ${T.live}</div><div class="logo">📺 ${T.title}</div><div class="pav big">${av}</div><h2></h2><p></p></div>`;
@@ -5139,7 +5148,7 @@ function detach(){
 }
 TM.start=function(by){
   if(TM.active)return;
-  cntHide();TM.by=by||'';TM.active=true;TM.endAt=Date.now()+TM.dur;TM.used=0;save();
+  cntHide();TM.by=by||'';TM.active=true;try{TM.clip=alRec()}catch(e){}TM.endAt=Date.now()+TM.dur;TM.used=0;save();
   try{AR.run=false;cancelAnimationFrame(AR.raf)}catch(e){}
   try{spStop&&spStop()}catch(e){}
   try{TVS.playing=false;TVS.token++}catch(e){}
@@ -5151,7 +5160,7 @@ TM.start=function(by){
 };
 function end(){
   TM.active=false;detach();TM.w5=TM.w1=false;
-  try{toast({hero:HERO.id,text:T().end})}catch(e){}
+  try{toast({hero:HERO.id,text:T().end+(lang==='en'?' · The video is on Blocks TV!':' · La vidéo passe sur Blocs TV !'),btns:[{label:'📺',fn:()=>openTV(TM.clip&&TM.clip.id)}]})}catch(e){}
   setTimeout(()=>{try{speak(T().end.replace(/[💧]/g,''))}catch(e){}},300);
 }
 /* appelé à chaque image de la carte */
@@ -5172,6 +5181,30 @@ TM.fire=function(){
 };
 alarm.onclick=()=>TM.fire();
 setInterval(alDraw,1000);
+
+/* ===== chaque alarme = une vidéo sur Blocs TV ===== */
+const ALK='elias_alarms';
+const alRead=()=>{try{return JSON.parse(localStorage.getItem(ALK)||'[]')||[]}catch(e){return[]}};
+window.TMCLIPS=()=>alRead();
+function alRec(){
+  const c={id:'al'+Date.now().toString(36),type:'alarm',title:lang==='en'?'🚨 Parents alert':'🚨 Alerte parents',author:(TM.by||HERO.name||'Elias').slice(0,14),hero:HERO.id,ts:Date.now(),why:TM.by?'rank':'time'};
+  const l=alRead();l.push(c);try{localStorage.setItem(ALK,JSON.stringify(l.slice(-6)))}catch(e){}
+  try{if(typeof DBS!=='undefined'&&DBS)DBS.collection('stories').doc(c.id).set(c).catch(()=>{})}catch(e){}
+  return c;
+}
+window.TMCLIP=async function(st,my){
+  const en=lang==='en',scr=$('#tvScreen');
+  const kidsH=[st.hero].concat(HEROES.map(h=>h.id)).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3).map(id=>HEROES.find(x=>x.id===id)).filter(Boolean);
+  const kv=kidsH.map((h,i)=>`<div class="run" style="--d:${5.2+i*.3}s;animation-delay:${-i*.9}s">${heroSVG({...h,forceOutfit:'hero'})}</div>`).join('');
+  const pv=PS.map((p,i)=>{const h={id:'p'+i,name:'',age:35,skin:p.skin,hair:p.hair,hairC:p.hairC,top:p.top,band:p.top,acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#37474f',shoe:'#222',s:1.1,girl:p.girl,glasses:p.glasses,forceOutfit:'hero'};return `<div class="run" style="--d:${5.2}s;animation-delay:${-(3.4+i*.35)}s;bottom:6%">${heroSVG(h)}</div>`}).join('');
+  scr.innerHTML=`<div class="tvalarm"><div class="flash">🚨 ${en?'FLASH NEWS · PARENTS ALERT':'FLASH INFO · ALERTE PARENTS'} 🚨</div><div class="shout" style="left:12%">${en?'AAAH!':'AAAH !'}</div><div class="shout" style="left:58%;animation-delay:-.2s">${en?'Come here!':'Reviens !'}</div>${kv}${pv}</div><div class="logo" style="position:absolute;left:10px;bottom:8px;background:#fff3;color:#fff;border-radius:12px;padding:2px 10px">📺 ${TVT[lang].title}</div>`;
+  siren(3);
+  const rerun=Date.now()-st.ts>120000;
+  if(rerun){const f=scr.querySelector('.flash');if(f)f.textContent='🔁 '+(en?'REPLAY · PARENTS ALERT':'REDIFFUSION · ALERTE PARENTS')}
+  const a=st.author;
+  await tvPres((rerun?(en?'Replay! The scene you missed. ':'Rediffusion ! La scène que vous avez ratée. '):'')+(st.why==='rank'?(en?`Flash news! ${a} is number one in the ranking and calls the parents! The kids are running everywhere!`:`Flash info ! ${a} est premier du classement et appelle les parents ! Les enfants courent dans tous les sens !`):(en?`Flash news! Too much screen time! The parents are running after the kids!`:`Flash info ! Trop de temps d’écran ! Les parents courent après les enfants !`)),my);
+  if(TVS.token!==my)return;await sleepT(2500,my);
+};
 window.TMCITY=function(dt){
   if(!TM.active)return;
   const left=Math.max(0,TM.endAt-Date.now());
