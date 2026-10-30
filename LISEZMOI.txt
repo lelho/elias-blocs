@@ -1,0 +1,50 @@
+ELIAS ET LES BLOCS MAGIQUES — version autonome (sans Claude)
+==============================================================
+
+Ce dossier contient le jeu complet. Il ne dépend plus de Claude : il suffit de
+le mettre en ligne UNE fois (gratuit), puis chaque iPad l'ouvre avec le lien.
+
+FICHIERS (à mettre tous ensemble au même endroit)
+  index.html            le jeu
+  manifest.webmanifest  permet l'installation comme une application
+  sw.js                 permet de rejouer même sans internet
+  icon-180/192/512.png  l'icône du jeu
+
+ÉTAPE 1 — METTRE LE JEU EN LIGNE (une seule fois, sur ordinateur)
+
+  Option A : GitHub Pages (gratuit, durable)
+   1. Crée un compte sur github.com puis clique sur « New repository ».
+      Nom : par exemple  elias-blocs   —  choisis « Public » — « Create ».
+   2. Clique « uploading an existing file », glisse TOUS les fichiers de ce
+      dossier (pas le dossier lui-même), puis « Commit changes ».
+   3. Va dans Settings > Pages. Sous « Branch », choisis « main » et « / (root) »,
+      puis « Save ».
+   4. Attends 1 à 2 minutes. L'adresse du jeu est affichée en haut de cette page :
+      https://TON-NOM.github.io/elias-blocs/
+
+  Option B : Netlify (plus rapide)
+   1. Va sur app.netlify.com/drop, crée un compte gratuit.
+   2. Glisse le dossier entier dans la zone « Drop ». Tu reçois une adresse https.
+
+ÉTAPE 2 — INSTALLER SUR CHAQUE iPAD (quel que soit le modèle)
+   1. Ouvre l'adresse dans Safari.
+   2. Touche le bouton Partager (carré avec une flèche).
+   3. Touche « Sur l'écran d'accueil », puis « Ajouter ».
+   4. Ouvre le jeu depuis la nouvelle icône : il s'ouvre en plein écran.
+   Les scores, pièces, héros et décorations restent sur chaque iPad.
+
+ÉTAPE 3 — JOUER ENSEMBLE EN LIGNE (facultatif)
+   Sur chaque iPad, touche la petite clé 🔑 en haut à gauche de l'accueil et tape
+   le MÊME code secret (au moins 6 lettres ou chiffres, par exemple lionbleu42).
+   Les iPad qui ont le même code se voient dans la ville, s'envoient des
+   messages, se défient et partagent la Blocs TV.
+   Sans code, le jeu fonctionne très bien en solo, sans rien envoyer sur internet.
+
+BON À SAVOIR
+   - Pour l'en ligne, le jeu utilise des serveurs publics gratuits (MQTT). Il n'y a
+     aucune garantie de service : si l'en ligne ne marche pas un jour, le jeu
+     reste jouable en solo. Choisis un code secret et ne le partage qu'avec la famille.
+   - Pour mettre à jour le jeu plus tard : remplace index.html dans le même dépôt.
+     Les iPad se mettent à jour à l'ouverture suivante (avec internet).
+   - Le micro n'est pas utilisé. Les voix viennent de l'iPad : pour de belles voix,
+     Réglages > Accessibilité > Contenu énoncé > Voix.
