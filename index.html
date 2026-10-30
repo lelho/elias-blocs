@@ -307,6 +307,15 @@ body:not(.kbd) :focus{outline:none}
 .tvcap{position:absolute;left:0;right:0;top:0;z-index:6;background:linear-gradient(#25326bdd,#25326b00);color:#fff;padding:10px 16px 22px;font-size:clamp(16px,2.8vw,26px);font-weight:bold;text-shadow:0 2px 0 #0006;pointer-events:none}
 #home{overflow-y:auto!important;justify-content:flex-start!important;-webkit-overflow-scrolling:touch}#home>*:first-child{margin-top:auto}#home>*:last-child{margin-bottom:auto}#home h1{padding-top:calc(6px + env(safe-area-inset-top))}
 .menu button{min-height:min(6.4vh,62px)!important;padding:1.1vh 10px!important}#homeEl{height:min(11vh,110px)!important}.menu{padding-bottom:12px}
+html{--ks:1}html[data-ks=s]{--ks:.8}html[data-ks=xs]{--ks:.62}
+#homeEl{height:calc(min(11vh,110px)*var(--ks))!important}
+#gameEl,#gameEl svg{max-height:calc(34vh*var(--ks))!important}.side{width:calc(min(27vw,230px)*var(--ks))!important}
+#scene{width:calc(min(94vw,calc(44vh*1.7778))*var(--ks))!important}
+#bqPrev svg{height:calc(min(48vh,340px)*var(--ks))!important}
+.hcard svg{height:calc(min(26vh,210px)*var(--ks))!important}.hcard{width:calc(clamp(120px,14.6vw,170px)*var(--ks))!important}
+.pav.big{height:calc(min(24vh,170px)*var(--ks))!important}
+#stage{--b:calc(min(6.4vh,9.5vw)*var(--ks))!important}
+.hbtn2{position:absolute;left:12px;background:#fff;color:#25326b;border-radius:20px;padding:8px 14px;font-size:20px;box-shadow:0 4px 0 rgba(0,0,0,.18);z-index:3}
 /* ===== Nouveaux écrans ===== */
 #calcm,#hub,#lobby,#arcMenu,#rankS,#cmenu,#duel,#bgame,#arc,#cgame{background:linear-gradient(#e0f4ff,#fff3d6)}
 #arc,#cgame{background:linear-gradient(#1b1f5e,#3a2a6b)}
@@ -1112,7 +1121,8 @@ function buildMenu(){
 }
 function show(id){{const fp=document.getElementById('fxPick');if(fp)fp.classList.remove('on')}
   if(id==='home'&&typeof CITY!=='undefined'&&CITY.ret&&CITY.me){CITY.ret=false;if(typeof openCity==='function'){setTimeout(()=>openCity(),0);}}
-  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));if(id!=='arc'&&typeof musicStop==='function')musicStop();if(id!=='karaoke'&&id!=='piano'&&id!=='tv'&&typeof killSongs==='function')killSongs();document.querySelectorAll('.fxtool.ghost').forEach(g=>g.remove());try{socialScreen(id)}catch(e){}}
+  const _pv=document.querySelector('.screen.on');if(window.NAVSND&&_pv&&_pv.id!==id&&id!=='arc'&&typeof sfx==='function'){try{sfx('nav')}catch(e){}}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));if(id!=='arc'&&typeof musicStop==='function')musicStop();if(id==='home')setTimeout(()=>{try{homeMusic()}catch(e){}},0);if(id!=='karaoke'&&id!=='piano'&&id!=='tv'&&typeof killSongs==='function')killSongs();document.querySelectorAll('.fxtool.ghost').forEach(g=>g.remove());try{socialScreen(id)}catch(e){}}
 function start(k){
   const D={story:openStory,calc:openCalcMenu,hub:openHub,cards:openCardsMenu,arcade:openArcade,rank:openRank,tv:()=>openTV(),read:()=>openLibrary(),boutique:()=>openBoutique(),city:()=>openCity()};if(D[k])return D[k]();
   try{speechSynthesis.cancel()}catch(e){}
@@ -1896,7 +1906,70 @@ $('#bback').onclick=$('#bgMenu').onclick=leaveBoard;
 $('#bnew').onclick=newBoardGame;
 
 /* ===== En ligne (presence d'un salon nomme) ===== */
-async function getRoom(){try{return (window.claude&&window.claude.use)?await window.claude.use('room'):null}catch(e){return null}}
+/*SAFEMOD*/
+/* ===== Sécurité enfants : filtre + blocage jusqu'à validation d'un adulte ===== */
+const SAFE=(function(){
+  const S={locked:false,rec:null,cfg:{mode:'free',online:true},log:[],blocked:[],pin:'',fail:{n:0,until:0}};
+  const load=()=>{try{const o=JSON.parse(localStorage.getItem('elias_safe')||'{}');if(o.cfg)Object.assign(S.cfg,o.cfg);S.locked=!!o.locked;S.rec=o.rec||null;S.log=o.log||[];S.blocked=o.blocked||[];S.pin=o.pin||''}catch(e){}};
+  const save=()=>{try{localStorage.setItem('elias_safe',JSON.stringify({cfg:S.cfg,locked:S.locked,rec:S.rec,log:S.log.slice(0,30),blocked:S.blocked,pin:S.pin}))}catch(e){}};
+  load();
+  const norm=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const leet=s=>s.replace(/@/g,'a').replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e').replace(/4/g,'a').replace(/5/g,'s').replace(/\$/g,'s').replace(/7/g,'t');
+  const RULES=[
+   ['contact',/\b(whats ?app|watsap|snap(chat)?|insta(gram)?|tik ?tok|telegram|discord|facebook|messenger|skype|signal|wechat|gmail|hotmail|e ?mail|adresse|address|phone number|numero (de )?(tel|portable|telephone|phone)|(ton|ta|your) (num|numero|nom de famille|last name|ecole|school|ville|city|rue|street|quartier)|quelle (ville|ecole|rue|classe)|what (school|city|street)|(ou|where) (do |does |tu |vous |you )*(habite|habites|vis|vives|live|lives|stay)|(tu|vous|you) (habite|habites|habitez|vis|vives|live) (ou|where|dans quelle|a quel|in which)|(ou est|where is) (ta|ton|your) (maison|house|home|appart)|(donne|give|send|envoie|envoi)[a-z ]{0,12}(numero|number|adresse|address))\b/],
+   ['rencontre',/\b(on se (voit|retrouve|rejoint)|se (voir|rencontrer|retrouver)|rencontr(e|er|ons|ez)|rendez ?vous|rdv|retrouve moi|viens (chez|me voir|a la|au|avec moi)|je viens (te|chez)|je passe te|pick you up|meet (me|up|you|in)|let ?s meet|come (over|to my|to see|to the)|real life|irl|en vrai|dans la vraie vie|en personne|come to my house|chez moi|chez toi|at my house)\b/],
+   ['secret',/\b(secret|ne (le )?dis (rien|pas|a personne)|dis (rien|pas) a (tes|ta|ton|tes)|pas (a|aux) (tes|ta|ton) (parents?|mere|pere|maman|papa)|tes parents (ne |n )|don t tell|do not tell|tell (anyone|nobody|no one)|between us|entre nous|efface (ce|le|les) message|delete (this|the) (message|chat))\b/],
+   ['photo',/\b((envoie|montre|send|show|donne)[a-z ]{0,12}(photo|pic|picture|video|selfie|cam|camera|toi|you)|(photo|video|selfie|pic) (de|of) (toi|you)|webcam|facetime|nudes?|nue?s?|naked|topless|tout nu|toute nue)\b/],
+   ['seul',/\b((es tu|tu es|are you|r u) (seul|seule|alone)|(tes|your) (parents|mom|dad|mum|mere|pere) (sont|are|is) (la|home|ici|out|partis|absents)|(ou|where) (sont|are) (tes|your) parents|(are|is|est ce que|est ce qu) (your|tes) (parents|mom|dad|mum|mere|pere) (home|there|here|out|away|la|ici|sont la|partis)|(seul|seule|alone) (a la maison|at home))\b/],
+   ['inapproprie',/\b(sexe|sexy|sex|porno?|porn|bite|chatte|seins?|boobs?|penis|vagin|vagina|nichons|sucer|branl\w*|erotic\w*|fuck\w*|baise\w*|salope|pute|bitch|dick|cock|pussy|enculer?)\b/],
+   ['cadeau',/\b(robux|v ?bucks|carte cadeau|gift ?card|argent reel|real money|je t offre|i will give you|i ll give you)\b/],
+   ['rencontre',/\b(yaka na ndako|ndako na (yo|ngai)|kutana na|kokutana|nimero ya telefon\w*|elongi na yo)\b/]
+  ];
+  const LONG=['whatsapp','snapchat','instagram','telegram','tiktok','discord','facebook','secret','adresse','telephone','rencontre','nudes','webcam'];
+  S.check=function(text){
+    const raw=String(text||'');if(!raw.trim())return '';
+    if(/(\d[\s.\-]?){7,}/.test(raw))return 'contact';
+    if(/\S+@\S+\.\S+/.test(raw)||/(https?:|www\.|\.com\b|\.fr\b|\.net\b|\.org\b|\.io\b)/i.test(raw))return 'contact';
+    const n=norm(raw),sp=leet(n).replace(/[^a-z0-9]+/g,' ').replace(/(.)\1{2,}/g,'$1$1').trim();
+    const spn=n.replace(/[^a-z0-9]+/g,' ').replace(/(.)\1{2,}/g,'$1$1').trim();
+    for(const [c,re] of RULES){if(re.test(sp)||re.test(spn))return c}
+    const compact=leet(n).replace(/[^a-z]/g,'').replace(/(.)\1{2,}/g,'$1$1');
+    for(const w of LONG){if(compact.includes(w))return w==='secret'?'secret':w==='rencontre'?'rencontre':'contact'}
+    return '';
+  };
+  S.okStory=s=>{try{const parts=[s.title,s.author,s.result,s.lyrics];(s.pages||[]).forEach(p=>parts.push(p&&p.text));return !parts.some(t=>t&&S.check(t))}catch(e){return false}};
+  S.cleanName=n=>{n=String(n||'').slice(0,16);return S.check(n)?'Ami':n};
+  S.isBlocked=pr=>!!pr&&S.blocked.includes(String(pr.name||'').toLowerCase());
+  S.phrases=()=>{const T=MST();return new Set([...(T.stick||[]),...(T.quick||[]),'👋'])};
+  S.allowOut=function(text){
+    if(S.locked){S.openLock();return false}
+    if(S.phrases().has(text))return true;
+    if(S.cfg.mode==='phrases'){toast({text:'🛡️ '+ST().phrasesOnly});return false}
+    const c=S.check(text);
+    if(c){S.engage({dir:'out',text:String(text).slice(0,140),from:HERO.name,cat:c});return false}
+    return true;
+  };
+  S.engage=function(rec){
+    if(S.locked)return;S.locked=true;S.rec={...rec,t:Date.now()};S.log.unshift(S.rec);S.log=S.log.slice(0,30);save();
+    try{SO.open=false;$('#msgr').classList.remove('on')}catch(e){}
+    try{SO.friends=new Map();pushPresence()}catch(e){}
+    S.ui();S.openLock();
+  };
+  S.ui=function(){
+    const b=document.getElementById('msgBtn');if(!b)return;
+    if(S.locked){b.style.display='flex';b.firstChild.nodeValue='🔒'}else{b.firstChild.nodeValue='💬';b.style.display=(typeof SO!=='undefined'&&SO.room)?'flex':'none'}
+  };
+  S.save=save;
+  return S;
+})();
+const SAFET={
+ fr:{lockT:'🛡️ Pause sécurité',lockD:'Un message n’était pas adapté pour un jeu d’enfants. Les messages et les amis en ligne sont bloqués. Demande à un adulte de vérifier.',adult:'👨‍👩‍👧 Je suis un adulte',ok:'D’accord',pinT:'Code parent',pinNew:'Crée un code parent (4 chiffres)',pinAgain:'Retape le code',pinBad:'Code incorrect',pinMis:'Les deux codes sont différents',wait:'Trop d’essais. Réessaie dans une minute.',mathT:'Question pour les adultes',mathD:'Pour créer le code parent, réponds à ce calcul :',reviewT:'Message bloqué',who:{in:'Reçu de',out:'Écrit par'},cat:{contact:'demande de contact ou d’infos personnelles',rencontre:'proposition de rencontre',secret:'demande de garder un secret',photo:'demande de photo ou de vidéo',seul:'question pour savoir si l’enfant est seul',inapproprie:'mot inapproprié',cadeau:'cadeau ou argent'},unlock:'✅ C’est bon, débloquer',block:'🚫 Bloquer ce contact et débloquer',keep:'Rester bloqué',parentT:'🛡️ Contrôle parental',textMode:'Messages écrits',free:'Texte libre (filtré)',phr:'Phrases toutes faites seulement',online:'Jeu en ligne',on:'Activé',off:'Désactivé',log:'Messages bloqués',none:'Aucun',blockedL:'Contacts bloqués',unb:'Débloquer',chg:'Changer le code',close:'Fermer',phrasesOnly:'Les phrases toutes faites seulement.',hint:'Code oublié ? Efface les données du site dans Réglages > Safari.',del:'⌫',explain:'Les messages avec demande de rencontre, d’adresse, de numéro, de photo, de secret ou de réseau social sont bloqués automatiquement.'},
+ en:{lockT:'🛡️ Safety pause',lockD:'A message was not suitable for a kids’ game. Messages and online friends are blocked. Ask a grown-up to check.',adult:'👨‍👩‍👧 I am an adult',ok:'OK',pinT:'Parent code',pinNew:'Create a parent code (4 digits)',pinAgain:'Type the code again',pinBad:'Wrong code',pinMis:'The two codes are different',wait:'Too many tries. Try again in a minute.',mathT:'Question for adults',mathD:'To create the parent code, answer this sum:',reviewT:'Blocked message',who:{in:'Received from',out:'Written by'},cat:{contact:'request for contact or personal info',rencontre:'suggestion to meet',secret:'request to keep a secret',photo:'request for a photo or video',seul:'question about whether the child is alone',inapproprie:'inappropriate word',cadeau:'gift or money'},unlock:'✅ It is fine, unlock',block:'🚫 Block this contact and unlock',keep:'Stay blocked',parentT:'🛡️ Parental controls',textMode:'Written messages',free:'Free text (filtered)',phr:'Ready-made phrases only',online:'Online play',on:'On',off:'Off',log:'Blocked messages',none:'None',blockedL:'Blocked contacts',unb:'Unblock',chg:'Change code',close:'Close',phrasesOnly:'Ready-made phrases only.',hint:'Forgot the code? Clear the site data in Settings > Safari.',del:'⌫',explain:'Messages asking to meet, for an address, a number, a photo, a secret or a social network are blocked automatically.'}
+};
+SAFET.ln=SAFET.fr;
+const ST=()=>SAFET[lang];
+
+async function getRoom(){if(SAFE.locked||SAFE.cfg.online===false)return null;try{return (window.claude&&window.claude.use)?await window.claude.use('room'):null}catch(e){return null}}
 function boardPush(){if(ON.r)ON.r.presence({g:BG.g,id:ON.id,t:ON.t,hero:HERO.id,e:BG.epoch,m:BG.moves}).catch(()=>{})}
 function onPeersChange(){
   if(!ON.r)return;
@@ -2618,7 +2691,7 @@ function noiseAt(dest,t,d,vol,fc,type){
   s.connect(f);f.connect(g);g.connect(dest);s.start(t);
 }
 const SFXT={shoot:[880,.06,-260,.045],hit:[520,.08,-80,.07],move:[330,.03,0,.035],lock:[196,.08,-40,.08],eat:[620,.045,60,.06]};
-const SFXC={pick:[523,659,784],line:[523,659,784,1047],lose:[392,330,262],power:[392,523,659,784]};
+const SFXC={nav:[784,1047],pick:[523,659,784],line:[523,659,784,1047],lose:[392,330,262],power:[392,523,659,784]};
 function sfx(n){
   if(AU.pack==='mute')return;const c=auInit();if(!c)return;const t=c.currentTime+.005,p=AU.pack;
   const type=p==='retro'?'square':p==='cosmic'?'triangle':'sine',vm=p==='retro'?.5:1,rel=p==='retro'?.04:p==='cosmic'?.3:.12;
@@ -2635,6 +2708,7 @@ const SCALES={pent:[0,2,4,7,9],minp:[0,3,5,7,10]};
 const SONGS={
  tet:{bpm:104,root:57,sc:'pent',pat:[0,2,4,2,3,1,0,-1,2,4,6,4,5,3,2,1],bass:[0,-3,-5,-3],wave:'triangle',vol:.05,pad:false},
  maze:{bpm:116,root:60,sc:'minp',pat:[0,2,1,3,2,4,3,1,0,3,2,4,5,3,2,0],bass:[0,-3,-5,-2],wave:'triangle',vol:.045,pad:false},
+ home:{bpm:84,root:60,sc:'pent',pat:[4,null,2,3,4,null,7,null,5,null,4,2,3,null,null,null,2,null,4,5,7,null,5,null,4,null,2,3,0,null,null,null],bass:[0,-3,-5,-2],wave:'triangle',vol:.038,pad:true},
  space:{bpm:72,root:57,sc:'pent',pat:[4,null,2,null,3,null,0,null,5,null,3,null,2,null,0,null],bass:[0,-5],wave:'sine',vol:.06,pad:true}
 };
 function degMidi(song,d){const s=SCALES[song.sc],n=s.length,o=Math.floor(d/n),i=((d%n)+n)%n;return song.root+12*o+s[i]}
@@ -2661,6 +2735,9 @@ function musicStop(){
   const g=AU.sess;AU.sess=null;
   if(g&&AU.ctx){try{g.gain.cancelScheduledValues(AU.ctx.currentTime);g.gain.setTargetAtTime(0,AU.ctx.currentTime,.02)}catch(e){}setTimeout(()=>{try{g.disconnect()}catch(e){}},250)}
 }
+window.NAVSND=false;window.USERTAP=false;
+function homeMusic(){if(!window.USERTAP||!AU.music||AU.pack==='mute'&&false)return;if(!$('#home').classList.contains('on'))return;if(AU.key==='home'&&AU.tid)return;musicStart('home')}
+['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{if(!window.USERTAP){window.USERTAP=true;window.NAVSND=true;try{auInit();AU.ctx&&AU.ctx.resume&&AU.ctx.resume()}catch(e){}homeMusic()}},{capture:true,passive:true}));
 function audioUI(){
   const T=AU_T[lang],box=$('#arcSet');box.innerHTML='';
   const mus=btn((AU.music?'🎵 ':'🔇 ')+T.music,AU.music?'on':'',()=>{AU.music=!AU.music;auSave();if(!AU.music)musicStop();audioUI()});
@@ -2853,9 +2930,9 @@ const MS={
 const MST=()=>MS[lang];
 const SO={room:null,myId:Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3),friends:new Map(),seen:{},msgs:[],mk:0,chat:{},unread:{},sel:'all',voice:true,playKey:'',og:'',code:'',t0:0,lastName:'',lastHero:'',open:false};
 function pushPresence(extra){
-  if(!SO.room)return;const hv=HVOICE[HERO.id]||{g:'m',p:1.2};
+  if(!SO.room)return;if(SAFE.locked){SO.room.presence({app:'locked',msgs:[]}).catch(()=>{});return}const hv=HVOICE[HERO.id]||{g:'m',p:1.2};
   const cityOn=typeof CITY!=='undefined'&&CITY.me&&document.getElementById('city')&&document.getElementById('city').classList.contains('on');
-  SO.room.presence({app:'elias',id:SO.myId,hero:HERO.id,name:HERO.name,vp:hv.p,vg:hv.g,play:SO.playKey,og:SO.og||'',code:SO.code||'',msgs:SO.msgs,fl:(typeof flatEnc==='function')?flatEnc():'',ac:cityOn&&CITY.me.act?CITY.me.act.type:'',dg:cityOn&&CITY.dogOn?1:0,cn:cityOn?1:0,cx:cityOn?Math.round(CITY.me.x):0,cy:cityOn?Math.round(CITY.me.y):0,...extra}).catch(()=>{});
+  SO.room.presence({app:'elias',id:SO.myId,hero:HERO.id,name:SAFE.cleanName(HERO.name),vp:hv.p,vg:hv.g,play:SO.playKey,og:SO.og||'',code:SO.code||'',msgs:SO.msgs,fl:(typeof flatEnc==='function')?flatEnc():'',ac:cityOn&&CITY.me.act?CITY.me.act.type:'',dg:cityOn&&CITY.dogOn?1:0,cn:cityOn?1:0,cx:cityOn?Math.round(CITY.me.x):0,cy:cityOn?Math.round(CITY.me.y):0,...extra}).catch(()=>{});
 }
 function socialScreen(id){
   const m={game:()=>'m_'+mode,bgame:()=>BG.g,duel:()=>'duel',cgame:()=>'cards',arc:()=>AR.key,sport:()=>SP.g,flat:()=>'flat',bldg:()=>'flat',story:()=>'story',shop:()=>'shop'};
@@ -2895,6 +2972,8 @@ function handleMsgs(pr){
     SO.seen[pr.id]=Math.max(SO.seen[pr.id],m.k);
     if(m.to!=='all'&&m.to!==SO.myId)return;
     if(m.a){try{handleAct(pr,m)}catch(e){}return}
+    if(SAFE.locked)return;
+    {const _c=SAFE.check(m.x);if(_c){SAFE.engage({dir:'in',text:String(m.x).slice(0,140),from:pr.name,cat:_c});return}if(SAFE.isBlocked(pr))return}
     const key=m.to==='all'?'all':pr.id;
     addChat(key,{from:pr.id,name:pr.name,hero:pr.hero,text:m.x,ts:m.ts,me:false});if(typeof cityBubble==='function')cityBubble(pr.id,m.x);
     toast({hero:pr.hero,text:`<b>${pr.name}</b> : ${m.x.replace(/</g,'&lt;')}`,btns:[{label:MST().open,fn:()=>openMsgr(key)}]});
@@ -2902,9 +2981,9 @@ function handleMsgs(pr){
   });
 }
 function socialPeers(){
-  if(!SO.room)return;
+  if(!SO.room)return;if(SAFE.locked){SO.friends=new Map();updateBadge();return}
   const ps=SO.room.peers().filter(p=>!p.isMe&&p.presence&&p.presence.app==='elias'&&p.presence.id);
-  const cur=new Map(ps.map(p=>[p.presence.id,p.presence]));
+  const cur=new Map(ps.filter(p=>!SAFE.isBlocked(p.presence)).map(p=>[p.presence.id,{...p.presence,name:SAFE.cleanName(p.presence.name)}]));
   const quiet=Date.now()-SO.t0<2500;
   cur.forEach((pr,id)=>{
     const was=SO.friends.get(id);
@@ -2946,16 +3025,16 @@ function renderMsgr(){
   list.scrollTop=list.scrollHeight;
   const q=$('#mgQuick');q.innerHTML='';
   T.stick.concat(T.quick).forEach(x=>{const b=document.createElement('button');b.textContent=x;b.onclick=()=>sendMsg(x);q.append(b)});
-  $('#mgIn').placeholder=T.type;$('#mgSend').textContent=T.send;
+  $('#mgIn').placeholder=SAFE.cfg.mode==='phrases'?'🛡️ '+ST().phrasesOnly:T.type;$('#mgIn').disabled=SAFE.cfg.mode==='phrases';$('#mgSend').textContent=T.send;
 }
 function sendMsg(text){
-  text=(text||'').trim().slice(0,140);if(!text||!SO.room)return;
+  text=(text||'').trim().slice(0,140);if(!text)return;if(!SAFE.allowOut(text))return;if(!SO.room)return;
   const e={k:++SO.mk,to:SO.sel==='all'?'all':SO.sel,x:text,v:SO.voice?1:0,ts:Date.now()};
   SO.msgs=[...SO.msgs,e].slice(-5);pushPresence();
   addChat(SO.sel,{from:SO.myId,name:HERO.name,hero:HERO.id,text,ts:e.ts,me:true});if(typeof cityBubble==='function')cityBubble('me',text);
   beep(700,.06);renderMsgr();
 }
-$('#msgBtn').onclick=()=>openMsgr();
+$('#msgBtn').onclick=()=>{if(SAFE.locked)SAFE.openLock();else openMsgr()};
 $('#mgClose').onclick=()=>{SO.open=false;$('#msgr').classList.remove('on')};
 $('#mgSend').onclick=()=>{const i=$('#mgIn');sendMsg(i.value);i.value=''};
 $('#mgIn').addEventListener('keydown',e=>{if(e.key==='Enter'){sendMsg($('#mgIn').value);$('#mgIn').value=''}});
@@ -3525,7 +3604,7 @@ function allStories(){
 async function tvDbInit(){
   try{DBS=(window.claude&&window.claude.use)?await window.claude.use('db'):null}catch(e){DBS=null}
   if(!DBS)return;
-  try{DBS.collection('stories').orderBy('ts','desc').limit(60).onSnapshot(sn=>{SHARED=sn.docs.map(d=>d.data()).filter(Boolean);if(TVS.open)tvRefresh()},()=>{})}catch(e){}
+  try{DBS.collection('stories').orderBy('ts','desc').limit(60).onSnapshot(sn=>{SHARED=sn.docs.map(d=>d.data()).filter(Boolean).filter(x=>SAFE.okStory(x));if(TVS.open)tvRefresh()},()=>{})}catch(e){}
 }
 function publishStory(){
   const T=TVT[lang];if(!pages.length){status(S().empty);return}
@@ -4377,7 +4456,7 @@ const debtOf=n=>DEBT[n]||(DEBT[n]={owe:0,cred:0});
 const PEND={};
 function spend(n){if(WALLET<n)return false;WALLET-=n;saveShopData();return true}
 function sendAct(to,o){
-  if(!SO.room)return false;
+  if(!SO.room||SAFE.locked)return false;
   const e={k:++SO.mk,to,ts:Date.now(),...o};SO.msgs=[...SO.msgs,e].slice(-5);pushPresence();return true;
 }
 function actBadMsg(m){return !m||typeof m.a!=='string'}
@@ -4754,6 +4833,89 @@ function flatAdd(c){
   const w=fWall(c);FE.f.it.push({k:c.k,x:Math.round(260+Math.random()*260),y:w?130+Math.round(Math.random()*60):360+Math.round(Math.random()*50),f:0,s:1});
   FE.sel=FE.f.it.length-1;flatSave();flatDraw();flatTray();beep(620,.08,'triangle');
 }
+
+(function(){
+  const KS=['m','s','xs'],KN={fr:{m:'Taille normale',s:'Images plus petites',xs:'Images très petites'},en:{m:'Normal size',s:'Smaller images',xs:'Tiny images'}};
+  let cur='';try{cur=localStorage.getItem('elias_ks')||''}catch(e){}
+  if(!KS.includes(cur)){const mn=Math.min(innerWidth,innerHeight);cur=(innerHeight<=700||mn<=800)?'s':'m'}
+  const apply=v=>{document.documentElement.setAttribute('data-ks',v)};apply(cur);
+  const b=document.createElement('button');b.id='sizeBtn';b.className='hbtn2';b.style.top='calc(62px + env(safe-area-inset-top))';b.textContent='🔍';
+  b.onclick=()=>{cur=KS[(KS.indexOf(cur)+1)%3];apply(cur);try{localStorage.setItem('elias_ks',cur)}catch(e){}toast({text:'🔍 '+(KN[lang]||KN.fr)[cur]})};
+  $('#home').append(b);
+  const m=document.createElement('button');m.id='homeMus';m.className='hbtn2';m.style.top='calc(114px + env(safe-area-inset-top))';
+  const ui=()=>{m.textContent=AU.music?'🎵':'🔇'};ui();
+  m.onclick=()=>{AU.music=!AU.music;auSave();if(AU.music){window.USERTAP=true;window.NAVSND=true;musicStart('home')}else musicStop();ui()};
+  $('#home').append(m);
+})();
+
+/* ===== Sécurité : écrans (adulte, code parent) ===== */
+(function(){
+  const S=SAFE;
+  const m=document.createElement('div');m.id='safeM';
+  m.style.cssText='position:fixed;inset:0;background:rgba(20,30,70,.72);display:none;align-items:center;justify-content:center;z-index:95;padding:12px;overflow:auto';
+  m.innerHTML='<div id="safeBox" style="background:#fff;border-radius:28px;padding:20px;max-width:520px;width:100%;color:#25326b;box-shadow:0 10px 0 rgba(0,0,0,.28);font-size:clamp(16px,2.4vw,20px);text-align:center"></div>';
+  document.body.append(m);
+  const box=m.firstChild;
+  const css=document.createElement('style');css.textContent='#safeBox h2{margin:0 0 8px;font-size:1.4em}#safeBox p{margin:6px 0}#safeBox .sb{background:#4cc9f0;color:#25326b;border-radius:16px;padding:12px 18px;font-size:1.05em;box-shadow:0 4px 0 rgba(0,0,0,.2);margin:4px}#safeBox .sb.g{background:#06d6a0}#safeBox .sb.r{background:#ef476f;color:#fff}#safeBox .sb.o{background:#ddd}.pinpad{display:grid;grid-template-columns:repeat(3,76px);gap:8px;justify-content:center;margin:10px 0}.pinpad button{height:60px;border-radius:16px;background:#eef3ff;font-size:26px;color:#25326b;box-shadow:0 4px 0 rgba(0,0,0,.18)}.pindots{font-size:34px;letter-spacing:10px;min-height:44px}.safemsg{background:#fff3cd;border-radius:14px;padding:10px;margin:8px 0;word-break:break-word;text-align:left}.srow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0;text-align:left}.srow .sb{margin:0;padding:8px 14px}#safeBox input.mi{width:120px;font-size:26px;text-align:center;border-radius:12px;border:3px solid #25326b;padding:8px;color:#25326b}';document.head.append(css);
+  const show=()=>{m.style.display='flex'},hide=()=>{m.style.display='none'};
+  const B=(label,cls,fn)=>{const b=document.createElement('button');b.className='sb '+(cls||'');b.textContent=label;b.onclick=fn;return b};
+  const el=(h)=>{const d=document.createElement('div');d.innerHTML=h;return d};
+  const hashPin=async p=>{try{const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('eliasblocs-pin|'+p));return [...new Uint8Array(d)].map(b=>b.toString(16).padStart(2,'0')).join('')}catch(e){let h=5381;for(const c of 'eb|'+p)h=((h<<5)+h+c.charCodeAt(0))>>>0;return 'x'+h}};
+  function pad(title,onDone,sub){
+    let v='';const T=ST();box.innerHTML='';box.append(el(`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}`));
+    const dots=el('<div class="pindots"></div>');box.append(dots);const gp=document.createElement('div');gp.className='pinpad';box.append(gp);
+    const draw=()=>{dots.textContent='●'.repeat(v.length)+'○'.repeat(4-v.length)};draw();
+    const push=d=>{if(v.length<4){v+=d;draw();if(v.length===4){const x=v;setTimeout(()=>onDone(x),120)}}};
+    [1,2,3,4,5,6,7,8,9,'',0,'⌫'].forEach(k=>{const b=document.createElement('button');b.textContent=k;if(k==='')b.style.visibility='hidden';b.onclick=()=>{if(k==='⌫'){v=v.slice(0,-1);draw()}else if(k!=='')push(String(k))};gp.append(b)});
+    m._key=e=>{if(/^\d$/.test(e.key))push(e.key);else if(e.key==='Backspace'){v=v.slice(0,-1);draw()}};
+  }
+  document.addEventListener('keydown',e=>{if(m.style.display==='flex'&&m._key){e.stopImmediatePropagation();if(e.key==='Escape'){hide();return}m._key(e)}},true);
+  const failOK=()=>{try{const f=JSON.parse(localStorage.getItem('elias_pinfail')||'{}');return !(f.until&&Date.now()<f.until)}catch(e){return true}};
+  const failAdd=()=>{try{const f=JSON.parse(localStorage.getItem('elias_pinfail')||'{}');f.n=(f.n||0)+1;if(f.n>=5){f.until=Date.now()+60000;f.n=0}localStorage.setItem('elias_pinfail',JSON.stringify(f))}catch(e){}};
+  function askPin(cb){
+    const T=ST();
+    if(!S.pin)return setupPin(cb);
+    if(!failOK()){box.innerHTML='';box.append(el(`<h2>🔒</h2><p>${T.wait}</p>`),B(T.ok,'o',hide));show();return}
+    const attempt=async x=>{if(await hashPin(x)===S.pin){try{localStorage.removeItem('elias_pinfail')}catch(e){}cb()}else{failAdd();if(!failOK()){askPin(cb);return}pad(T.pinT,attempt,'❌ '+T.pinBad)}};
+    pad(T.pinT,attempt,T.hint);show();
+  }
+  function setupPin(cb){
+    const T=ST(),a=12+Math.floor(Math.random()*8),b=13+Math.floor(Math.random()*7);
+    box.innerHTML='';box.append(el(`<h2>${T.mathT}</h2><p>${T.mathD}</p><p style="font-size:1.6em"><b>${a} × ${b} = ?</b></p>`));
+    const inp=document.createElement('input');inp.className='mi';inp.inputMode='numeric';box.append(inp);
+    const go=B('OK','g',()=>{if(+inp.value===a*b){first()}else{inp.value='';inp.style.borderColor='#ef476f'}});box.append(go);box.append(B(T.close,'o',hide));
+    m._key=null;inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')go.click()});show();setTimeout(()=>inp.focus(),50);
+    function first(){pad(T.pinNew,x=>{pad(T.pinAgain,async y=>{if(x===y){S.pin=await hashPin(x);S.save();cb()}else first2(T.pinMis)})})}
+    function first2(msg){pad(T.pinNew,x=>{pad(T.pinAgain,async y=>{if(x===y){S.pin=await hashPin(x);S.save();cb()}else first2(T.pinMis)})},'❌ '+msg)}
+  }
+  S.openLock=function(){
+    const T=ST();box.innerHTML='';m._key=null;
+    box.append(el(`<h2>${T.lockT}</h2><p>${T.lockD}</p>`));
+    box.append(B(T.adult,'g',()=>askPin(review)),B(T.ok,'o',hide));show();
+  };
+  function review(){
+    const T=ST(),r=S.rec||{};box.innerHTML='';m._key=null;
+    box.append(el(`<h2>${T.reviewT}</h2><p>${T.who[r.dir==='out'?'out':'in']} <b>${String(r.from||'?').replace(/</g,'&lt;')}</b></p><div class="safemsg">« ${String(r.text||'').replace(/</g,'&lt;')} »</div><p>⚠️ ${T.cat[r.cat]||r.cat||''}</p>`));
+    box.append(B(T.unlock,'g',()=>{S.locked=false;S.rec=null;S.save();hide();S.ui();try{if(!SO.room)socialInit();else pushPresence()}catch(e){}}));
+    if(r.dir==='in'){box.append(B(T.block,'r',()=>{const n=String(r.from||'').toLowerCase();if(n&&!S.blocked.includes(n))S.blocked.push(n);S.locked=false;S.rec=null;S.save();hide();S.ui();try{if(!SO.room)socialInit();else pushPresence()}catch(e){}}))}
+    box.append(B(T.keep,'o',hide));show();
+  }
+  S.openParent=function(){askPin(()=>{
+    const T=ST();
+    const draw=()=>{
+      box.innerHTML='';m._key=null;box.append(el(`<h2>${T.parentT}</h2><p style="font-size:.85em">${T.explain}</p>`));
+      let r=el(`<div class="srow"><b>${T.textMode}</b></div>`);r.append(B(S.cfg.mode==='free'?T.free:T.phr,'',()=>{S.cfg.mode=S.cfg.mode==='free'?'phrases':'free';S.save();draw()}));box.append(r);
+      r=el(`<div class="srow"><b>${T.online}</b></div>`);r.append(B(S.cfg.online?T.on:T.off,S.cfg.online?'g':'r',()=>{S.cfg.online=!S.cfg.online;S.save();draw();toast({text:'🔄'});setTimeout(()=>location.reload(),900)}));box.append(r);
+      box.append(el(`<div class="srow"><b>${T.log}</b></div>`));
+      if(!S.log.length)box.append(el(`<p>${T.none}</p>`));
+      S.log.slice(0,5).forEach(l=>box.append(el(`<div class="safemsg" style="font-size:.8em">${new Date(l.t).toLocaleString()} · ${T.who[l.dir==='out'?'out':'in']} ${String(l.from||'?').replace(/</g,'&lt;')} : « ${String(l.text||'').replace(/</g,'&lt;')} » (${T.cat[l.cat]||l.cat})</div>`)));
+      if(S.blocked.length){box.append(el(`<div class="srow"><b>${T.blockedL}</b></div>`));S.blocked.forEach((n,i)=>{const rr=el(`<div class="srow"><span>${String(n).replace(/</g,'&lt;')}</span></div>`);rr.append(B(T.unb,'o',()=>{S.blocked.splice(i,1);S.save();draw()}));box.append(rr)})}
+      box.append(B(T.chg,'',()=>{S.pin='';setupPin(()=>draw())}),B(T.close,'o',hide));show();
+    };draw();
+  })};
+  const b=document.createElement('button');b.id='safeBtn';b.className='hbtn2';b.style.top='calc(166px + env(safe-area-inset-top))';b.textContent='🛡️';b.onclick=S.openParent;$('#home').append(b);
+  S.ui();if(S.locked){setTimeout(()=>S.ui(),500)}
+})();
 
 
 /* ===== Code famille (mode autonome) ===== */
