@@ -44,7 +44,7 @@ small.n{opacity:.6}
  <div class="card"><b id="cA">0</b><span>actifs (24 h)</span></div>
  <div class="card alert"><b id="cS">0</b><span>alertes sécurité</span></div>
 </div>
-<div class="bar"><input id="q" placeholder="Rechercher un prénom…"><select id="fam"><option value="">Toutes les familles</option></select><select id="flt"><option value="">Tous</option><option value="on">En ligne</option><option value="new">Nouveaux (24 h)</option><option value="al">Avec alertes</option></select><small class="n">Les données sont chiffrées : seul ce fichier peut les lire.</small></div>
+<div class="bar"><input id="q" placeholder="Rechercher un prénom…"><select id="fam"><option value="">Tous les groupes</option></select><select id="flt"><option value="">Tous</option><option value="on">En ligne</option><option value="new">Nouveaux (24 h)</option><option value="al">Avec alertes</option></select><small class="n">Les données sont chiffrées : seul ce fichier peut les lire.</small></div>
 <table><thead><tr id="hd"></tr></thead><tbody id="tb"></tbody></table>
 <div class="empty" id="em" style="display:none">Aucun joueur pour l’instant. Ils apparaissent ici dès qu’ils entrent un code famille sur leur iPad.</div>
 <div id="det"></div>
@@ -110,20 +110,20 @@ function status(){const n=live.size;const e=$('#st');e.textContent=n?`🟢 conne
 const isOn=p=>p.on&&Date.now()-(p.seen||0)<150000;
 const ago=t=>{if(!t)return '—';const s=(Date.now()-t)/1000;return s<60?'à l’instant':s<3600?Math.floor(s/60)+' min':s<86400?Math.floor(s/3600)+' h':Math.floor(s/86400)+' j'};
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const COLS=[['name','Joueur'],['on','Statut'],['lvl','Niveau'],['pts','Points'],['coins','Pièces'],['act','Activité'],['dev','Appareil'],['fam','Famille'],['firstSeen','Inscrit'],['seen','Vu']];
+const COLS=[['name','Joueur'],['on','Statut'],['lvl','Niveau'],['pts','Points'],['coins','Pièces'],['act','Activité'],['dev','Appareil'],['grp','Groupe'],['firstSeen','Inscrit'],['seen','Vu']];
 function render(){
   const all=Object.values(P),now=Date.now(),day=864e5;
   $('#cT').textContent=all.length;$('#cO').textContent=all.filter(isOn).length;
   $('#cN').textContent=all.filter(p=>now-(p.firstSeen||0)<day).length;$('#cA').textContent=all.filter(p=>now-(p.seen||0)<day).length;
   $('#cS').textContent=all.reduce((a,p)=>a+(p.alerts||0),0);
-  const fams=[...new Set(all.map(p=>p.fam||''))].sort(),fs=$('#fam'),cur=fs.value;
-  fs.innerHTML='<option value="">Toutes les familles</option>'+fams.map(f=>`<option value="${esc(f)}">${f?'Famille '+esc(f):'Sans famille'}</option>`).join('');fs.value=cur;
+  const fams=[...new Set(all.map(p=>p.grp||p.fam||''))].sort(),fs=$('#fam'),cur=fs.value;
+  fs.innerHTML='<option value="">Tous les groupes</option>'+fams.map(f=>`<option value="${esc(f)}">${f?'Groupe '+esc(f):'Sans groupe'}</option>`).join('');fs.value=cur;
   const q=$('#q').value.toLowerCase(),flt=$('#flt').value,fm=fs.value;
-  let list=all.filter(p=>(!q||String(p.name).toLowerCase().includes(q))&&(!fm||(p.fam||'')===fm)&&(!flt||(flt==='on'?isOn(p):flt==='new'?now-(p.firstSeen||0)<day:(p.alerts||0)>0)));
+  let list=all.filter(p=>(!q||String(p.name).toLowerCase().includes(q))&&(!fm||(p.grp||p.fam||'')===fm)&&(!flt||(flt==='on'?isOn(p):flt==='new'?now-(p.firstSeen||0)<day:(p.alerts||0)>0)));
   list.sort((a,b)=>{const x=sortK==='on'?isOn(a):a[sortK],y=sortK==='on'?isOn(b):b[sortK];return (x>y?1:x<y?-1:0)*sortD});
   $('#hd').innerHTML=COLS.map(([k,l])=>`<th data-k="${k}">${l}${sortK===k?(sortD>0?' ▲':' ▼'):''}</th>`).join('');
   $('#hd').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;sortD=sortK===k?-sortD:-1;sortK=k;render()});
-  $('#tb').innerHTML=list.map(p=>`<tr class="row" data-id="${esc(p.id)}"><td><b>${esc(p.name)}</b>${now-(p.firstSeen||0)<day?'<span class="badge">NOUVEAU</span>':''}${p.alerts?'<span class="badge r">⚠ '+p.alerts+'</span>':''}<br><small class="n">${esc(p.hero)}${p.age?' · '+p.age+' ans':''}</small></td><td><span class="dot ${isOn(p)?'on':''}"></span>${isOn(p)?'en ligne':'hors ligne'}</td><td>${p.lvl||1}</td><td>${p.pts||0}<br><small class="n">total ${p.all||0}</small></td><td>${p.coins||0}</td><td>${esc((p.act||'').replace(':',' · '))}</td><td>${esc(p.dev)}</td><td>${esc(p.fam||'—')}</td><td>${p.firstSeen?new Date(p.firstSeen).toLocaleDateString():'—'}</td><td>${ago(p.seen)}</td></tr>`).join('');
+  $('#tb').innerHTML=list.map(p=>`<tr class="row" data-id="${esc(p.id)}"><td><b>${esc(p.name)}</b>${now-(p.firstSeen||0)<day?'<span class="badge">NOUVEAU</span>':''}${p.alerts?'<span class="badge r">⚠ '+p.alerts+'</span>':''}<br><small class="n">${esc(p.hero)}${p.age?' · '+p.age+' ans':''}</small></td><td><span class="dot ${isOn(p)?'on':''}"></span>${isOn(p)?'en ligne':'hors ligne'}</td><td>${p.lvl||1}</td><td>${p.pts||0}<br><small class="n">total ${p.all||0}</small></td><td>${p.coins||0}</td><td>${esc((p.act||'').replace(':',' · '))}</td><td>${esc(p.dev)}</td><td>${esc(p.grp||p.fam||'—')}</td><td>${p.firstSeen?new Date(p.firstSeen).toLocaleDateString():'—'}</td><td>${ago(p.seen)}</td></tr>`).join('');
   $('#tb').querySelectorAll('tr.row').forEach(tr=>tr.onclick=()=>{sel=tr.dataset.id;detail()});
   $('#em').style.display=all.length?'none':'block';detail();
 }
