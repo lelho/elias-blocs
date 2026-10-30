@@ -3964,7 +3964,7 @@ function cleanSpec(sp){
    buddies:(Array.isArray(sp.buddies)?sp.buddies:[]).map(n=>Math.max(1,Math.min(10,+n||1))).slice(0,3)};
 }
 function cleanStory(s){
-  if(s&&s.type==='alarm'&&s.id)return {id:String(s.id).replace(/[^a-z0-9_-]/gi,'').slice(0,24),type:'alarm',title:String(s.title||'').slice(0,40),author:String(s.author||'').slice(0,14),hero:String(s.hero||'elias'),ts:+s.ts||0,why:s.why==='rank'?'rank':'time'};
+  if(s&&s.type==='alarm'&&s.id)return {id:String(s.id).replace(/[^a-z0-9_-]/gi,'').slice(0,24),type:'alarm',title:String(s.title||'').slice(0,40),author:String(s.author||'').slice(0,14),hero:String(s.hero||'elias'),ts:+s.ts||0,why:s.why==='rank'?'rank':'time',pol:s.pol?1:0};
   if(s&&s.type==='music')return cleanSong(s);
   if(s&&s.type==='game')return cleanGame(s);
   if(!s||typeof s!=='object'||!Array.isArray(s.pages)||!s.id)return null;
@@ -4962,7 +4962,7 @@ function handleAct(pr,m){
     const x=+m.x,y=+m.y,C=CTGT();
     toast({hero:pr.hero,text:C.ask(nm),btns:[{label:C.go,fn:()=>{if(!CITY.open)return;cityTP(x,y,SO.friends.size);cityBubble('me','🎉');toast({hero:HERO.id,text:C.here})}},{label:C.no,fn:()=>{}}]});
   }
-  else if(m.a==='par'&&fresh){if(SAFE.cfg.friendAlerts!==false&&window.TM&&!TM.active&&(m.w==='chief'||Date.now()-TM.lastRemote>120000)){TM.lastRemote=Date.now();if(m.w==='time'){TM.start('',true,'time')}else if(m.w==='chief'){TM.start(nm,true,'chief')}else{try{toast({hero:pr.hero,text:TXT_PAR(nm)})}catch(e){}TM.start(nm,true,'rank')}}}
+  else if(m.a==='par'&&fresh){if(SAFE.cfg.friendAlerts!==false&&window.TM&&!TM.active&&(m.w==='chief'||Date.now()-TM.lastRemote>120000)){TM.lastRemote=Date.now();const pl=m.p===1;if(m.w==='time'){TM.start('',true,'time',pl)}else if(m.w==='chief'){TM.start(nm,true,'chief',pl)}else{try{toast({hero:pr.hero,text:TXT_PAR(nm)})}catch(e){}TM.start(nm,true,'rank',pl)}}}
   else if(m.a==='gift'&&n>0&&fresh){giveCoins(n);toast({hero:pr.hero,text:T.rgift(nm,n)});cityBubble(pr.id,'🎁');sfx&&sfx('win')}
   else if(m.a==='loan'&&n>0&&fresh){
     toast({hero:pr.hero,text:T.rloan(nm,n),btns:[{label:T.okb,fn:()=>{giveCoins(n);debtOf(nm).owe+=n;saveDebt();ans('lok',{n});cityBubble('me',T.thx)}},{label:T.no,fn:()=>ans('lno',{n})}]});
@@ -5422,9 +5422,9 @@ function flatAdd(c){
 (function(){
 const LS=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
 const TXT={
- fr:{ban:'TEMPS D’ÉCRAN DÉPASSÉ !',ban2:'Les parents arrivent !',say:'Attention ! Trente minutes d’écran ! Les parents arrivent !',sayChief:n=>`Alerte ! ${n}, le chef du groupe, appelle les parents !`,banChief:n=>`${n}, chef du groupe : les parents arrivent !`,sayBy:n=>`Alerte ! ${n} est premier du classement et appelle les parents !`,banBy:n=>`${n} est 1er du classement : les parents arrivent !`,pw:'🚨 Tu es 1er du classement ! Tu peux appeler les parents !',pwB:'🚨 Appeler les parents',fromF:n=>`🚨 <b>${n}</b> est 1er du classement et appelle les parents !`,w5:'⏱ Plus que 5 minutes de jeu !',w1:'⏱ Plus qu’une minute de jeu !',caught:'Tes parents t’ont attrapé ! C’est l’heure de la pause 💕',end:'Les parents sont repartis… Va faire une pause : bois un verre d’eau et va jouer dehors ! 💧',chip:'⏱',min:'min',
+ fr:{ban:'TEMPS D’ÉCRAN DÉPASSÉ !',ban2:'Les parents arrivent !',say:'Attention ! Trente minutes d’écran ! Les parents arrivent !',polSay:'La police arrive aussi, ses 4 policiers courent après les enfants !',polName:'🚓 Police',copName:'👮 Police',polBub:['🚓 Pin-pon !','Stop !','Rentre !'],sayChief:n=>`Alerte ! ${n}, le chef du groupe, appelle les parents !`,banChief:n=>`${n}, chef du groupe : les parents arrivent !`,sayBy:n=>`Alerte ! ${n} est premier du classement et appelle les parents !`,banBy:n=>`${n} est 1er du classement : les parents arrivent !`,pw:'🚨 Tu es 1er du classement ! Tu peux appeler les parents !',pwB:'🚨 Appeler les parents',fromF:n=>`🚨 <b>${n}</b> est 1er du classement et appelle les parents !`,w5:'⏱ Plus que 5 minutes de jeu !',w1:'⏱ Plus qu’une minute de jeu !',caught:'Tes parents t’ont attrapé ! C’est l’heure de la pause 💕',end:'Les parents sont repartis… Va faire une pause : bois un verre d’eau et va jouer dehors ! 💧',chip:'⏱',min:'min',
   sc:['😱 Aaaah !','🏃 Au secours !','Pas déjà !','😭 Nooon !','Cours !!','Une minute !','Ils arrivent !'],par:['Maman','Papa','Mamie','Tonton'],hug:['❤️ Pause !','Viens ici !','Assez joué !','Attrapé !'],lim:'Temps d’écran avant l’alerte',off:'Désactivé'},
- en:{ban:'SCREEN TIME IS UP!',ban2:'The parents are coming!',say:'Warning! Thirty minutes of screen time! The parents are coming!',sayChief:n=>`Alert! ${n}, the group leader, calls the parents!`,banChief:n=>`${n}, group leader: the parents are coming!`,sayBy:n=>`Alert! ${n} is first in the ranking and calls the parents!`,banBy:n=>`${n} is #1 in the ranking: the parents are coming!`,pw:'🚨 You are #1 in the ranking! You can call the parents!',pwB:'🚨 Call the parents',fromF:n=>`🚨 <b>${n}</b> is #1 in the ranking and calls the parents!`,w5:'⏱ Only 5 minutes of play left!',w1:'⏱ Only one minute of play left!',caught:'Your parents caught you! Time for a break 💕',end:'The parents have gone… Take a break: drink some water and go play outside! 💧',chip:'⏱',min:'min',
+ en:{ban:'SCREEN TIME IS UP!',ban2:'The parents are coming!',say:'Warning! Thirty minutes of screen time! The parents are coming!',polSay:'The police are coming too, with 4 officers!',polName:'🚓 Police',copName:'👮 Police',polBub:['🚓 Nee-naw!','Stop!','Go home!'],sayChief:n=>`Alert! ${n}, the group leader, calls the parents!`,banChief:n=>`${n}, group leader: the parents are coming!`,sayBy:n=>`Alert! ${n} is first in the ranking and calls the parents!`,banBy:n=>`${n} is #1 in the ranking: the parents are coming!`,pw:'🚨 You are #1 in the ranking! You can call the parents!',pwB:'🚨 Call the parents',fromF:n=>`🚨 <b>${n}</b> is #1 in the ranking and calls the parents!`,w5:'⏱ Only 5 minutes of play left!',w1:'⏱ Only one minute of play left!',caught:'Your parents caught you! Time for a break 💕',end:'The parents have gone… Take a break: drink some water and go play outside! 💧',chip:'⏱',min:'min',
   sc:['😱 Aaaah!','🏃 Help!','Not yet!','😭 Nooo!','Run!!','One minute!','They are coming!'],par:['Mum','Dad','Gran','Uncle'],hug:['❤️ Break time!','Come here!','Enough play!','Got you!'],lim:'Screen time before the alert',off:'Off'}
 };
 TXT.ln=TXT.fr;const T=()=>TXT[lang];
@@ -5459,22 +5459,46 @@ function spawnParents(){
     e.g.querySelector('.nm').textContent='👨‍👩‍👧 '+h.name;
   });
 }
+function spawnPolice(){
+  if(CITY.ents.has('policecar'))return;
+  const h={id:'police',name:'',age:35,skin:'#8d5a3c',hair:'short',hairC:'#111',top:'#1d3557',band:'#1d3557',acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#222',shoe:'#222',s:1,forceOutfit:'hero'};
+  const e=mkEnt('policecar',h,T().polName,{x:600,y:40,speed:260});e.isPolice=true;e.car=true;e.deployed=false;e.t0=Date.now();
+  const bob=e.g.querySelector('.bob');
+  if(bob)bob.innerHTML=`<svg x="-46" y="-52" width="92" height="56" viewBox="0 0 92 56"><rect x="4" y="20" width="84" height="22" rx="8" fill="#f4f6fb" stroke="#1d3557" stroke-width="3"/><path d="M20 20 L30 6 H62 L74 20Z" fill="#cfe8ff" stroke="#1d3557" stroke-width="3" stroke-linejoin="round"/><line x1="46" y1="6" x2="46" y2="20" stroke="#1d3557" stroke-width="3"/><rect x="4" y="30" width="84" height="7" fill="#1d3557"/><rect x="38" y="-1" width="16" height="8" rx="3" fill="#1d3557"/><rect class="sirL" x="38" y="-3" width="8" height="7" rx="2" fill="#ff2d2d"/><rect class="sirR" x="46" y="-3" width="8" height="7" rx="2" fill="#2d7dff"/><circle cx="24" cy="44" r="8" fill="#222"/><circle cx="68" cy="44" r="8" fill="#222"/><circle cx="24" cy="44" r="3.5" fill="#ccc"/><circle cx="68" cy="44" r="3.5" fill="#ccc"/><text x="46" y="35" font-size="7" font-weight="900" fill="#fff" text-anchor="middle">POLICE</text></svg>`;
+  e.g.querySelector('.nm').textContent=T().polName;
+  try{if(!document.getElementById('polCss')){const st=document.createElement('style');st.id='polCss';st.textContent='.sirL{animation:polf .35s infinite alternate}.sirR{animation:polf .35s infinite alternate-reverse}@keyframes polf{from{opacity:1}to{opacity:.15}}';document.head.append(st)}}catch(x){}
+  /* la voiture va se garer près de toi, puis 4 policiers en sortent */
+  const m=CITY.me||{x:600,y:500,};const tx=Math.max(60,Math.min(WW-60,m.x+(m.x>WW/2?-170:170))),ty=Math.max(60,Math.min(WH-60,m.y));
+  e.path=cityPath(e.x,e.y,tx,ty);e.park={x:tx,y:ty};
+}
+function deployCops(car){
+  car.deployed=true;car.path=[];car.moving=false;
+  const SK=['#8d5a3c','#6f4430','#c68642','#5e3a28'],HR=['short','spiky','bob','short'];
+  for(let i=0;i<4;i++){
+    const id='cop'+i;if(CITY.ents.has(id))continue;
+    const h={id,name:T().copName,age:35,skin:SK[i],hair:HR[i],hairC:'#111',top:'#1d3557',band:'#ffd23f',acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#14213d',shoe:'#111',s:1.08,girl:i===2,forceOutfit:'hero'};
+    const e=mkEnt(id,h,h.name,{x:car.x+(i-1.5)*18,y:car.y+16,speed:165});e.parent=true;e.safe=0;e.caught=0;e.isPolice=true;
+    const sv=e.g.querySelector('.bob svg');if(sv){sv.setAttribute('x','-34');sv.setAttribute('y','-94');sv.setAttribute('width','68');sv.setAttribute('height','96')}
+    e.g.querySelector('.nm').textContent=T().copName;cityBubble(id,T().polBub[i%3]);
+  }
+  try{siren(4)}catch(x){}
+}
 function kids(){return [...CITY.ents.values()].filter(e=>e.npc||e===CITY.me)}
 TM.attach=function(){
   if(!TM.active)return;
   $('#city').classList.add('tmalert');ban.classList.add('on');
-  spawnParents();
+  spawnParents();if(TM.pol)spawnPolice();
   CITY.ents.forEach(e=>{if(e.npc){e.sp0=e.sp0||e.speed;e.speed=e.sp0*2.6}});
   const q=document.getElementById('cityPrompt');
 };
 function detach(){
   $('#city').classList.remove('tmalert');ban.classList.remove('on');
-  CITY.ents.forEach((e,id)=>{if(e.parent){e.g.remove();CITY.ents.delete(id)}else if(e.npc&&e.sp0){e.speed=e.sp0;e.path=[];e.wait=1+Math.random()*2;e.target=null;e.caughtT=0}});
+  CITY.ents.forEach((e,id)=>{if(e.parent||e.isPolice){e.g.remove();CITY.ents.delete(id)}else if(e.npc&&e.sp0){e.speed=e.sp0;e.path=[];e.wait=1+Math.random()*2;e.target=null;e.caughtT=0}});
 }
-TM.start=function(by,remote,mode){
-  if(TM.active)return;TM.mode=mode||(by?'rank':'time');
+TM.start=function(by,remote,mode,pol){
+  if(TM.active)return;TM.mode=mode||(by?'rank':'time');TM.pol=(pol!==undefined&&pol!==null)?!!pol:Math.random()<.5;
   /* l'alarme concerne tout le groupe, en même temps */
-  if(!remote){try{if(typeof sendAct==='function')sendAct('all',{a:'par',w:TM.mode})}catch(e){}}
+  if(!remote){try{if(typeof sendAct==='function')sendAct('all',{a:'par',w:TM.mode,p:TM.pol?1:0})}catch(e){}}
   cntHide();TM.by=by||'';TM.active=true;try{TM.clip=alRec()}catch(e){}TM.endAt=Date.now()+TM.dur;TM.used=0;save();
   try{AR.run=false;cancelAnimationFrame(AR.raf)}catch(e){}
   try{spStop&&spStop()}catch(e){}
@@ -5482,7 +5506,7 @@ TM.start=function(by,remote,mode){
   try{speechSynthesis.cancel()}catch(e){}
   ['bgend','end','cityP','vm','nmM','rdQuiz','msgr'].forEach(i=>{const x=document.getElementById(i);if(x)x.classList.remove('on')});
   CITY.ret=false;openCity();
-  siren(10);setTimeout(()=>{try{speak(TM.by?(TM.mode==='chief'?T().sayChief(TM.by):T().sayBy(TM.by)):T().say)}catch(e){}},500);
+  siren(10);setTimeout(()=>{try{speak((TM.by?(TM.mode==='chief'?T().sayChief(TM.by):T().sayBy(TM.by)):T().say)+(TM.pol?' '+T().polSay:''))}catch(e){}},500);
   setTimeout(()=>{if(TM.active)siren(6)},12000);
 };
 function end(){
@@ -5516,7 +5540,7 @@ const ALK='elias_alarms';
 const alRead=()=>{try{return JSON.parse(localStorage.getItem(ALK)||'[]')||[]}catch(e){return[]}};
 window.TMCLIPS=()=>alRead();
 function alRec(){
-  const c={id:'al'+Date.now().toString(36),type:'alarm',title:lang==='en'?'🚨 Parents alert':'🚨 Alerte parents',author:(TM.by||HERO.name||'Elias').slice(0,14),hero:HERO.id,ts:Date.now(),why:TM.by?'rank':'time'};
+  const c={id:'al'+Date.now().toString(36),type:'alarm',title:lang==='en'?'🚨 Parents alert':'🚨 Alerte parents',author:(TM.by||HERO.name||'Elias').slice(0,14),hero:HERO.id,ts:Date.now(),why:TM.by?'rank':'time',pol:TM.pol?1:0};
   const l=alRead();l.push(c);try{localStorage.setItem(ALK,JSON.stringify(l.slice(-6)))}catch(e){}
   try{if(typeof DBS!=='undefined'&&DBS)DBS.collection('stories').doc(c.id).set(c).catch(()=>{})}catch(e){}
   return c;
@@ -5526,7 +5550,7 @@ window.TMCLIP=async function(st,my){
   const kidsH=[st.hero].concat(HEROES.map(h=>h.id)).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3).map(id=>HEROES.find(x=>x.id===id)).filter(Boolean);
   const kv=kidsH.map((h,i)=>`<div class="run" style="--d:${5.2+i*.3}s;animation-delay:${-i*.9}s">${heroSVG({...h,forceOutfit:'hero'})}</div>`).join('');
   const pv=PS.map((p,i)=>{const h={id:'p'+i,name:'',age:35,skin:p.skin,hair:p.hair,hairC:p.hairC,top:p.top,band:p.top,acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#37474f',shoe:'#222',s:1.1,girl:p.girl,glasses:p.glasses,forceOutfit:'hero'};return `<div class="run" style="--d:${5.2}s;animation-delay:${-(3.4+i*.35)}s;bottom:6%">${heroSVG(h)}</div>`}).join('');
-  scr.innerHTML=`<div class="tvalarm"><div class="flash">🚨 ${en?'FLASH NEWS · PARENTS ALERT':'FLASH INFO · ALERTE PARENTS'} 🚨</div><div class="shout" style="left:12%">${en?'AAAH!':'AAAH !'}</div><div class="shout" style="left:58%;animation-delay:-.2s">${en?'Come here!':'Reviens !'}</div>${kv}${pv}</div><div class="logo" style="position:absolute;left:10px;bottom:8px;background:#fff3;color:#fff;border-radius:12px;padding:2px 10px">📺 ${TVT[lang].title}</div>`;
+  scr.innerHTML=`<div class="tvalarm"><div class="flash">🚨 ${en?'FLASH NEWS · PARENTS ALERT':'FLASH INFO · ALERTE PARENTS'} 🚨</div><div class="shout" style="left:12%">${en?'AAAH!':'AAAH !'}</div><div class="shout" style="left:58%;animation-delay:-.2s">${en?'Come here!':'Reviens !'}</div>${kv}${pv}${st.pol?`<div class="run" style="--d:4.4s;animation-delay:-3s;bottom:3%;width:17%"><svg viewBox="0 0 92 56"><rect x="4" y="20" width="84" height="22" rx="8" fill="#f4f6fb" stroke="#1d3557" stroke-width="3"/><path d="M20 20 L30 6 H62 L74 20Z" fill="#cfe8ff" stroke="#1d3557" stroke-width="3"/><rect x="38" y="-3" width="8" height="7" fill="#ff2d2d"/><rect x="46" y="-3" width="8" height="7" fill="#2d7dff"/><circle cx="24" cy="44" r="8" fill="#222"/><circle cx="68" cy="44" r="8" fill="#222"/></svg></div>`:''}</div><div class="logo" style="position:absolute;left:10px;bottom:8px;background:#fff3;color:#fff;border-radius:12px;padding:2px 10px">📺 ${TVT[lang].title}</div>`;
   siren(3);
   const rerun=Date.now()-st.ts>120000;
   if(rerun){const f=scr.querySelector('.flash');if(f)f.textContent='🔁 '+(en?'REPLAY · PARENTS ALERT':'REDIFFUSION · ALERTE PARENTS')}
@@ -5537,9 +5561,10 @@ window.TMCLIP=async function(st,my){
 window.TMCITY=function(dt){
   if(!TM.active)return;
   const left=Math.max(0,TM.endAt-Date.now());
-  ban.innerHTML=`${TM.by?'🚨 '+(TM.mode==='chief'?T().banChief(TM.by):T().banBy(TM.by)):'⚠️ '+T().ban+' '+T().ban2} <span>⏳ ${Math.floor(Math.ceil(left/1000)/60)}:${String(Math.ceil(left/1000)%60).padStart(2,'0')}</span>`;
+  ban.innerHTML=`${TM.by?'🚨 '+(TM.mode==='chief'?T().banChief(TM.by):T().banBy(TM.by)):'⚠️ '+T().ban+' '+T().ban2} ${TM.pol?' 🚓':''} <span>⏳ ${Math.floor(Math.ceil(left/1000)/60)}:${String(Math.ceil(left/1000)%60).padStart(2,'0')}</span>`;
   if(left<=0){end();return}
   if(CITY.freeze>0)CITY.freeze-=dt;
+  {const car=CITY.ents.get('policecar');if(car&&!car.deployed&&((!car.path.length&&Date.now()-car.t0>1500)||Date.now()-car.t0>9000))deployCops(car)}
   const ps=[...CITY.ents.values()].filter(e=>e.parent),ks=kids();
   ks.forEach(k=>{if(k.safe>0)k.safe-=dt;if(k.caughtT>0)k.caughtT-=dt});
   ps.forEach(p=>{
@@ -5548,7 +5573,7 @@ window.TMCITY=function(dt){
       if(p.caught>0||k.safe>0)return;
       if(Math.hypot(k.x-p.x,k.y-p.y)<30){
         p.caught=2.6;k.safe=6;k.caughtT=2.6;k.path=[];p.path=[];
-        cityBubble(p.id,T().hug[Math.floor(Math.random()*4)]);
+        cityBubble(p.id,p.isPolice?T().polBub[Math.floor(Math.random()*3)]:T().hug[Math.floor(Math.random()*4)]);
         if(k===CITY.me){CITY.freeze=2.6;cityBubble('me','💕');try{toast({hero:HERO.id,text:T().caught});speak(T().caught.replace(/💕/g,''))}catch(e){}}
         else cityBubble(k.id,'💕');
       }
@@ -5587,7 +5612,7 @@ setInterval(()=>{
     /* groupe : les parents arrivent à heure fixe pour tout le monde (multiples de l'intervalle) */
     const iv=l*60000,now=Date.now(),k=Math.floor(now/iv);
     if(TM.kIv!==iv){TM.kIv=iv;TM.lastK=k;TM.w5=TM.w1=false}
-    if(k>TM.lastK){TM.lastK=k;TM.w5=TM.w1=false;if(TM.paused)cntHide();else TM.start()}
+    if(k>TM.lastK){TM.lastK=k;TM.w5=TM.w1=false;if(TM.paused)cntHide();else TM.start('',false,'time',(Math.imul(k,2654435761)>>>0)%2===0)}
     else{
       const rem=Math.ceil(((k+1)*iv-now)/1000);
       if(rem<=10&&rem>0&&!TM.paused)cntShow(rem);else cntHide();
