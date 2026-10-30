@@ -4932,7 +4932,7 @@ function handleAct(pr,m){
     const b=CITYB.find(x=>x.id===m.b);if(!b||!fresh)return;
     toast({hero:pr.hero,text:T.rgo(nm,b.ico+' '+bName(b)),btns:[{label:T.okb,fn:()=>{cityGoTo(b.id);ans('gook',{})}},{label:T.no,fn:()=>{}}]});
   }else if(m.a==='gook'){cityBubble(pr.id,T.yesN)}
-  else if(m.a==='par'&&fresh){if(SAFE.cfg.friendAlerts!==false&&window.TM&&!TM.active&&Date.now()-TM.lastRemote>120000){TM.lastRemote=Date.now();try{toast({hero:pr.hero,text:TXT_PAR(nm)})}catch(e){}TM.start(nm)}}
+  else if(m.a==='par'&&fresh){if(SAFE.cfg.friendAlerts!==false&&window.TM&&!TM.active&&Date.now()-TM.lastRemote>120000){TM.lastRemote=Date.now();if(m.w==='time'){TM.start('',true)}else{try{toast({hero:pr.hero,text:TXT_PAR(nm)})}catch(e){}TM.start(nm,true)}}}
   else if(m.a==='gift'&&n>0&&fresh){giveCoins(n);toast({hero:pr.hero,text:T.rgift(nm,n)});cityBubble(pr.id,'🎁');sfx&&sfx('win')}
   else if(m.a==='loan'&&n>0&&fresh){
     toast({hero:pr.hero,text:T.rloan(nm,n),btns:[{label:T.okb,fn:()=>{giveCoins(n);debtOf(nm).owe+=n;saveDebt();ans('lok',{n});cityBubble('me',T.thx)}},{label:T.no,fn:()=>ans('lno',{n})}]});
@@ -5373,7 +5373,8 @@ function flatAdd(c){
       let r=el(`<div class="srow"><b>${T.textMode}</b></div>`);r.append(B(S.cfg.mode==='free'?T.free:T.phr,'',()=>{S.cfg.mode=S.cfg.mode==='free'?'phrases':'free';S.save();draw()}));box.append(r);
       r=el(`<div class="srow"><b>${T.online}</b></div>`);r.append(B(S.cfg.online?T.on:T.off,S.cfg.online?'g':'r',()=>{S.cfg.online=!S.cfg.online;S.save();draw();toast({text:'🔄'});setTimeout(()=>location.reload(),900)}));box.append(r);
       {const on=S.cfg.friendAlerts!==false;r=el(`<div class="srow"><b>${T.fa}</b></div>`);r.append(B(on?T.on:T.off,on?'g':'r',()=>{S.cfg.friendAlerts=!on;S.save();draw()}));box.append(r)}
-      {const L=S.cfg.limit===undefined?60:S.cfg.limit,OPT=[30,45,60,90,120,0];r=el(`<div class="srow"><b>${T.lim}</b></div>`);r.append(B(L?L+' '+T.min:T.off,L?'g':'o',()=>{S.cfg.limit=OPT[(OPT.indexOf(L)+1)%OPT.length];S.save();try{TM.used=Math.min(TM.used,(S.cfg.limit||1)*60-1)}catch(e){}draw()}));box.append(r)}
+      {const L=S.cfg.limit===undefined?30:S.cfg.limit,OPT=[5,10,15,30,60,0];r=el(`<div class="srow"><b>${T.lim}</b></div>`);const row=document.createElement('div');row.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:6px';
+        OPT.forEach(v=>row.append(B(v===0?T.off:v===60?'1 h':v+' '+T.min,v===L?'g':'o',()=>{S.cfg.limit=v;S.save();try{TM.used=Math.min(TM.used,(v||1)*60-1)}catch(e){}draw()})));r.append(row);box.append(r)}
       if(window.ELIAS_REG){const on=window.ELIAS_REG.on();r=el(`<div class="srow"><b>${T.reg}</b></div>`);r.append(B(on?T.on:T.off,on?'g':'r',()=>{S.cfg.reg=!on;S.save();draw();try{if(S.cfg.reg)window.ELIAS_REG.start()}catch(e){}}));box.append(r);box.append(el(`<p style="font-size:.78em;margin:0 0 6px;text-align:left">${T.regD}</p>`))}
       box.append(el(`<div class="srow"><b>${T.log}</b></div>`));
       if(!S.log.length)box.append(el(`<p>${T.none}</p>`));
@@ -5391,14 +5392,14 @@ function flatAdd(c){
 (function(){
 const LS=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
 const TXT={
- fr:{ban:'TEMPS D’ÉCRAN DÉPASSÉ !',ban2:'Les parents arrivent !',say:'Attention ! Une heure d’écran ! Les parents arrivent !',sayBy:n=>`Alerte ! ${n} est premier du classement et appelle les parents !`,banBy:n=>`${n} est 1er du classement : les parents arrivent !`,pw:'🚨 Tu es 1er du classement ! Tu peux appeler les parents !',pwB:'🚨 Appeler les parents',fromF:n=>`🚨 <b>${n}</b> est 1er du classement et appelle les parents !`,w5:'⏱ Plus que 5 minutes de jeu !',w1:'⏱ Plus qu’une minute de jeu !',caught:'Tes parents t’ont attrapé ! C’est l’heure de la pause 💕',end:'Les parents sont repartis… Va faire une pause : bois un verre d’eau et va jouer dehors ! 💧',chip:'⏱',min:'min',
+ fr:{ban:'TEMPS D’ÉCRAN DÉPASSÉ !',ban2:'Les parents arrivent !',say:'Attention ! Trente minutes d’écran ! Les parents arrivent !',sayBy:n=>`Alerte ! ${n} est premier du classement et appelle les parents !`,banBy:n=>`${n} est 1er du classement : les parents arrivent !`,pw:'🚨 Tu es 1er du classement ! Tu peux appeler les parents !',pwB:'🚨 Appeler les parents',fromF:n=>`🚨 <b>${n}</b> est 1er du classement et appelle les parents !`,w5:'⏱ Plus que 5 minutes de jeu !',w1:'⏱ Plus qu’une minute de jeu !',caught:'Tes parents t’ont attrapé ! C’est l’heure de la pause 💕',end:'Les parents sont repartis… Va faire une pause : bois un verre d’eau et va jouer dehors ! 💧',chip:'⏱',min:'min',
   sc:['😱 Aaaah !','🏃 Au secours !','Pas déjà !','😭 Nooon !','Cours !!','Une minute !','Ils arrivent !'],par:['Maman','Papa','Mamie','Tonton'],hug:['❤️ Pause !','Viens ici !','Assez joué !','Attrapé !'],lim:'Temps d’écran avant l’alerte',off:'Désactivé'},
- en:{ban:'SCREEN TIME IS UP!',ban2:'The parents are coming!',say:'Warning! One hour of screen time! The parents are coming!',sayBy:n=>`Alert! ${n} is first in the ranking and calls the parents!`,banBy:n=>`${n} is #1 in the ranking: the parents are coming!`,pw:'🚨 You are #1 in the ranking! You can call the parents!',pwB:'🚨 Call the parents',fromF:n=>`🚨 <b>${n}</b> is #1 in the ranking and calls the parents!`,w5:'⏱ Only 5 minutes of play left!',w1:'⏱ Only one minute of play left!',caught:'Your parents caught you! Time for a break 💕',end:'The parents have gone… Take a break: drink some water and go play outside! 💧',chip:'⏱',min:'min',
+ en:{ban:'SCREEN TIME IS UP!',ban2:'The parents are coming!',say:'Warning! Thirty minutes of screen time! The parents are coming!',sayBy:n=>`Alert! ${n} is first in the ranking and calls the parents!`,banBy:n=>`${n} is #1 in the ranking: the parents are coming!`,pw:'🚨 You are #1 in the ranking! You can call the parents!',pwB:'🚨 Call the parents',fromF:n=>`🚨 <b>${n}</b> is #1 in the ranking and calls the parents!`,w5:'⏱ Only 5 minutes of play left!',w1:'⏱ Only one minute of play left!',caught:'Your parents caught you! Time for a break 💕',end:'The parents have gone… Take a break: drink some water and go play outside! 💧',chip:'⏱',min:'min',
   sc:['😱 Aaaah!','🏃 Help!','Not yet!','😭 Nooo!','Run!!','One minute!','They are coming!'],par:['Mum','Dad','Gran','Uncle'],hug:['❤️ Break time!','Come here!','Enough play!','Got you!'],lim:'Screen time before the alert',off:'Off'}
 };
 TXT.ln=TXT.fr;const T=()=>TXT[lang];
 const TM=window.TM={used:parseInt(LS('elias_tm'))||0,active:false,endAt:0,lastInput:Date.now(),w5:false,w1:false,dur:90000};
-const limitMin=()=>{const l=SAFE.cfg.limit;return l===undefined?60:l};
+const limitMin=()=>{const l=SAFE.cfg.limit;return l===undefined?30:l};
 const save=()=>{try{localStorage.setItem('elias_tm',String(TM.used))}catch(e){}};
 ['pointerdown','keydown','touchstart','pointermove'].forEach(ev=>document.addEventListener(ev,()=>{TM.lastInput=Date.now()},{capture:true,passive:true}));
 /* bandeau + pastille */
@@ -5435,8 +5436,10 @@ function detach(){
   $('#city').classList.remove('tmalert');ban.classList.remove('on');
   CITY.ents.forEach((e,id)=>{if(e.parent){e.g.remove();CITY.ents.delete(id)}else if(e.npc&&e.sp0){e.speed=e.sp0;e.path=[];e.wait=1+Math.random()*2;e.target=null;e.caughtT=0}});
 }
-TM.start=function(by){
+TM.start=function(by,remote){
   if(TM.active)return;
+  /* l'alarme concerne tout le groupe, en même temps */
+  if(!remote){try{if(typeof sendAct==='function')sendAct('all',{a:'par',w:by?'rank':'time'})}catch(e){}}
   cntHide();TM.by=by||'';TM.active=true;try{TM.clip=alRec()}catch(e){}TM.endAt=Date.now()+TM.dur;TM.used=0;save();
   try{AR.run=false;cancelAnimationFrame(AR.raf)}catch(e){}
   try{spStop&&spStop()}catch(e){}
@@ -5465,7 +5468,6 @@ TM.grant=function(){
 TM.fire=function(){
   if(!TM.power||Date.now()>=TM.power.until||TM.active)return;
   TM.power=null;alDraw();const nm=HERO.name;
-  try{if(typeof sendAct==='function')sendAct('all',{a:'par'})}catch(e){}
   TM.start(nm);
 };
 alarm.onclick=()=>TM.fire();
