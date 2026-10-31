@@ -1097,6 +1097,7 @@ function noseSVG(h){
 }
 function heroSVG(h){
   if(h.custom)return creatureSVG(h);
+  if(h.pk!==undefined)return parentSVG(h);
   const sk=h.skin,sc=h.s||1,of=outfitOf(h),O=OUT[of]||OUT.hero,top=O.top||h.top,band=O.band||h.band;
   const lash=h.girl?`<path d="M46 43 l-5 -3 M48 40 l-3 -5 M84 43 l5 -3 M82 40 l3 -5" stroke="${h.hairC}" stroke-width="2" stroke-linecap="round"/>`:'';
   const legs=h.skirt?sk:h.legC;
@@ -1132,6 +1133,66 @@ ${eq.face&&FACES[eq.face]?FACES[eq.face](h):''}
 <path d="M52 63 Q65 66 78 63" fill="none" stroke="#e0e0e0" stroke-width="1.5"/>
 ${hg}
 </g></svg>`}
+
+/*PARSTART*/
+function parentSVG(h){
+  const k=h.pk|0,sk=h.skin,hc=h.hairC,top=h.top;
+  const ex='style="transform-origin:38px 72px"';
+  const D={
+   0:{bot:'#3b4a8a',shoe:'#7a2d4e'},   /* Maman */
+   1:{bot:'#2f3b52',shoe:'#1a1a22'},   /* Papa */
+   2:{bot:'#5d4a7a',shoe:'#4a3a2e'},   /* Mamie */
+   3:{bot:'#2b2f3a',shoe:'#ffffff'}    /* Tonton */
+  }[k];
+  const skD=`<path d="M44 40 Q45 56 65 61 Q85 56 86 40 Q76 53 65 53 Q54 53 44 40Z" fill="#000" opacity=".07"/>`;
+  /* jambes */
+  let legs;
+  if(k===2)legs=`<path d="M42 108 L88 108 L96 150 L34 150Z" fill="${D.bot}"/><path d="M42 108 L88 108 L90 120 L40 120Z" fill="#000" opacity=".1"/><path d="M34 150 L96 150 L97 154 L33 154Z" fill="#000" opacity=".18"/><rect x="48" y="152" width="11" height="9" fill="${sk}"/><rect x="71" y="152" width="11" height="9" fill="${sk}"/>`;
+  else legs=`<rect x="44" y="104" width="19" height="56" rx="7" fill="${D.bot}"/><rect x="67" y="104" width="19" height="56" rx="7" fill="${D.bot}"/><rect x="63" y="108" width="4" height="48" fill="#000" opacity=".14"/><rect x="44" y="104" width="6" height="56" rx="3" fill="#fff" opacity=".07"/>`+(k===3?`<rect x="44" y="140" width="19" height="4" fill="#fff" opacity=".18"/><rect x="67" y="140" width="19" height="4" fill="#fff" opacity=".18"/>`:'');
+  const shoes=k===2?`<ellipse cx="53" cy="163" rx="12" ry="6" fill="${D.shoe}"/><ellipse cx="77" cy="163" rx="12" ry="6" fill="${D.shoe}"/>`
+   :k===3?`<ellipse cx="52" cy="163" rx="14" ry="7" fill="#fff" stroke="#2b2f3a" stroke-width="2.5"/><ellipse cx="78" cy="163" rx="14" ry="7" fill="#fff" stroke="#2b2f3a" stroke-width="2.5"/><path d="M42 165h20M68 165h20" stroke="#ef476f" stroke-width="2.5"/>`
+   :`<ellipse cx="52" cy="163" rx="14" ry="6.5" fill="${D.shoe}"/><ellipse cx="78" cy="163" rx="14" ry="6.5" fill="${D.shoe}"/><ellipse cx="50" cy="160" rx="7" ry="2" fill="#fff" opacity=".25"/><ellipse cx="76" cy="160" rx="7" ry="2" fill="#fff" opacity=".25"/>`;
+  /* torse */
+  let tors=`<path d="M38 70 Q65 58 92 70 L96 114 Q65 122 34 114Z" fill="${top}"/><path d="M80 66 Q92 68 94 80 L96 114 Q86 118 78 118Z" fill="#000" opacity=".12"/><path d="M42 74 Q50 68 56 70 L54 112 L38 112Z" fill="#fff" opacity=".08"/>`;
+  let det='';
+  if(k===0)det=`<path d="M52 66 Q65 80 78 66 L74 64 Q65 72 56 64Z" fill="#fff" opacity=".9"/><path d="M46 88 L84 88 L88 120 Q65 126 42 120Z" fill="#fff" opacity=".92"/><path d="M46 88 L84 88" stroke="#e8509f" stroke-width="3"/><rect x="54" y="98" width="22" height="14" rx="4" fill="#ffd9e8" stroke="#e8509f" stroke-width="2"/><circle cx="65" cy="105" r="3" fill="#e8509f"/><path d="M56 88 Q65 80 74 88" fill="none" stroke="#e8509f" stroke-width="2.5"/>`;
+  if(k===1)det=`<path d="M52 64 L65 82 L78 64 L72 62 L65 70 L58 62Z" fill="#fff"/><path d="M63 72 L67 72 L69 106 L65 112 L61 106Z" fill="#ef476f"/><path d="M62 72 L68 72 L66 77 L64 77Z" fill="#c1274a"/><path d="M65 82 V118" stroke="#000" stroke-width="1.5" opacity=".15"/><circle cx="65" cy="94" r="1.6" fill="#fff"/><circle cx="65" cy="104" r="1.6" fill="#fff"/><rect x="36" y="110" width="58" height="6" rx="3" fill="#3a2a1a"/><rect x="60" y="109" width="10" height="8" rx="2" fill="#ffd23f"/>`;
+  if(k===2)det=`<path d="M62 66 L65 112" stroke="#000" stroke-width="2" opacity=".18"/><path d="M52 66 Q65 78 78 66" fill="#f4e4c1"/><circle cx="62" cy="86" r="2.6" fill="#ffd23f"/><circle cx="62" cy="98" r="2.6" fill="#ffd23f"/><circle cx="62" cy="110" r="2.6" fill="#ffd23f"/><path d="M52 72 Q65 86 78 72" fill="none" stroke="#e9d9ff" stroke-width="3"/><circle cx="65" cy="80" r="2.6" fill="#fff"/><circle cx="60" cy="78" r="2" fill="#fff"/><circle cx="70" cy="78" r="2" fill="#fff"/>`;
+  if(k===3)det=`<path d="M48 66 Q65 84 82 66 L78 62 Q65 72 52 62Z" fill="#000" opacity=".2"/><path d="M55 76 V94M75 76 V94" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><path d="M42 104 Q65 98 88 104 L90 118 Q65 124 40 118Z" fill="#000" opacity=".13"/><path d="M48 106 L82 106" stroke="#fff" stroke-width="1.5" opacity=".4"/><rect x="58" y="86" width="14" height="6" rx="3" fill="#ffd23f"/>`;
+  /* bras gauche levé (qui gronde / appelle) */
+  const sleeve=k===0?top:k===1?top:k===2?top:top;
+  const armL=`<g class="wave" ${ex}><path d="M38 74 L24 72 Q14 70 12 56 L22 52 Q26 62 36 64Z" fill="${sleeve}"/><path d="M18 56 L24 54" stroke="#000" stroke-width="3" opacity=".12"/><circle cx="17" cy="48" r="8" fill="${sk}"/><rect x="14" y="30" width="5" height="17" rx="2.5" fill="${sk}"/><rect x="19.5" y="34" width="4.5" height="13" rx="2.2" fill="${sk}"/><rect x="9" y="37" width="4.5" height="10" rx="2.2" fill="${sk}"/><circle cx="12" cy="49" r="3" fill="${sk}"/></g>`;
+  /* bras droit + objet */
+  let armR=`<path d="M92 74 Q104 78 104 98 L106 112 L94 114 L90 96Z" fill="${sleeve}"/><circle cx="102" cy="116" r="7.5" fill="${sk}"/>`;
+  if(k===0)armR+=`<g transform="rotate(-30 104 112)"><rect x="101" y="76" width="6" height="44" rx="3" fill="#c68a4e"/><ellipse cx="104" cy="74" rx="9" ry="12" fill="#c68a4e"/><ellipse cx="104" cy="72" rx="5" ry="7" fill="#e0a868" opacity=".6"/></g><circle cx="104" cy="116" r="6" fill="${sk}"/>`;
+  if(k===1)armR=`<path d="M92 74 Q106 80 108 98 L109 110 L96 112 L90 96Z" fill="${sleeve}"/><rect x="98" y="104" width="13" height="9" rx="3" fill="#25326b"/><circle cx="104.5" cy="108.5" r="3.4" fill="#fff"/><path d="M104.5 108.5V106.5M104.5 108.5L106.2 109.3" stroke="#222" stroke-width="1"/><circle cx="105" cy="118" r="7.5" fill="${sk}"/>`;
+  if(k===2)armR+=`<path d="M98 112 Q104 100 112 112" fill="none" stroke="#7a4a2a" stroke-width="3"/><rect x="92" y="112" width="26" height="22" rx="6" fill="#c0392b"/><rect x="92" y="112" width="26" height="6" rx="3" fill="#000" opacity=".18"/><circle cx="105" cy="124" r="3" fill="#ffd23f"/>`;
+  if(k===3)armR+=`<g transform="rotate(-20 106 114)"><path d="M98 96 L128 78 L128 112 L98 108Z" fill="#ffd23f" stroke="#a37a00" stroke-width="2.5" stroke-linejoin="round"/><rect x="94" y="97" width="9" height="12" rx="3" fill="#444"/><ellipse cx="128" cy="95" rx="5" ry="17" fill="#333"/></g><circle cx="102" cy="114" r="6" fill="${sk}"/>`;
+  /* cou + tête */
+  const neck=`<rect x="58" y="54" width="14" height="14" rx="5" fill="${sk}"/><path d="M58 60 Q65 66 72 60 L72 64 Q65 68 58 64Z" fill="#000" opacity=".1"/>`;
+  const ears=`<circle cx="42.5" cy="38" r="4.6" fill="${sk}"/><circle cx="87.5" cy="38" r="4.6" fill="${sk}"/><circle cx="42.5" cy="38" r="2" fill="#000" opacity=".1"/><circle cx="87.5" cy="38" r="2" fill="#000" opacity=".1"/>`;
+  const head=`<path d="M44 34 Q44 14 65 13 Q86 14 86 34 L85 44 Q82 60 65 61 Q48 60 45 44Z" fill="${sk}"/>${skD}<ellipse cx="51" cy="47" rx="5" ry="3.2" fill="#ff6b8a" opacity=".22"/><ellipse cx="79" cy="47" rx="5" ry="3.2" fill="#ff6b8a" opacity=".22"/>`;
+  /* cheveux */
+  let hair='',hairF='';
+  if(k===0){hair=`<circle cx="65" cy="10" r="10" fill="${hc}"/><path d="M62 4 Q65 -2 68 4" stroke="#fff" stroke-width="2" fill="none" opacity=".25"/>`;hairF=`<path d="M42 38 Q40 12 65 11 Q90 12 88 38 Q86 24 76 22 Q64 26 54 22 Q44 24 42 38Z" fill="${hc}"/><path d="M52 18 Q62 14 74 17" stroke="#fff" stroke-width="2" fill="none" opacity=".2"/><rect x="58" y="14" width="14" height="4" rx="2" fill="#ffd23f"/>`}
+  if(k===1){hairF=`<path d="M43 36 Q40 11 65 10 Q90 11 87 36 Q84 22 74 20 Q64 18 56 20 Q46 22 43 36Z" fill="${hc}"/><path d="M50 16 Q62 11 80 17" stroke="#fff" stroke-width="2" fill="none" opacity=".18"/><path d="M44 36 L46 46 L48 40Z M86 36 L84 46 L82 40Z" fill="${hc}"/>`}
+  if(k===2){hair=`<path d="M38 40 Q34 8 65 8 Q96 8 92 40 L94 62 Q86 66 84 52 L46 52 Q44 66 36 62Z" fill="${hc}"/>`;hairF=`<path d="M43 38 Q42 14 65 13 Q88 14 87 38 Q82 24 70 22 Q58 24 50 28 Q45 30 43 38Z" fill="${hc}"/><path d="M50 18 Q62 12 78 18" stroke="#fff" stroke-width="2.5" fill="none" opacity=".5"/><path d="M38 52 q4 -4 8 0 M84 52 q4 -4 8 0" stroke="#fff" stroke-width="2" fill="none" opacity=".45"/>`}
+  if(k===3){hairF=`<path d="M42 36 Q40 20 46 14 L50 2 L56 12 L62 -2 L68 11 L76 0 L80 12 L88 6 L88 36 Q84 24 76 22 Q64 18 54 22 Q46 24 42 36Z" fill="${hc}"/><path d="M48 18 Q62 12 80 17" stroke="#fff" stroke-width="2" fill="none" opacity=".2"/>`}
+  /* visage : sourcils sévères, yeux ronds, bouche qui crie */
+  const brows=`<path d="M49 30 L61 34" stroke="${k===2?'#9ca3af':hc}" stroke-width="3.6" stroke-linecap="round"/><path d="M81 30 L69 34" stroke="${k===2?'#9ca3af':hc}" stroke-width="3.6" stroke-linecap="round"/>`;
+  const eyes=`<ellipse cx="55.5" cy="39.5" rx="5.2" ry="5.6" fill="#fff"/><ellipse cx="74.5" cy="39.5" rx="5.2" ry="5.6" fill="#fff"/><circle cx="56.5" cy="40.5" r="3.1" fill="#3b2314"/><circle cx="73.5" cy="40.5" r="3.1" fill="#3b2314"/><circle cx="57.4" cy="39.4" r="1.1" fill="#fff"/><circle cx="74.4" cy="39.4" r="1.1" fill="#fff"/><path d="M50 36 Q55.5 33 61 36M69 36 Q74.5 33 80 36" stroke="#000" stroke-width="1" fill="none" opacity=".25"/>`;
+  const nose=`<path d="M63 44 Q65 49 67 44" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round" opacity=".3"/><ellipse cx="65" cy="47" rx="3.4" ry="2.2" fill="#000" opacity=".1"/>`;
+  const mouth=`<path d="M57 53 Q65 50 73 53 Q70 62 65 62 Q60 62 57 53Z" fill="#5a1a1a"/><path d="M58.5 53.4 Q65 51.4 71.5 53.4 L70.6 55.6 Q65 54 59.4 55.6Z" fill="#fff"/><ellipse cx="65" cy="59.4" rx="3.6" ry="2" fill="#e8607a"/>`;
+  let face=brows+eyes+nose+mouth;
+  if(k===1)face+=`<path d="M46 46 Q47 62 65 66 Q83 62 84 46 Q80 56 72 55 Q65 52 58 55 Q50 56 46 46Z" fill="${hc}"/><path d="M56 53 Q65 49 74 53 Q65 51 56 53Z" fill="${hc}"/><path d="M57 54 Q65 51 73 54 Q70 63 65 63 Q60 63 57 54Z" fill="#5a1a1a"/><path d="M58.5 54.4 Q65 52.4 71.5 54.4 L70.6 56.4 Q65 55 59.4 56.4Z" fill="#fff"/><path d="M52 53 Q65 47 78 53 Q65 50 52 53Z" fill="${hc}"/>`;
+  if(k===2)face+=`<g fill="none" stroke="#25326b" stroke-width="2.4"><circle cx="55.5" cy="39.5" r="9"/><circle cx="74.5" cy="39.5" r="9"/><path d="M64.5 39.5h1"/><path d="M46.5 39 L43 37M83.5 39 L87 37"/></g><circle cx="55.5" cy="39.5" r="9" fill="#9ad6ff" opacity=".18"/><circle cx="74.5" cy="39.5" r="9" fill="#9ad6ff" opacity=".18"/><path d="M48 46 Q52 49 56 46" stroke="#000" stroke-width="1" fill="none" opacity=".2"/>`;
+  if(k===3)face+=`<path d="M60 64 Q65 70 70 64 Q65 66 60 64Z" fill="${hc}"/>`;
+  if(k===0)face+=`<g transform="translate(85 21)" stroke="#ef233c" stroke-width="2.4" stroke-linecap="round" fill="none"><path d="M-5 -3 Q-2 -3 -2 -6M5 -3 Q2 -3 2 -6M-5 3 Q-2 3 -2 6M5 3 Q2 3 2 6"/></g>`;
+  const earr=k===0?`<circle cx="42.5" cy="45" r="2.4" fill="#ffd23f"/><circle cx="87.5" cy="45" r="2.4" fill="#ffd23f"/>`:'';
+  const scale=h.s||1;
+  return `<svg viewBox="-10 -6 150 186" xmlns="http://www.w3.org/2000/svg" overflow="visible" style="overflow:visible"><g transform="translate(65 172) scale(${scale}) translate(-65 -172)">${hair}${legs}${shoes}${tors}${det}${armR}${neck}${ears}${head}${earr}${hairF}${face}${armL}</g></svg>`;
+}
+/*PAREND*/
 
 function creatureSVG(h){
   const sc=h.s||1;let b='';
@@ -1937,8 +1998,8 @@ const BG={g:'chess',mode:'ai',st:null,moves:[],sel:-1,dests:[],last:null,me:'w',
 let ON={r:null,id:'',t:0,game:'',code:'',opp:null,mi:-1,full:false};
 const ENG=()=>BG.g==='chess'?CH:CK;
 const sideG=p=>BG.g==='chess'?sideOf(p):p.toLowerCase();
-function robotSVG(){return `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="14" width="36" height="32" rx="9" fill="#9aa5b1"/><rect x="18" y="22" width="9" height="9" rx="3" fill="#fff"/><rect x="33" y="22" width="9" height="9" rx="3" fill="#fff"/><circle cx="22" cy="27" r="3" fill="#25326b"/><circle cx="37" cy="27" r="3" fill="#25326b"/><rect x="22" y="37" width="16" height="4" rx="2" fill="#25326b"/><rect x="28" y="5" width="4" height="9" fill="#6c7a89"/><circle cx="30" cy="5" r="4" fill="#ef476f"/></svg>`}
-function cardHTML(h,name,side,isRobot){return `<div class="pav">${isRobot?robotSVG():heroSVG(h)}</div><b>${name}</b><span class="sidechip">${side==='w'?'⚪':side==='b'?'⚫':''}</span>`}
+function robotAvSVG(){return `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="14" width="36" height="32" rx="9" fill="#9aa5b1"/><rect x="18" y="22" width="9" height="9" rx="3" fill="#fff"/><rect x="33" y="22" width="9" height="9" rx="3" fill="#fff"/><circle cx="22" cy="27" r="3" fill="#25326b"/><circle cx="37" cy="27" r="3" fill="#25326b"/><rect x="22" y="37" width="16" height="4" rx="2" fill="#25326b"/><rect x="28" y="5" width="4" height="9" fill="#6c7a89"/><circle cx="30" cy="5" r="4" fill="#ef476f"/></svg>`}
+function cardHTML(h,name,side,isRobot){return `<div class="pav">${isRobot?robotAvSVG():heroSVG(h)}</div><b>${name}</b><span class="sidechip">${side==='w'?'⚪':side==='b'?'⚫':''}</span>`}
 function myTurn(){
   if(BG.over||BG.busy)return false;
   if(BG.mode==='hot')return true;
@@ -2275,7 +2336,7 @@ function duelResult(){
 }
 function renderDuel(){
   const T=BTT(),o=ON.opp,oh=o?HEROES.find(x=>x.id===o.hero):null;
-  const card=(h,name,d,s,robot)=>`<div class="pav">${h?heroSVG(h):robotSVG()}</div><div class="dinfo"><b>${name}</b><div class="prog"><i style="width:${d*10}%"></i></div><small>${s} ${T.scoreL}</small></div>`;
+  const card=(h,name,d,s,robot)=>`<div class="pav">${h?heroSVG(h):robotAvSVG()}</div><div class="dinfo"><b>${name}</b><div class="prog"><i style="width:${d*10}%"></i></div><small>${s} ${T.scoreL}</small></div>`;
   $('#dOpp').innerHTML=card(oh,oh?oh.name:'…',o&&o.e===DU.epoch?o.d:0,o&&o.e===DU.epoch?o.s:0);
   $('#dMe').innerHTML=card(HERO,T.you+' · '+HERO.name,DU.i,DU.score);
   const ch=$('#dch');ch.innerHTML='';
@@ -3018,7 +3079,7 @@ function cdRender(){
   const my=CDG.seat;
   let opp='';
   for(let i=1;i<st.n;i++){const s=(my+i)%st.n,h=cdHero(s);
-   opp+=`<div class="copp${st.cur===s?' turn':''}"><div class="pav">${h?heroSVG(h):robotSVG()}</div><b>${cdName(s)}</b><span class="cnt">🃏 ${st.h[s].length}</span></div>`}
+   opp+=`<div class="copp${st.cur===s?' turn':''}"><div class="pav">${h?heroSVG(h):robotAvSVG()}</div><b>${cdName(s)}</b><span class="cnt">🃏 ${st.h[s].length}</span></div>`}
   const top=st.c[st.c.length-1],mine=st.h[my],canAct=st.cur===my&&st.w<0;
   let hand='';mine.forEach((c,i)=>{const ok=canAct&&cdCan(c,st)&&(st.dr<0||i===st.dr);hand+=cardHTML2(c,(ok?'ok':'no')+`" data-i="${i}`)});
   const msg=st.w>=0?'':(canAct?(mine.some(c=>cdCan(c,st))?T.youCanPlay:T.nothing):T.turnOf(cdName(st.cur)));
@@ -5760,7 +5821,7 @@ const POS=[[50,210],[1150,210],[50,430],[1150,430]];
 function spawnParents(){
   PS.forEach((p,i)=>{
     const id='par'+i;if(CITY.ents.has(id))return;
-    const h={id:'par'+i,name:T().par[i],age:35,skin:p.skin,hair:p.hair,hairC:p.hairC,top:p.top,band:p.top,acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#37474f',shoe:'#222',s:1.12,girl:p.girl,glasses:p.glasses,forceOutfit:'hero'};
+    const h={id:'par'+i,name:T().par[i],age:35,skin:p.skin,hair:p.hair,hairC:p.hairC,top:p.top,band:p.top,acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#37474f',shoe:'#222',s:1.12,girl:p.girl,glasses:p.glasses,forceOutfit:'hero',pk:i};
     const e=mkEnt(id,h,h.name,{x:POS[i][0],y:POS[i][1],speed:150});e.parent=true;e.safe=0;e.caught=0;
     const sv=e.g.querySelector('.bob svg');if(sv){sv.setAttribute('x','-36');sv.setAttribute('y','-98');sv.setAttribute('width','72');sv.setAttribute('height','100')}
     e.g.querySelector('.nm').textContent='👨‍👩‍👧 '+h.name;
@@ -5845,7 +5906,7 @@ function monLayer(){
   if(!document.getElementById('monCss')){const st=document.createElement('style');st.id='monCss';st.textContent='@keyframes monwalk{from{transform:rotate(-2.2deg) translateY(0)}to{transform:rotate(2.2deg) translateY(-7px)}}@keyframes monarmL{from{transform:rotate(18deg)}to{transform:rotate(-38deg)}}@keyframes monarmR{from{transform:rotate(-18deg)}to{transform:rotate(38deg)}}@keyframes monfire{from{transform:translateY(0) scale(1);opacity:1}to{transform:translateY(-34px) scale(1.5);opacity:0}}@keyframes monquake{0%{transform:translate(0,0)}20%{transform:translate(-6px,4px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,3px)}80%{transform:translate(3px,-2px)}100%{transform:translate(0,0)}}.monb{transform-origin:110px 300px;animation:monwalk .55s ease-in-out infinite alternate}.monaL{transform-box:fill-box;transform-origin:90% 10%;animation:monarmL .5s ease-in-out infinite alternate}.monaR{transform-box:fill-box;transform-origin:10% 10%;animation:monarmR .5s ease-in-out infinite alternate}.monfx{animation:monfire 1.2s ease-out infinite}.quake{animation:monquake .38s linear}.bld{transition:transform .5s,filter .5s,opacity .5s}';document.head.append(st)}
   return l;
 }
-function robotSVG(attrs){return `<svg ${attrs} viewBox="0 0 220 334"><g class="monb">
+function robotSVG(attrs){return `<svg ${attrs} viewBox="0 0 220 334" overflow="visible" style="overflow:visible"><g class="monb">
    <rect x="52" y="236" width="48" height="84" rx="10" fill="#6a4c93" stroke="#2b1a4d" stroke-width="5"/><rect x="120" y="236" width="48" height="84" rx="10" fill="#6a4c93" stroke="#2b1a4d" stroke-width="5"/>
    <rect x="42" y="304" width="68" height="26" rx="8" fill="#2b1a4d"/><rect x="110" y="304" width="68" height="26" rx="8" fill="#2b1a4d"/>
    <g class="monaL"><rect x="6" y="120" width="40" height="92" rx="12" fill="#e76f51" stroke="#7a2d14" stroke-width="5"/><rect x="2" y="206" width="48" height="34" rx="10" fill="#f4a261" stroke="#7a2d14" stroke-width="5"/></g>
