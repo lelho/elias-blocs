@@ -600,6 +600,23 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 #geSvg .cn{stroke:#fff;stroke-width:1.4;vector-effect:non-scaling-stroke;transition:fill .15s}#geSvg .cn.hl{fill:#ffb703!important}#geSvg .cn.ok{fill:#4ad66d!important}#geSvg .cn.ko{fill:#ff5d73!important}#geSvg .gf.miss{stroke:#ff5d73}#geSvg .gf.good{stroke:#1fc8a0}
 #geChoices{display:none;gap:10px;justify-content:center;flex-wrap:wrap}.gch{background:#fff;color:var(--ink);border-radius:18px;padding:12px 22px;font-size:clamp(17px,2.6vw,24px);box-shadow:0 4px 0 var(--edge)}.gch.ok{background:#4ad66d;color:#fff}.gch.ko{background:#ff5d73;color:#fff}.gch.on2{background:var(--ink);color:#fff}
 .tvalarm{position:absolute;inset:0;overflow:hidden;background:linear-gradient(#9bd6ff 0 55%,#8bc34a 55% 62%,#6b6f7a 62%)}
+.tvrb{position:absolute;inset:0;overflow:hidden;background:linear-gradient(#ff9a5a,#a24a6e 48%,#2b2350)}
+.tvrb .flash{position:absolute;left:0;right:0;top:0;background:#d62828;color:#fff;text-align:center;font-weight:900;padding:6px;font-size:clamp(14px,2.6vw,26px);animation:tvfl .5s infinite alternate;z-index:5}
+.tvrb .gr{position:absolute;left:0;right:0;bottom:0;height:16%;background:#4a4458}
+.tvrb .bl{position:absolute;bottom:14%;border:3px solid rgba(0,0,0,.35);border-radius:6px 6px 0 0;transform-origin:50% 100%;animation:tvcol .8s ease-in forwards;animation-delay:var(--dl)}
+.tvrb .bl i{position:absolute;left:12%;right:12%;top:10%;height:70%;background:repeating-linear-gradient(90deg,#ffe9a0 0 22%,transparent 22% 40%),#0002;opacity:.55}
+@keyframes tvcol{to{transform:rotate(7deg) scaleY(.3);filter:brightness(.4) saturate(.4)}}
+.tvrb .fx{position:absolute;bottom:16%;font-size:clamp(20px,5vw,46px);opacity:0;animation:tvfx 1.4s ease-out infinite;animation-delay:calc(var(--dl) + .5s)}
+@keyframes tvfx{0%{opacity:0;transform:translateY(10px) scale(.7)}25%{opacity:1}100%{opacity:0;transform:translateY(-44px) scale(1.5)}}
+.tvrb .rob{position:absolute;bottom:6%;height:74%;aspect-ratio:220/334;left:-32%;animation:tvrob 10s linear forwards;z-index:3}
+@keyframes tvrob{to{left:112%}}
+.tvrb .rob svg{width:100%;height:100%;display:block}
+.tvrb .uf{position:absolute;width:13%;left:-16%;animation:tvuf var(--d) linear forwards;animation-delay:var(--dl);z-index:4}
+.tvrb .uf svg{width:100%;display:block;overflow:visible}
+@keyframes tvuf{to{left:112%}}
+.tvrb .ubm{animation:tvfl .45s infinite alternate}
+.tvrb .run{position:absolute;bottom:2%;width:7%;animation:tvrun var(--d) linear infinite,tvbob .25s ease-in-out infinite alternate;z-index:2}
+.tvrb .run svg{width:100%;height:auto;display:block}
 .tvalarm .flash{position:absolute;left:0;right:0;top:0;background:#d62828;color:#fff;text-align:center;font-weight:900;padding:6px;font-size:clamp(14px,2.6vw,26px);animation:tvfl .5s infinite alternate}
 @keyframes tvfl{to{background:#ff7a00}}
 .tvalarm .run{position:absolute;bottom:8%;width:13%;animation:tvrun var(--d) linear infinite,tvbob .25s ease-in-out infinite alternate}
@@ -708,7 +725,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 <div id="city" class="screen"><div class="top"><button id="cityBack"></button><div class="star" id="cityT"></div><button class="star" id="cityN" style="border:0"></button><div id="cityWho"></div></div>
  <div id="cityWrap"><svg id="citySvg" viewBox="0 0 1200 690" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><g id="cityMap"></g><g id="cityFx"></g><g id="cityChars"></g></svg></div>
  <div id="cityP"><div class="cpbox"><button id="cpX">✕</button><div class="cphead"><div id="cpAv" class="cpav"></div><div><b id="cpNm"></b><div id="cpSt"></div></div></div><div id="cpBody"></div></div></div>
- <div id="cityBar"><span id="cityHint"></span><b id="cityPrompt"></b><button id="cityDog"></button><button id="cityBall"></button><button id="cityHi"></button><button id="cityJoin"></button><button id="cityMeet"></button><button id="cityChief" style="display:none;background:#ef476f;color:#fff"></button></div></div>
+ <div id="cityBar"><span id="cityHint"></span><b id="cityPrompt"></b><button id="cityDog"></button><button id="cityBall"></button><button id="cityHi"></button><button id="cityJoin"></button><button id="cityMeet"></button><button id="cityChief" style="display:none;background:#ef476f;color:#fff"></button><button id="cityRobot" style="display:none;background:#1d3557;color:#fff"></button></div></div>
 
 <div id="fxPick"></div>
 <div id="sport" class="screen"><div class="top"><button id="spBack"></button><div class="star" id="spT"></div><div class="star" id="spScore"></div></div><div id="spMsg"></div><div id="spStage"></div><div id="spCtl"></div></div>
@@ -4209,7 +4226,7 @@ function tvRefresh(){
     const b=document.createElement('button');b.className='tvblk'+(i===TVS.idx?' on':'');b.style.setProperty('--c',COL[(i)%10]);
     const h=HEROES.find(x=>x.id===s.hero);
     b.innerHTML=`<span class="n"></span><div class="pav"></div><div class="tt"><b></b><small></small></div>`;
-    b.querySelector('.n').textContent=i+1;b.querySelector('b').textContent=(s.type==='alarm'?'🚨 ':s.film?'🎬 ':s.type==='music'?'🎵 ':s.type==='game'?(GICO[s.game]||'🎮')+' ':'')+s.title;b.querySelector('small').textContent=`${T.by} ${s.author}`;
+    b.querySelector('.n').textContent=i+1;b.querySelector('b').textContent=(s.type==='alarm'?((window.KIND_ICO&&KIND_ICO[s.kind])||'🚨')+' ':s.film?'🎬 ':s.type==='music'?'🎵 ':s.type==='game'?(GICO[s.game]||'🎮')+' ':'')+s.title;b.querySelector('small').textContent=`${T.by} ${s.author}`;
     if(h)b.querySelector('.pav').innerHTML=heroSVG({...h,forceOutfit:'hero'}).replace('viewBox="0 0 130 175"','viewBox="18 0 94 108"');
     b.onclick=()=>{TVS.idx=i;tvRun();tvRefresh()};
     box.append(b);
@@ -4818,7 +4835,7 @@ function kidHero(i){
 function openCity(){
   if(!CITY.grid)CITY.grid=cityGrid();
   $('#bgend').classList.remove('on');$('#end')&&$('#end').classList.remove('on');
-  const T=CTY[lang];$('#cityBack').textContent=L().menu;$('#cityT').textContent='🏙️ '+T.t;$('#cityHint').textContent=T.hint;$('#cityJoin').textContent=CTGT().join;{const cb=$('#cityChief');cb.textContent=CTGT().chief;cb.style.display=(window.TM&&TM.isChief&&TM.isChief())?'':'none'}$('#cityMeet').textContent=CTGT().meet;$('#cityHi').textContent=T.hello+' '+T.hi;
+  const T=CTY[lang];$('#cityBack').textContent=L().menu;$('#cityT').textContent='🏙️ '+T.t;$('#cityHint').textContent=T.hint;$('#cityJoin').textContent=CTGT().join;{const ch=!!(window.TM&&TM.isChief&&TM.isChief()),cb=$('#cityChief'),rb=$('#cityRobot');cb.textContent=CTGT().chief;cb.style.display=ch?'':'none';rb.textContent=CTGT().robot;rb.style.display=ch?'':'none'}$('#cityMeet').textContent=CTGT().meet;$('#cityHi').textContent=T.hello+' '+T.hi;
   cityDraw();
   CITY.ents.forEach(e=>e.g.remove());CITY.ents.clear();CITY.dogs.forEach(d=>d.g.remove());CITY.dogs.clear();CITY.ball=null;
   let sp=CITY.spawn||{x:600,y:430};
@@ -4837,9 +4854,9 @@ function openCity(){
   CITY.open=true;CITY.last=performance.now();cancelAnimationFrame(CITY.raf);CITY.raf=requestAnimationFrame(cityLoop);
   show('city');
 }
-const CTG={fr:{join:'👥 Rejoindre mes amis',meet:'📍 Tous ensemble',none:'Aucun ami n’est dans la ville pour l’instant.',asked:'📍 Tes amis sont appelés ici !',ask:(n)=>`${n} veut qu’on se retrouve ici !`,go:'J’y vais',no:'Non',here:'On est ensemble ! 🎉',chief:'🚨 Lancer Panique City'},
- en:{join:'👥 Join my friends',meet:'📍 All together',none:'No friend is in the city right now.',asked:'📍 Your friends are called here!',ask:(n)=>`${n} wants everyone to meet here!`,go:'I’m coming',no:'No',here:'We are together! 🎉',chief:'🚨 Launch Panic City'},
- ln:{join:'👥 Kokutana na baninga',meet:'📍 Biso nyonso esika moko',none:'Moninga moko azali na engumba te sikoyo.',asked:'📍 Baninga bazali kobanda awa !',ask:(n)=>`${n} alingi tokutana awa !`,go:'Nakei',no:'Te',here:'Tozali esika moko ! 🎉',chief:'🚨 Benga baboti'}};
+const CTG={fr:{join:'👥 Rejoindre mes amis',meet:'📍 Tous ensemble',none:'Aucun ami n’est dans la ville pour l’instant.',asked:'📍 Tes amis sont appelés ici !',ask:(n)=>`${n} veut qu’on se retrouve ici !`,go:'J’y vais',no:'Non',here:'On est ensemble ! 🎉',chief:'🚨 Lancer Panique City',robot:'🤖 Lancer le robot géant'},
+ en:{join:'👥 Join my friends',meet:'📍 All together',none:'No friend is in the city right now.',asked:'📍 Your friends are called here!',ask:(n)=>`${n} wants everyone to meet here!`,go:'I’m coming',no:'No',here:'We are together! 🎉',chief:'🚨 Launch Panic City',robot:'🤖 Launch the giant robot'},
+ ln:{robot:'🤖 Lancer le robot géant',join:'👥 Kokutana na baninga',meet:'📍 Biso nyonso esika moko',none:'Moninga moko azali na engumba te sikoyo.',asked:'📍 Baninga bazali kobanda awa !',ask:(n)=>`${n} alingi tokutana awa !`,go:'Nakei',no:'Te',here:'Tozali esika moko ! 🎉',chief:'🚨 Benga baboti'}};
 const CTGT=()=>CTG[lang]||CTG.fr;
 function cityTP(x,y,k){
   const me=CITY.me;if(!me)return;const n=k||0,a=n*2.4,r=44+16*Math.floor(n/6);
@@ -5056,7 +5073,7 @@ function cityLoop(ts){
 }
 $('#citySvg').addEventListener('wheel',e=>{e.preventDefault();CITY.pan=Math.max(-WH,Math.min(WH,(CITY.pan||0)+e.deltaY*.8))},{passive:false});
 $('#cityBack').onclick=()=>{CITY.open=false;cancelAnimationFrame(CITY.raf);CITY.ret=false;cancelAct(CITY.me);buildMenu();show('home')};
-$('#cityChief').onclick=()=>{if(window.TM)TM.chiefAsk()};$('#cityJoin').onclick=()=>cityJoin();$('#cityMeet').onclick=()=>cityMeet();
+$('#cityChief').onclick=()=>{if(window.TM)TM.chiefAsk()};$('#cityRobot').onclick=()=>{if(window.TM)TM.chief('monster')};$('#cityJoin').onclick=()=>cityJoin();$('#cityMeet').onclick=()=>cityMeet();
 $('#cityHi').onclick=()=>{cityBubble('me','👋');if(SO.room){SO.sel='all';sendMsg('👋')}beep(700,.08)};
 function cityWhoDraw(){
   const w=$('#cityWho'),en=lang==='en';w.innerHTML='';
@@ -5609,17 +5626,17 @@ const drawChip=()=>{const l=limitMin();const rem=Math.max(0,Math.ceil((300000-(D
 /* sirène */
 function siren(n){try{const c=auInit();if(!c)return;const t=c.currentTime;for(let i=0;i<(n||8);i++)toneAt(AU.sg,t+i*.4,i%2?640:900,.36,'triangle',.09,.05,0)}catch(e){}}
 /* ===== événements de la ville à heures fixes : 5 min parents · 10 min police · 30 min monstre · 1 h tout ===== */
-const KIND_ICO={parents:'👨‍👩‍👧',police:'🚓',monster:'🧱👾',all:'🚨'};
+const KIND_ICO={parents:'👨‍👩‍👧',police:'🚓',monster:'🤖',all:'🚨'};window.KIND_ICO=KIND_ICO;
 const kindOf=n=>n%12===0?'all':n%6===0?'monster':n%2===0?'police':'parents';
 const KT={
  fr:{parents:{ban:'LES PARENTS ARRIVENT !',say:'Attention ! Les parents arrivent !',pre:'Les parents arrivent dans…',w1:'Dans une minute, les parents arrivent !'},
   police:{ban:'🚓 LA POLICE ARRIVE !',say:'Attention ! La police arrive ! Les policiers courent après les enfants !',pre:'La police arrive dans…',w1:'Dans une minute, la police arrive !'},
-  monster:{ban:'🧱👾 LE MÉGABLOC ATTAQUE LA VILLE !',say:'Alerte ! Un monstre géant en blocs attaque la ville ! Sauvez-vous !',pre:'Le monstre géant arrive dans…',w1:'Dans une minute, un monstre géant arrive !'},
-  all:{ban:'🚨 ALERTE GÉNÉRALE : PARENTS, POLICE ET MONSTRE !',say:'Alerte générale ! Les parents, la police et le monstre géant arrivent tous en même temps !',pre:'Alerte générale dans…',w1:'Dans une minute : alerte générale !'}},
+  monster:{ban:'🤖 LE ROBOT GÉANT ATTAQUE LA VILLE !',say:'Alerte ! Un robot géant attaque la ville ! Sauvez-vous !',pre:'Le robot géant arrive dans…',w1:'Dans une minute, un robot géant arrive !'},
+  all:{ban:'🚨 ALERTE GÉNÉRALE : PARENTS, POLICE ET ROBOT GÉANT !',say:'Alerte générale ! Les parents, la police et le robot géant arrivent tous en même temps !',pre:'Alerte générale dans…',w1:'Dans une minute : alerte générale !'}},
  en:{parents:{ban:'THE PARENTS ARE COMING!',say:'Warning! The parents are coming!',pre:'The parents are coming in…',w1:'In one minute, the parents arrive!'},
   police:{ban:'🚓 THE POLICE ARE COMING!',say:'Warning! The police are coming! The officers chase the kids!',pre:'The police are coming in…',w1:'In one minute, the police arrive!'},
-  monster:{ban:'🧱👾 THE MEGABLOCK ATTACKS THE CITY!',say:'Alert! A giant block monster attacks the city! Run!',pre:'The giant monster arrives in…',w1:'In one minute, a giant monster arrives!'},
-  all:{ban:'🚨 GENERAL ALERT: PARENTS, POLICE AND MONSTER!',say:'General alert! The parents, the police and the giant monster all arrive together!',pre:'General alert in…',w1:'In one minute: general alert!'}}
+  monster:{ban:'🤖 THE GIANT ROBOT ATTACKS THE CITY!',say:'Alert! A giant robot attacks the city! Run!',pre:'The giant robot arrives in…',w1:'In one minute, a giant robot arrives!'},
+  all:{ban:'🚨 GENERAL ALERT: PARENTS, POLICE AND GIANT ROBOT!',say:'General alert! The parents, the police and the giant robot all arrive together!',pre:'General alert in…',w1:'In one minute: general alert!'}}
 };
 KT.ln=KT.fr;const KTT=k=>(KT[lang]||KT.fr)[k||'parents'];
 /* cris d'enfants (ambiance de cour d'école) pendant l'alarme */
@@ -5755,12 +5772,7 @@ function monLayer(){
   if(!document.getElementById('monCss')){const st=document.createElement('style');st.id='monCss';st.textContent='@keyframes monwalk{from{transform:rotate(-2.2deg) translateY(0)}to{transform:rotate(2.2deg) translateY(-7px)}}@keyframes monarmL{from{transform:rotate(18deg)}to{transform:rotate(-38deg)}}@keyframes monarmR{from{transform:rotate(-18deg)}to{transform:rotate(38deg)}}@keyframes monfire{from{transform:translateY(0) scale(1);opacity:1}to{transform:translateY(-34px) scale(1.5);opacity:0}}@keyframes monquake{0%{transform:translate(0,0)}20%{transform:translate(-6px,4px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,3px)}80%{transform:translate(3px,-2px)}100%{transform:translate(0,0)}}.monb{transform-origin:110px 300px;animation:monwalk .55s ease-in-out infinite alternate}.monaL{transform-box:fill-box;transform-origin:90% 10%;animation:monarmL .5s ease-in-out infinite alternate}.monaR{transform-box:fill-box;transform-origin:10% 10%;animation:monarmR .5s ease-in-out infinite alternate}.monfx{animation:monfire 1.2s ease-out infinite}.quake{animation:monquake .38s linear}.bld{transition:transform .5s,filter .5s,opacity .5s}';document.head.append(st)}
   return l;
 }
-function spawnMonster(){
-  if(CITY.ents.has('monster'))return;
-  const h={id:'mega',name:'',age:35,skin:'#8d5a3c',hair:'short',hairC:'#111',top:'#1d3557',band:'#1d3557',acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#222',shoe:'#222',s:1,forceOutfit:'hero'};
-  const e=mkEnt('monster',h,'🧱 Mégabloc',{x:600,y:-120,speed:70});e.parent=true;e.isMonster=true;e.safe=0;e.caught=0;
-  const bob=e.g.querySelector('.bob');
-  if(bob)bob.innerHTML=`<svg x="-110" y="-330" width="220" height="334" viewBox="0 0 220 334"><g class="monb">
+function robotSVG(attrs){return `<svg ${attrs} viewBox="0 0 220 334"><g class="monb">
    <rect x="52" y="236" width="48" height="84" rx="10" fill="#6a4c93" stroke="#2b1a4d" stroke-width="5"/><rect x="120" y="236" width="48" height="84" rx="10" fill="#6a4c93" stroke="#2b1a4d" stroke-width="5"/>
    <rect x="42" y="304" width="68" height="26" rx="8" fill="#2b1a4d"/><rect x="110" y="304" width="68" height="26" rx="8" fill="#2b1a4d"/>
    <g class="monaL"><rect x="6" y="120" width="40" height="92" rx="12" fill="#e76f51" stroke="#7a2d14" stroke-width="5"/><rect x="2" y="206" width="48" height="34" rx="10" fill="#f4a261" stroke="#7a2d14" stroke-width="5"/></g>
@@ -5771,8 +5783,14 @@ function spawnMonster(){
    <path d="M60 40 L100 54 M160 40 L120 54" stroke="#14327a" stroke-width="8" stroke-linecap="round"/>
    <rect x="72" y="86" width="76" height="28" rx="6" fill="#14327a"/><path d="M78 86v12M94 86v12M110 86v12M126 86v12M142 86v12" stroke="#fff" stroke-width="9"/>
    <rect x="70" y="4" width="32" height="22" rx="6" fill="#ffd23f" stroke="#8a6d00" stroke-width="4"/><rect x="118" y="4" width="32" height="22" rx="6" fill="#ef476f" stroke="#7a1030" stroke-width="4"/>
-  </g></svg>`;
-  e.g.querySelector('.nm').textContent='🧱 Mégabloc';
+  </g></svg>`}
+function spawnMonster(){
+  if(CITY.ents.has('monster'))return;
+  const h={id:'mega',name:'',age:35,skin:'#8d5a3c',hair:'short',hairC:'#111',top:'#1d3557',band:'#1d3557',acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#222',shoe:'#222',s:1,forceOutfit:'hero'};
+  const e=mkEnt('monster',h,'🤖 Robot géant',{x:600,y:-120,speed:70});e.parent=true;e.isMonster=true;e.safe=0;e.caught=0;
+  const bob=e.g.querySelector('.bob');
+  if(bob)bob.innerHTML=robotSVG('x="-110" y="-330" width="220" height="334"');
+  e.g.querySelector('.nm').textContent='🤖 Robot géant';
   monLayer();MON.t=0;MON.step=0;MON.roar=0;MON.tgt=null;MON.dmg.clear();
   monRoar();monStomp(1);
 }
@@ -5901,15 +5919,15 @@ TM.grant=function(){
 const isChief=()=>{try{const g=(localStorage.getItem('elias_grpname')||'').toLowerCase();return !!g&&localStorage.getItem('elias_gown')===g}catch(e){return false}};
 TM.isChief=isChief;
 const CHT={
- fr:{ask:'Que veux-tu lancer maintenant ?',kinds:{parents:'👨‍👩‍👧 Parents',police:'🚓 Police',monster:'🧱👾 Monstre',all:'🚨 Tout'},n5:'📢 Chef : le monstre géant attaque dans 5 minutes !',n1:'📢 Chef : le monstre géant attaque dans 1 minute !',n5a:'📢 Chef : l’alerte générale (avec le monstre) arrive dans 5 minutes !',n1a:'📢 Chef : l’alerte générale arrive dans 1 minute !',now:'🧱 Le lancer maintenant',wait:'Laisser venir',wait2:n=>`Patiente encore ${n} avant de relancer une alerte.`,pre:n=>`${n}, chef du groupe : `,say:n=>`Alerte ! ${n}, le chef du groupe, déclenche : `},
- en:{ask:'What do you want to launch now?',kinds:{parents:'👨‍👩‍👧 Parents',police:'🚓 Police',monster:'🧱👾 Monster',all:'🚨 Everything'},n5:'📢 Leader: the giant monster attacks in 5 minutes!',n1:'📢 Leader: the giant monster attacks in 1 minute!',n5a:'📢 Leader: the general alert (with the monster) arrives in 5 minutes!',n1a:'📢 Leader: the general alert arrives in 1 minute!',now:'🧱 Launch it now',wait:'Let it come',wait2:n=>`Wait ${n} more before launching another alert.`,pre:n=>`${n}, group leader: `,say:n=>`Alert! ${n}, the group leader, triggers: `}
+ fr:{ask:'Que veux-tu lancer maintenant ?',kinds:{parents:'👨‍👩‍👧 Parents',police:'🚓 Police',monster:'🤖 Robot géant',all:'🚨 Tout'},n5:'📢 Chef : le robot géant attaque dans 5 minutes !',n1:'📢 Chef : le robot géant attaque dans 1 minute !',n5a:'📢 Chef : l’alerte générale (avec le robot géant) arrive dans 5 minutes !',n1a:'📢 Chef : l’alerte générale arrive dans 1 minute !',now:'🤖 Le lancer maintenant',wait:'Laisser venir',wait2:n=>`Patiente encore ${n} avant de relancer une alerte.`,pre:n=>`${n}, chef du groupe : `,say:n=>`Alerte ! ${n}, le chef du groupe, déclenche : `},
+ en:{ask:'What do you want to launch now?',kinds:{parents:'👨‍👩‍👧 Parents',police:'🚓 Police',monster:'🤖 Giant robot',all:'🚨 Everything'},n5:'📢 Leader: the giant robot attacks in 5 minutes!',n1:'📢 Leader: the giant robot attacks in 1 minute!',n5a:'📢 Leader: the general alert (with the giant robot) arrives in 5 minutes!',n1a:'📢 Leader: the general alert arrives in 1 minute!',now:'🤖 Launch it now',wait:'Let it come',wait2:n=>`Wait ${n} more before launching another alert.`,pre:n=>`${n}, group leader: `,say:n=>`Alert! ${n}, the group leader, triggers: `}
 };CHT.ln=CHT.fr;const CH=()=>CHT[lang]||CHT.fr;
 function chiefBan(){return '🚨 '+CH().pre(TM.by)+KTT(TM.kind).ban}
 function chiefSay(){return CH().say(TM.by)+KTT(TM.kind).say}
 TM.lastChief=0;
 TM.chief=function(kind){
   if(!isChief()||TM.active)return false;
-  const left=180000-(Date.now()-TM.lastChief);
+  const left=(kind==='monster'||kind==='all'?45000:180000)-(Date.now()-TM.lastChief);
   if(left>0){const sec=Math.ceil(left/1000);try{toast({hero:HERO.id,text:CH().wait2(Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0'))})}catch(e){}return false}
   TM.lastChief=Date.now();TM.start(HERO.name,false,'chief',['parents','police','monster','all'].includes(kind)?kind:'parents');return true};
 TM.chiefAsk=function(){
@@ -5941,12 +5959,34 @@ const ALK='elias_alarms';
 const alRead=()=>{try{return JSON.parse(localStorage.getItem(ALK)||'[]')||[]}catch(e){return[]}};
 window.TMCLIPS=()=>alRead();
 function alRec(){
-  const c={id:'al'+Date.now().toString(36),type:'alarm',title:lang==='en'?'🚨 Parents alert':'🚨 Alerte parents',author:(TM.by||HERO.name||'Elias').slice(0,14),hero:HERO.id,ts:Date.now(),why:TM.by?'rank':'time',pol:TM.pol?1:0,kind:TM.kind||'parents'};
+  const c={id:'al'+Date.now().toString(36),type:'alarm',title:(()=>{const k=TM.kind||'parents',en=lang==='en';return {parents:en?'Parents alert':'Alerte parents',police:en?'Police alert':'Alerte police',monster:en?'Giant robot attack':'Attaque du robot géant',all:en?'GENERAL ALERT':'ALERTE GÉNÉRALE'}[k]})(),author:(TM.by||HERO.name||'Elias').slice(0,14),hero:HERO.id,ts:Date.now(),why:TM.by?'rank':'time',pol:TM.pol?1:0,kind:TM.kind||'parents'};
   const l=alRead();l.push(c);try{localStorage.setItem(ALK,JSON.stringify(l.slice(-6)))}catch(e){}
   try{if(typeof DBS!=='undefined'&&DBS)DBS.collection('stories').doc(c.id).set(c).catch(()=>{})}catch(e){}
   return c;
 }
+async function tvRobotClip(st,my){
+  const en=lang==='en',scr=$('#tvScreen'),all=st.kind==='all';
+  try{monLayer()}catch(e){}
+  const cols=['#2a9d8f','#e76f51','#3b6ed8','#e8509f','#7b6cf6','#f4a300'],ico=['🏫','🛍️','📺','🎤','🏢','📚'];
+  const bl=cols.map((c,i)=>{const x=6+i*15.5,h=30+((i*37)%15),c0=x+6,t=(c0-13+32)/14;return `<div class="bl" style="left:${x}%;width:12.5%;height:${h}%;background:${c};--dl:${(t-.35).toFixed(2)}s"><i></i><div style="position:absolute;top:4%;left:0;right:0;text-align:center;font-size:clamp(14px,3vw,28px)">${ico[i]}</div></div><div class="fx" style="left:${x+3}%;--dl:${(t-.35).toFixed(2)}s">${i%2?'💥':'🔥'}</div>`}).join('');
+  const ufo=(dl,d,top,col)=>`<div class="uf" style="--dl:${dl}s;--d:${d}s;top:${top}%"><svg viewBox="-60 -40 120 120"><path class="ubm" d="M-12 8 L12 8 L40 74 L-40 74Z" fill="${col}" opacity=".35"/><ellipse cx="0" cy="0" rx="46" ry="13" fill="#b8c2cf" stroke="#4a5568" stroke-width="3"/><path d="M-22 -6 Q0 -40 22 -6Z" fill="${col}" fill-opacity=".6" stroke="#4a5568" stroke-width="3"/><circle cx="0" cy="-16" r="5" fill="#5bbf3a"/><circle cx="-30" cy="2" r="4" fill="#ffd23f"/><circle cx="-10" cy="5" r="4" fill="#ef476f"/><circle cx="10" cy="5" r="4" fill="#2ec4b6"/><circle cx="30" cy="2" r="4" fill="#ffd23f"/></svg></div>`;
+  const kidsH=[st.hero].concat(HEROES.map(h=>h.id)).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3).map(id=>HEROES.find(x=>x.id===id)).filter(Boolean);
+  const kv=kidsH.map((h,i)=>`<div class="run" style="--d:${4.6+i*.4}s;animation-delay:${-i*1.3}s">${heroSVG({...h,forceOutfit:'hero'})}</div>`).join('');
+  const extra=all?PS.map((p,i)=>{const h={id:'p'+i,name:'',age:35,skin:p.skin,hair:p.hair,hairC:p.hairC,top:p.top,band:p.top,acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#37474f',shoe:'#222',s:1.1,girl:p.girl,glasses:p.glasses,forceOutfit:'hero'};return `<div class="run" style="--d:4.6s;animation-delay:${-(2.6+i*.4)}s">${heroSVG(h)}</div>`}).join(''):'';
+  const rerun=Date.now()-st.ts>120000;
+  scr.innerHTML=`<div class="tvrb"><div class="flash">🚨 ${rerun?(en?'REPLAY':'REDIFFUSION'):(en?'PANIC CITY · FLASH NEWS':'PANIQUE CITY · FLASH INFO')} 🚨</div>${ufo(.3,7,16,'#7be0ff')}${ufo(2.4,8.5,28,'#a8ff7b')}${ufo(4.4,7.5,12,'#ff8fd8')}${bl}<div class="gr"></div><div class="rob">${robotSVG('')}</div>${kv}${extra}</div><div class="logo" style="position:absolute;left:10px;bottom:8px;background:#fff3;color:#fff;border-radius:12px;padding:2px 10px;z-index:6">📺 ${TVT[lang].title}</div>`;
+  /* sons : rugissement, pas, soucoupes */
+  let n=0;const iv=setInterval(()=>{if(TVS.token!==my){clearInterval(iv);return}n++;try{monSound('step');if(n===4||n===8)monSound('crash');if(n===2||n===6)ufoSound();if(n===1)monSound('roar')}catch(e){}},1000);
+  try{siren(2);ufoSound();monSound('roar')}catch(e){}
+  const a=st.author,pre=rerun?(en?'Replay! The scene you missed. ':'Rediffusion ! La scène que vous avez ratée. '):'';
+  const txt=all?(en?`Flash news! General alert! The parents, the police and a giant robot invade the city, while flying saucers fly over the buildings!`:`Flash info ! Alerte générale ! Les parents, la police et un robot géant envahissent la ville, pendant que des ovnis survolent les immeubles !`)
+    :(en?`Flash news! A giant robot attacks the city! The buildings collapse and flying saucers fly over the rooftops! ${a} watches the disaster.`:`Flash info ! Un robot géant attaque la ville ! Les immeubles s’effondrent et des ovnis survolent les toits ! ${a} assiste à la catastrophe.`);
+  const t0=Date.now();await tvPres(pre+txt,my);
+  if(TVS.token===my){const rest=11500-(Date.now()-t0);if(rest>0)await sleepT(rest,my)}
+  clearInterval(iv);
+}
 window.TMCLIP=async function(st,my){
+  if(st.kind==='monster'||st.kind==='all')return tvRobotClip(st,my);
   const en=lang==='en',scr=$('#tvScreen');
   const kidsH=[st.hero].concat(HEROES.map(h=>h.id)).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3).map(id=>HEROES.find(x=>x.id===id)).filter(Boolean);
   const kv=kidsH.map((h,i)=>`<div class="run" style="--d:${5.2+i*.3}s;animation-delay:${-i*.9}s">${heroSVG({...h,forceOutfit:'hero'})}</div>`).join('');
@@ -5975,7 +6015,7 @@ window.TMCITY=function(dt){
       if(Math.hypot(k.x-p.x,k.y-(p.isMonster?p.y-70:p.y))<(p.isMonster?95:30)){
         p.caught=p.isMonster?.8:2.6;k.safe=6;k.caughtT=2.6;k.path=[];if(!p.isMonster)p.path=[];
         cityBubble(p.id,p.isMonster?'💥 ROAAAR !':p.isPolice?T().polBub[Math.floor(Math.random()*3)]:T().hug[Math.floor(Math.random()*4)]);
-        if(k===CITY.me){CITY.freeze=2.6;cityBubble('me',p.isMonster?'😱':'💕');try{const ct=p.isMonster?(lang==='en'?'The monster scared you! 😱':'Le monstre t’a fait peur ! 😱'):T().caught;toast({hero:HERO.id,text:ct});speak(ct.replace(/[💕😱]/g,''))}catch(e){}}
+        if(k===CITY.me){CITY.freeze=2.6;cityBubble('me',p.isMonster?'😱':'💕');try{const ct=p.isMonster?(lang==='en'?'The giant robot scared you! 😱':'Le robot géant t’a fait peur ! 😱'):T().caught;toast({hero:HERO.id,text:ct});speak(ct.replace(/[💕😱]/g,''))}catch(e){}}
         else cityBubble(k.id,p.isMonster?'😱':'💕');
       }
     });
@@ -7106,7 +7146,7 @@ function viewIn(){
     const cp=B(t.cp,'',async()=>{try{await navigator.clipboard.writeText(link)}catch(e){li.select();try{document.execCommand('copy')}catch(_){}}cp.textContent=t.cpd});box.append(cp);
     if(navigator.share)box.append(B(t.sh,'g',()=>{try{navigator.share({title:'Elias et les Blocs Magiques',url:link})}catch(e){}}));
   }
-  try{const gl=(LS('elias_grpname')||'').toLowerCase();if(gl&&LS('elias_gown')===gl&&window.TM&&TM.chief){const cl={fr:'🚨 Lancer une alerte (parents, police, monstre…)',en:'🚨 Launch an alert (parents, police, monster…)',ln:'🚨 Bandisa alerte'}[lang]||'🚨';box.append(B(cl,'r',()=>{close();(TM.chiefAsk||TM.chief)()}))}}catch(e){}
+  try{const gl=(LS('elias_grpname')||'').toLowerCase();if(gl&&LS('elias_gown')===gl&&window.TM&&TM.chief){const cl={fr:'🚨 Lancer une alerte (parents, police, monstre…)',en:'🚨 Launch an alert (parents, police, monster…)',ln:'🚨 Bandisa alerte'}[lang]||'🚨';box.append(B(cl,'r',()=>{close();(TM.chiefAsk||TM.chief)()}));box.append(B({fr:'🤖 Lancer le robot géant',en:'🤖 Launch the giant robot',ln:'🤖 Lancer le robot géant'}[lang]||'🤖',''  ,()=>{close();TM.chief('monster')}))}}catch(e){}
   box.append(el('<p></p>'));
   box.append(B(t.leave,'o',()=>{try{localStorage.removeItem('elias_fam');localStorage.removeItem('elias_grpname')}catch(e){}location.reload()}));
   if(LS('elias_grpname'))box.append(B(t.del,'r',()=>delStart()));
