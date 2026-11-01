@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Elias Blocs">
+<meta name="apple-mobile-web-app-title" content="Panic City">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#8fd3ff">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
-<title>Elias et les Blocs Magiques</title>
+<title>Panic City</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 html,body{margin:0;height:100%;overflow:hidden;font-family:"Arial Rounded MT Bold","Chalkboard SE","Comic Sans MS",system-ui,sans-serif;color:#25326b}
@@ -923,7 +923,7 @@ const NUM={
  ln:['zéro','moko','mibale','misato','minei','mitano','motoba','sambo','mwambe','libwa','zomi']
 };
 const LANG={
-fr:{name:'🇫🇷 Français',voice:'fr-FR',W:NUM.fr,title:'Elias et les<br>Blocs Magiques',modes:{build:'Construis',add:'Additionne',count:'Compte',cmp:'Plus haut ?',draw:'Dessin',geo:'Géographie',story:'Mon histoire',merge:'Assemble',mult:'Multiplie',div:'Partage',calc:'Calcul',hub:'Échecs & Dames',cards:'Cartes magiques',arcade:'Arcade',rank:'Classement',astro:'Astronomie',tv:'Blocs TV',read:'Lecture',boutique:'Boutique',city:'La Ville'},menu:'⬅ Menu',again:'🔁 Rejouer',
+fr:{name:'🇫🇷 Français',voice:'fr-FR',W:NUM.fr,title:'Panic<br>City',modes:{build:'Construis',add:'Additionne',count:'Compte',cmp:'Plus haut ?',draw:'Dessin',geo:'Géographie',story:'Mon histoire',merge:'Assemble',mult:'Multiplie',div:'Partage',calc:'Calcul',hub:'Échecs & Dames',cards:'Cartes magiques',arcade:'Arcade',rank:'Classement',astro:'Astronomie',tv:'Blocs TV',read:'Lecture',boutique:'Boutique',city:'La Ville'},menu:'⬅ Menu',again:'🔁 Rejouer',
  mergeAsk(n){return `Glisse les tours l’une sur l’autre pour faire ${this.W[n]} !`},mergeOver(n){return `Oups, ça dépasse ${this.W[n]} ! On recommence.`},mergeWin(n){return `Bravo, tu as fait ${this.W[n]} !`},
  multAsk(a,b){return `${nw(a)} tours de ${nw(b)} blocs. Combien en tout ?`},multOk(a,b,p){return `${nw(a)} fois ${nw(b)} font ${nw(p)} !`},
  divAsk(n,k){return `Partage ${nw(n)} blocs entre ${nw(k)} amis. Combien chacun ?`},divOk(n,k,q){return `${nw(n)} partagés en ${nw(k)} : ${nw(q)} chacun !`},
@@ -948,7 +948,7 @@ fr:{name:'🇫🇷 Français',voice:'fr-FR',W:NUM.fr,title:'Elias et les<br>Bloc
  endBig(g){return g?'Bravo Super Elias !':'Bien joué Elias !'},
  endM(s,t,R){return `${s} réussites sur ${R} · Total : ${t} ⭐`},
  endSay(s){return `Bravo Elias ! Tu as gagné ${s} étoiles !`}},
-en:{name:'🇬🇧 English',voice:'en-GB',W:NUM.en,title:'Elias and the<br>Magic Blocks',modes:{build:'Build',add:'Add',count:'Count',cmp:'Which is taller?',draw:'Drawing',geo:'Geography',story:'My story',merge:'Join',mult:'Multiply',div:'Share',calc:'Maths',hub:'Chess & Draughts',cards:'Magic Cards',arcade:'Arcade',rank:'Ranking',astro:'Astronomy',tv:'Blocks TV',read:'Reading',boutique:'Shop',city:'The City'},menu:'⬅ Menu',again:'🔁 Play again',
+en:{name:'🇬🇧 English',voice:'en-GB',W:NUM.en,title:'Panic<br>City',modes:{build:'Build',add:'Add',count:'Count',cmp:'Which is taller?',draw:'Drawing',geo:'Geography',story:'My story',merge:'Join',mult:'Multiply',div:'Share',calc:'Maths',hub:'Chess & Draughts',cards:'Magic Cards',arcade:'Arcade',rank:'Ranking',astro:'Astronomy',tv:'Blocks TV',read:'Reading',boutique:'Shop',city:'The City'},menu:'⬅ Menu',again:'🔁 Play again',
  mergeAsk(n){return `Drag the towers onto each other to make ${this.W[n]}!`},mergeOver(n){return `Oops, that is more than ${this.W[n]}! Let us start again.`},mergeWin(n){return `Great, you made ${this.W[n]}!`},
  multAsk(a,b){return `${nw(a)} towers of ${nw(b)} blocks. How many in all?`},multOk(a,b,p){return `${nw(a)} times ${nw(b)} makes ${nw(p)}!`},
  divAsk(n,k){return `Share ${nw(n)} blocks between ${nw(k)} friends. How many each?`},divOk(n,k,q){return `${nw(n)} shared by ${nw(k)} is ${nw(q)} each!`},
@@ -973,7 +973,7 @@ en:{name:'🇬🇧 English',voice:'en-GB',W:NUM.en,title:'Elias and the<br>Magic
  endBig(g){return g?'Well done Super Elias!':'Good job Elias!'},
  endM(s,t,R){return `${s} correct out of ${R} · Total: ${t} ⭐`},
  endSay(s){return `Great job Elias! You won ${s} stars!`}},
-ln:{name:'🇨🇩 Lingála',voice:'fr-FR',W:NUM.ln,title:'Elias mpe<br>Mabanga ya Mayele',modes:{build:'Tonga',add:'Bakisa',count:'Tanga',cmp:'Oyo molai?',draw:'Dessin',geo:'Géographie',story:'Lisolo na ngai',merge:'Sangisa',mult:'Mbala',div:'Gayana',calc:'Calcul',hub:'Échecs & Dames',cards:'Cartes magiques',arcade:'Arcade',rank:'Classement',astro:'Astronomie',tv:'Blocs TV',read:'Kotanga',boutique:'Boutique',city:'La Ville'},menu:'⬅ Menu',again:'🔁 Meka lisusu',
+ln:{name:'🇨🇩 Lingála',voice:'fr-FR',W:NUM.ln,title:'Panic<br>City',modes:{build:'Tonga',add:'Bakisa',count:'Tanga',cmp:'Oyo molai?',draw:'Dessin',geo:'Géographie',story:'Lisolo na ngai',merge:'Sangisa',mult:'Mbala',div:'Gayana',calc:'Calcul',hub:'Échecs & Dames',cards:'Cartes magiques',arcade:'Arcade',rank:'Classement',astro:'Astronomie',tv:'Blocs TV',read:'Kotanga',boutique:'Boutique',city:'La Ville'},menu:'⬅ Menu',again:'🔁 Meka lisusu',
  mergeAsk(n){return `Sangisa bandako mpo na kosala ${this.W[n]}!`},mergeOver(n){return `Ezali koleka ${this.W[n]}! Banda lisusu.`},mergeWin(n){return `Malamu, osali ${this.W[n]}!`},
  multAsk(a,b){return `Bandako ${nw(a)} ya ${this.blk(b)}. Nyonso esali boni?`},multOk(a,b,p){return `${nw(a)} mbala ${nw(b)} esali ${nw(p)}!`},
  divAsk(n,k){return `Gayana ${this.blk(n)} na baninga ${nw(k)}. Moko na moko azwi boni?`},divOk(n,k,q){return `${nw(n)} na ${nw(k)} esali ${nw(q)} moko na moko!`},
@@ -8613,7 +8613,7 @@ function viewIn(){
     const link=SITE+'#group='+encodeURIComponent(LS('elias_grpname'));
     box.append(el(`<b style="font-size:.9em">${t.link}</b>`));const li=document.createElement('input');li.readOnly=true;li.value=link;box.append(li);
     const cp=B(t.cp,'',async()=>{try{await navigator.clipboard.writeText(link)}catch(e){li.select();try{document.execCommand('copy')}catch(_){}}cp.textContent=t.cpd});box.append(cp);
-    if(navigator.share)box.append(B(t.sh,'g',()=>{try{navigator.share({title:'Elias et les Blocs Magiques',url:link})}catch(e){}}));
+    if(navigator.share)box.append(B(t.sh,'g',()=>{try{navigator.share({title:'Panic City',url:link})}catch(e){}}));
   }
   try{const gl=(LS('elias_grpname')||'').toLowerCase();if(gl&&LS('elias_gown')===gl&&window.TM&&TM.chief){const cl={fr:'🚨 Lancer une alerte (parents, police, monstre…)',en:'🚨 Launch an alert (parents, police, monster…)',ln:'🚨 Bandisa alerte'}[lang]||'🚨';box.append(B(cl,'r',()=>{close();(TM.chiefAsk||TM.chief)()}));box.append(B({fr:'🤖 Lancer le robot géant',en:'🤖 Launch the giant robot',ln:'🤖 Lancer le robot géant'}[lang]||'🤖',''  ,()=>{close();TM.chief('monster')}))}}catch(e){}
   box.append(el('<p></p>'));
