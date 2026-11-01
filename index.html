@@ -2415,14 +2415,14 @@ const AT={
  ln:{tet:'Mabanga ezali kokweya',maze:'Labyrinthe ya minzoto',space:'Défense ya espace',seek:'Cherche le bloc !',pen:'Penalty',hoop:'Paniers',fix:'Garage des blocs',karaoke:'Karaoké',piano:'Piano des blocs',rhythm:'Tape les notes',shop:'Le petit marché',score:'Score',lives:'Bomoi',level:'Niveau',best:'Record',over:'Esili !',newRec:'Record ya sika !',rank:'Classement',pts:'pts',recs:'Records ya',wins:'balongi',hintT:'Remplis les lignes !',hintM:'Lia minzoto, kima mabanga ya nkanda !',hintS:'Tya misapi na écran mpo na kokende. Tira mabanga !',hintR:'Tape la colonne quand la note arrive sur la ligne !',arcade:'Arcade',duel:'Duel',stars:'minzoto',back:'Kozonga'}
 };
 const ATT=()=>AT[lang];
-Object.assign(AT.fr,{g8:'Grand 8',hintG:'Touche l’écran ou Espace pour sauter : attrape les ⭐ et évite les 🚧 !'});Object.assign(AT.en,{g8:'Roller Coaster',hintG:'Tap the screen or press Space to jump: grab the ⭐ and dodge the 🚧!'});Object.assign(AT.ln,{g8:'Grand 8',hintG:'Fina na ekran to Espace mpo na kopumbwa : zwa ba ⭐ mpe kima ba 🚧 !'});
+Object.assign(AT.fr,{g8:'Grand 8',hintG:'Touche l’écran ou Espace pour sauter : attrape les ⭐ et évite les 🚧 !'});Object.assign(AT.en,{g8:'Roller Coaster',hintG:'Tap the screen or press Space to jump: grab the ⭐ and dodge the 🚧!'});Object.assign(AT.fr,{manege:'Manège',roue:'Grande roue',hintN:'Touche « Attrape ! » quand un anneau passe près de ta main !',hintW:'Touche les ballons de cette couleur !'});Object.assign(AT.en,{manege:'Carousel',roue:'Ferris Wheel',hintN:'Tap “Grab!” when a ring passes near your hand!',hintW:'Tap the balloons of this colour!'});Object.assign(AT.ln,{manege:'Manège',roue:'Grande roue',hintN:'Fina « Zwa ! » ntango eloko ya mondeko eleki pene na loboko na yo !',hintW:'Fina ba ballon ya langi oyo !',g8:'Grand 8',hintG:'Fina na ekran to Espace mpo na kopumbwa : zwa ba ⭐ mpe kima ba 🚧 !'});
 Object.assign(AT.fr,{haunt:'Maison hantée',hintH:'Glisse le doigt ou ← ↑ ↓ → : prends les citrouilles 🎃, évite fantômes, araignées et chauves-souris !',race:'Course de voitures',hintC:'Glisse le doigt ou ← → pour conduire. Évite les autres voitures !',train:'Train à vapeur',hintV:'Touche en haut ou ↑ pour sauter, en bas ou ↓ pour te baisser !'});Object.assign(AT.en,{haunt:'Haunted House',hintH:'Slide your finger or use arrows: grab the pumpkins 🎃, dodge ghosts, spiders and bats!',race:'Car Race',hintC:'Slide your finger or use ← → to drive. Dodge the other cars!',train:'Steam Train',hintV:'Tap the top or ↑ to jump, tap the bottom or ↓ to duck!'});Object.assign(AT.ln,{haunt:'Ndako ya bazimu',hintH:'Telema na mosapi to ba flèches : zwa ba citrouille 🎃, zala na ba fantôme, ba araignée mpe ba chauve-souris !',race:'Mbango ya motuka',hintC:'Telema na mosapi to ← → mpo na kotambusa. Zala na ba motuka mosusu !',train:'Train ya mixi',hintV:'Fina na likolo to ↑ mpo na kopumbwa, na nse to ↓ mpo na kogumbama !'});
 const AR={g:null,raf:0,last:0,run:false,score:0,over:false,cv:null,cx:null,hold:[]};
 const GAMES={};
 function openArcade(){
   const T=ATT();$('#arcT').textContent='🕹️ '+T.arcade;$('#arcBack').textContent=L().menu;
   const g=$('#arcGrid');g.innerHTML='';
-  [['tet','🧱','#3b6ed8'],['maze','⭐','#e8509f'],['space','🚀','#7b6cf6'],['seek','🔍','#e63946'],['fix','🔧','#2a9d8f'],['karaoke','🎤','#d62828'],['piano','🎹','#3a86ff'],['rhythm','🎶','#ff7b54'],['shop','🛒','#2a9d8f'],['pen','⚽','#3fa34d'],['hoop','🏀','#e76f51'],['train','🚂','#8d5a3c'],['race','🏎️','#e63946'],['haunt','🏚️','#4a3a6b'],['g8','🎢','#ff595e']].forEach(([k,ico,c])=>{
+  [['tet','🧱','#3b6ed8'],['maze','⭐','#e8509f'],['space','🚀','#7b6cf6'],['seek','🔍','#e63946'],['fix','🔧','#2a9d8f'],['karaoke','🎤','#d62828'],['piano','🎹','#3a86ff'],['rhythm','🎶','#ff7b54'],['shop','🛒','#2a9d8f'],['pen','⚽','#3fa34d'],['hoop','🏀','#e76f51'],['train','🚂','#8d5a3c'],['race','🏎️','#e63946'],['haunt','🏚️','#4a3a6b'],['g8','🎢','#ff595e'],['manege','🎠','#ff7bac'],['roue','🎡','#4cc9f0']].forEach(([k,ico,c])=>{
     const b=btn('',null,()=>k==='g8'?openG8('arc'):k==='seek'?startSeek():k==='fix'?startFix():k==='karaoke'?openKaraoke():k==='piano'?openPiano():k==='rhythm'?openRhythmPick():k==='shop'?startShop():(k==='pen'||k==='hoop')?startSport(k):startArcade(k));b.style.background=c;
     const best=(scHero(HERO.id).best[k])||0;
     b.innerHTML=`<span class="ic">${ico}</span><span>${T[k]}</span><small>${T.best} : ${best}</small>`;g.append(b)});
@@ -2431,7 +2431,7 @@ function openArcade(){
 function startArcade(k){
   try{speechSynthesis.cancel()}catch(e){}
   filmReset();AR.g=GAMES[k];AR.key=k;AR.score=0;AR.over=false;AR.paused=false;AR.cv=$('#acv');AR.cx=AR.cv.getContext('2d');
-  $('#aback').textContent=L().menu;$('#ahint').textContent=ATT()['hint'+({tet:'T',maze:'M',space:'S',rhythm:'R',train:'V',race:'C',haunt:'H',g8:'G'})[k]];
+  $('#aback').textContent=L().menu;$('#ahint').textContent=ATT()['hint'+({tet:'T',maze:'M',space:'S',rhythm:'R',train:'V',race:'C',haunt:'H',g8:'G',manege:'N',roue:'W'})[k]];
   clearHolds();$('#actl').innerHTML='';
   AR.g.init();show('arc');audioUI();musicStart(k);{const cv=AR.cv,r=cv.width/cv.height,h=Math.min(innerHeight*.58,innerWidth*.94/r);cv.style.height=h+'px';cv.style.width=(h*r)+'px'}AR.run=true;AR.last=performance.now();cancelAnimationFrame(AR.raf);AR.raf=requestAnimationFrame(arcLoop);
 }
@@ -3601,7 +3601,7 @@ function pushPresence(extra){
   if(!SO.room)return;if(SO.full&&!SAFE.locked){SO.room.presence({app:'full',msgs:[]}).catch(()=>{});return}
   if(SAFE.locked){SO.room.presence({app:'locked',msgs:[]}).catch(()=>{});return}const hv=HVOICE[HERO.id]||{g:'m',p:1.2};
   const cityOn=typeof CITY!=='undefined'&&CITY.me&&document.getElementById('city')&&document.getElementById('city').classList.contains('on');
-  SO.room.presence({app:'elias',id:SO.myId,hero:HERO.id,rp:scHero(HERO.id).pts,name:SAFE.cleanName(HERO.name),vp:hv.p,vg:hv.g,play:SO.playKey,og:SO.og||'',code:SO.code||'',msgs:SO.msgs,jt:SO.jt,fl:(typeof flatEnc==='function')?flatEnc():'',ac:cityOn&&CITY.me.act?CITY.me.act.type:'',dg:cityOn&&CITY.dogOn?1:0,cn:cityOn?1:0,ti:(window.TM&&TM.pubInt)?TM.pubInt():0,ch:(window.TM&&TM.isChief&&TM.isChief())?1:0,cx:cityOn?Math.round(CITY.me.x):0,cy:cityOn?Math.round(CITY.me.y):0,...extra}).catch(()=>{});
+  SO.room.presence({app:'elias',id:SO.myId,hero:HERO.id,rp:scHero(HERO.id).pts,name:SAFE.cleanName(HERO.name),vp:hv.p,vg:hv.g,play:SO.playKey,og:SO.og||'',code:SO.code||'',msgs:SO.msgs,jt:SO.jt,fl:(typeof flatEnc==='function')?flatEnc():'',ac:cityOn&&CITY.me.act?CITY.me.act.type:'',dg:cityOn&&CITY.dogOn?1:0,hd:(window.CITYHOLD&&CITYHOLD.ico&&Date.now()-CITYHOLD.t<60000)?CITYHOLD.ico:'',cn:cityOn?1:0,ti:(window.TM&&TM.pubInt)?TM.pubInt():0,ch:(window.TM&&TM.isChief&&TM.isChief())?1:0,cx:cityOn?Math.round(CITY.me.x):0,cy:cityOn?Math.round(CITY.me.y):0,...extra}).catch(()=>{});
 }
 function socialScreen(id){
   const m={game:()=>'m_'+mode,bgame:()=>BG.g,duel:()=>'duel',cgame:()=>'cards',arc:()=>AR.key,sport:()=>SP.g,flat:()=>'flat',bldg:()=>'flat',story:()=>'story',draw:()=>'draw',geo:()=>'geo',shop:()=>'shop'};
@@ -3943,12 +3943,12 @@ $('#fxBack').onclick=()=>{$('#bgend').classList.remove('on');openArcade()};
 
 /* ===== Karaoké : composer, chanter, publier à la Blocs TV ===== */
 const KRT={
- fr:{t:'Karaoké',keys:'Tape les blocs pour créer ta mélodie',lyr:'Les paroles (un mot par note)',lyrPh:'Écris tes paroles ici',play:'▶ Chanter',stop:'⏹ Stop',clear:'🗑',undo:'↩',pub:'📺 Publier',titleL:'Titre de ta chanson',tempo:['Lent','Normal','Vite'],inst:{piano:'Piano',bell:'Cloche',flute:'Flûte',synth:'Synthé'},notes:'notes',words:'mots',voice:'Voix du héros',pubOk:'Ta chanson passe à la Blocs TV !',len:['Court','Moyen','Long'],models:'Chansons à essayer',sing:'Chante avec moi !',untitled:'Ma chanson',empty:'Tape d’abord quelques blocs !',tip:'Chante en même temps : le micro n’est pas utilisé, c’est ta voix à toi !'},
- en:{t:'Karaoke',keys:'Tap the blocks to make your melody',lyr:'The lyrics (one word per note)',lyrPh:'Write your lyrics here',play:'▶ Sing',stop:'⏹ Stop',clear:'🗑',undo:'↩',pub:'📺 Publish',titleL:'Title of your song',tempo:['Slow','Normal','Fast'],inst:{piano:'Piano',bell:'Bell',flute:'Flute',synth:'Synth'},notes:'notes',words:'words',voice:'Hero voice',pubOk:'Your song is on Blocks TV!',len:['Short','Medium','Long'],models:'Songs to try',sing:'Sing with me!',untitled:'My song',empty:'Tap a few blocks first!',tip:'Sing along: the microphone is not used, it is your own voice!'}
+ fr:{t:'Karaoké',keys:'Tape les blocs pour créer ta mélodie',lyr:'Les paroles (un mot par note)',lyrPh:'Écris tes paroles ici',play:'▶ Chanter',stop:'⏹ Stop',clear:'🗑',undo:'↩',pub:'📺 Publier',titleL:'Titre de ta chanson',tempo:['Lent','Normal','Vite'],inst:{piano:'Piano',bell:'Cloche',flute:'Flûte',synth:'Synthé'},notes:'notes',words:'mots',voice:'Voix du héros',pubOk:'Ta chanson passe à la Blocs TV !',len:['Court','Moyen','Long'],models:'Chansons à essayer',sing:'Chante avec moi !',untitled:'Ma chanson',empty:'Tape d’abord quelques blocs !',tip:'Astuce : mets un casque, ta voix sera plus claire !'},
+ en:{t:'Karaoke',keys:'Tap the blocks to make your melody',lyr:'The lyrics (one word per note)',lyrPh:'Write your lyrics here',play:'▶ Sing',stop:'⏹ Stop',clear:'🗑',undo:'↩',pub:'📺 Publish',titleL:'Title of your song',tempo:['Slow','Normal','Fast'],inst:{piano:'Piano',bell:'Bell',flute:'Flute',synth:'Synth'},notes:'notes',words:'words',voice:'Hero voice',pubOk:'Your song is on Blocks TV!',len:['Short','Medium','Long'],models:'Songs to try',sing:'Sing with me!',untitled:'My song',empty:'Tap a few blocks first!',tip:'Tip: wear headphones, your voice will be clearer!'}
 };
 KRT.ln=KRT.fr;
 const KSCALE=[60,62,64,67,69,72,74,76],KINST=['piano','bell','flute','synth'],KTEMPO=[80,104,136],KLEN=[.5,1,2];
-const KR={notes:[],dl:1,tempo:104,inst:'piano',voice:true,lyrics:'',token:0,playing:false};
+const KR={notes:[],dl:1,tempo:104,inst:'piano',voice:true,lyrics:'',token:0,playing:false,vol:null};
 function songsDemo(){
   const fr=lang!=='en';
   return [
@@ -3992,7 +3992,7 @@ function singWord(w,m,dur,hv){
 }
 async function playSongOn(song,root,heroId,tok,voice){
   const c=auInit();if(!c)return;
-  killSongs();const dest=c.createGain();dest.connect(AU.sg);SONGDESTS.add(dest);
+  killSongs();const dest=c.createGain();dest.gain.value=(KR.vol==null?1:KR.vol);dest.connect(AU.sg);SONGDESTS.add(dest);
   const bt=60/song.tempo,T0=c.currentTime+.3,times=[];let off=0;
   song.notes.forEach(n=>{times.push(off*bt);instPlay(song.inst,T0+off*bt,n.m,n.b*bt*.95,dest);off+=n.b});
   const total=off*bt,words=song.lyrics.split(/\s+/).filter(Boolean),hv=HVOICE[heroId]||{g:'m',p:1.2};
@@ -4021,9 +4021,9 @@ function openKaraoke(){
   grp(KTEMPO.map((v,i)=>[T.tempo[i],v]),KR.tempo,v=>KR.tempo=v);
   grp(KINST.map(v=>[T.inst[v],v]),KR.inst,v=>KR.inst=v);
   const vb=document.createElement('button');vb.textContent=(KR.voice?'🗣️ ':'🔇 ')+T.voice;vb.className=KR.voice?'on':'';vb.onclick=()=>{KR.voice=!KR.voice;openKaraoke()};const vg=document.createElement('div');vg.className='kgrp';vg.append(vb);
-  const ub=document.createElement('button');ub.textContent=T.undo;ub.onclick=()=>{KR.notes.pop();krStage()};const cb=document.createElement('button');cb.textContent=T.clear;cb.onclick=()=>{KR.notes=[];krStage()};vg.append(ub,cb);set.append(vg);
+  set.append(vg);
   const md=$('#kModels');md.innerHTML='';
-  songsDemo().forEach(s=>{const b=document.createElement('button');b.textContent='🎵 '+s.title;b.onclick=()=>{KR.notes=s.notes.map(n=>({...n}));KR.lyrics=s.lyrics;KR.tempo=s.tempo;KR.inst=s.inst;$('#kLyr').value=KR.lyrics;if(!$('#kTitle').value)$('#kTitle').value=s.title;openKaraoke();krSing()};md.append(b)});
+  songsDemo().forEach(s=>{const b=document.createElement('button');b.textContent='🎵 '+s.title;b.onclick=()=>{KR.notes=s.notes.map(n=>({...n}));KR.lyrics=s.lyrics;KR.tempo=s.tempo;KR.inst=s.inst;$('#kLyr').value=KR.lyrics;if(!$('#kTitle').value)$('#kTitle').value=s.title;openKaraoke();krSing();if(window.kr2Go)kr2Go(3)};md.append(b)});
   krStage();show('karaoke');
 }
 function krStage(){
@@ -4169,11 +4169,11 @@ $('#rpBack').onclick=()=>openArcade();
 
 /* ===== Tous les jeux -> Blocs TV (replays et cartes de score) ===== */
 const GNAME={
- fr:{g8:'Grand 8',haunt:'Maison hantée',race:'Course de voitures',train:'Train à vapeur',tet:'Blocs en chute',maze:'Labyrinthe aux étoiles',space:'Défense de l’espace',seek:'Cherche le bloc !',draw:'Dessin',geo:'Géographie',read:'Lecture',flat:'Appartement',pen:'Penalty',hoop:'Paniers',fix:'Garage des blocs',rhythm:'Tape les notes',shop:'Le petit marché',chess:'Échecs',dames:'Dames',cards:'Cartes magiques',duel:'Duel de calcul',astro:'Astronomie',m_build:'Construis',m_add:'Additionne',m_count:'Compte',m_cmp:'Plus haut ?',m_merge:'Assemble',m_mult:'Multiplie',m_div:'Partage'},
- en:{g8:'Roller Coaster',haunt:'Haunted House',race:'Car Race',train:'Steam Train',tet:'Falling Blocks',maze:'Star Maze',space:'Space Defender',seek:'Find the block!',draw:'Drawing',geo:'Geography',read:'Reading',flat:'Apartment',pen:'Penalty',hoop:'Hoops',fix:'Block Garage',rhythm:'Tap the notes',shop:'The little market',chess:'Chess',dames:'Draughts',cards:'Magic Cards',duel:'Maths duel',astro:'Astronomy',m_build:'Build',m_add:'Add',m_count:'Count',m_cmp:'Which is taller?',m_merge:'Join',m_mult:'Multiply',m_div:'Share'}
+ fr:{manege:'Manège',roue:'Grande roue',g8:'Grand 8',haunt:'Maison hantée',race:'Course de voitures',train:'Train à vapeur',tet:'Blocs en chute',maze:'Labyrinthe aux étoiles',space:'Défense de l’espace',seek:'Cherche le bloc !',draw:'Dessin',geo:'Géographie',read:'Lecture',flat:'Appartement',pen:'Penalty',hoop:'Paniers',fix:'Garage des blocs',rhythm:'Tape les notes',shop:'Le petit marché',chess:'Échecs',dames:'Dames',cards:'Cartes magiques',duel:'Duel de calcul',astro:'Astronomie',m_build:'Construis',m_add:'Additionne',m_count:'Compte',m_cmp:'Plus haut ?',m_merge:'Assemble',m_mult:'Multiplie',m_div:'Partage'},
+ en:{manege:'Carousel',roue:'Ferris Wheel',g8:'Roller Coaster',haunt:'Haunted House',race:'Car Race',train:'Steam Train',tet:'Falling Blocks',maze:'Star Maze',space:'Space Defender',seek:'Find the block!',draw:'Drawing',geo:'Geography',read:'Reading',flat:'Apartment',pen:'Penalty',hoop:'Hoops',fix:'Block Garage',rhythm:'Tap the notes',shop:'The little market',chess:'Chess',dames:'Draughts',cards:'Magic Cards',duel:'Maths duel',astro:'Astronomy',m_build:'Build',m_add:'Add',m_count:'Count',m_cmp:'Which is taller?',m_merge:'Join',m_mult:'Multiply',m_div:'Share'}
 };
 GNAME.ln=GNAME.fr;
-const GICO={g8:'🎢',haunt:'🏚️',race:'🏎️',train:'🚂',geo:'🌍',draw:'🎨',read:'📚',pen:'⚽',hoop:'🏀',tet:'🧱',maze:'⭐',space:'🚀',seek:'🔍',fix:'🔧',rhythm:'🎶',shop:'🛒',chess:'♟️',dames:'⚫',cards:'🃏',duel:'➕',astro:'🔭',m_build:'🏗️',m_add:'➕',m_count:'👆',m_cmp:'📏',m_merge:'🧩',m_mult:'✖️',m_div:'➗'};
+const GICO={manege:'🎠',roue:'🎡',g8:'🎢',haunt:'🏚️',race:'🏎️',train:'🚂',geo:'🌍',draw:'🎨',read:'📚',pen:'⚽',hoop:'🏀',tet:'🧱',maze:'⭐',space:'🚀',seek:'🔍',fix:'🔧',rhythm:'🎶',shop:'🛒',chess:'♟️',dames:'⚫',cards:'🃏',duel:'➕',astro:'🔭',m_build:'🏗️',m_add:'➕',m_count:'👆',m_cmp:'📏',m_merge:'🧩',m_mult:'✖️',m_div:'➗'};
 const PUBL={fr:{btn:'📺 Publier sur la Blocs TV',done:'✅ Publié !',pts:'points',won:'victoire',stars:'étoiles',game:'Jeu',res:'Résultat',moves:'coups',score:'Score',ok:'Ton jeu passe à la Blocs TV !'},en:{btn:'📺 Publish on Blocks TV',done:'✅ Published!',pts:'points',won:'win',stars:'stars',game:'Game',res:'Result',moves:'moves',score:'Score',ok:'Your game is on Blocks TV!'}};
 PUBL.ln=PUBL.fr;
 let PENDING_PUB=null;
@@ -4648,7 +4648,7 @@ const H={
   if(k==='d'||k==='D')return click('#cdrawp');if(k==='p'||k==='P')return click('#cpass');
  },
  cmenu(k){if(k==='ArrowLeft')return click('#cmMinus');if(k==='ArrowRight')return click('#cmPlus');if(k==='Enter')return click('#cmSolo')},
- arc(k){if(k==='p'||k==='P'){AR.paused=!AR.paused;$('#ahint').textContent=AR.paused?'⏸ P':ATT()['hint'+({tet:'T',maze:'M',space:'S',rhythm:'R',train:'V',race:'C',haunt:'H',g8:'G'})[AR.key]]||''}},
+ arc(k){if(k==='p'||k==='P'){AR.paused=!AR.paused;$('#ahint').textContent=AR.paused?'⏸ P':ATT()['hint'+({tet:'T',maze:'M',space:'S',rhythm:'R',train:'V',race:'C',haunt:'H',g8:'G',manege:'N',roue:'W'})[AR.key]]||''}},
  seek(k){
   const st=45;if(k==='ArrowLeft')SKC.x=Math.max(10,SKC.x-st);else if(k==='ArrowRight')SKC.x=Math.min(990,SKC.x+st);else if(k==='ArrowUp')SKC.y=Math.max(10,SKC.y-st);else if(k==='ArrowDown')SKC.y=Math.min(690,SKC.y+st);
   else if(k==='Enter'||k===' ')return seekTap(null,[SKC.x,SKC.y]);else if(k==='h'||k==='H')return click('#skHint');else return;
@@ -4927,9 +4927,11 @@ const CITYB=[],CITYS=[];
   CITYB.push({id:'g8',ico:'🎢',c:'#ff595e',fr:'Grand 8',en:'Roller Coaster',go:()=>openG8('city'),x:500,y:1560,w:200,h:140,dx:600,dy:1538});
   [['foot','⚽','Football','Football',240,810,'foot'],['bask','🏀','Basket','Basketball',950,810,'bask'],['sw1','🪢','Balançoire','Swing',530,830,'swing'],['sw2','🪢','Balançoire','Swing',590,830,'swing'],['slide','🛝','Toboggan','Slide',650,830,'slide']]
    .forEach(d=>CITYS.push({id:d[0],ico:d[1],fr:d[2],en:d[3],dx:d[4],dy:d[5],type:d[6],park:true}));
+  [['carou','🎠','Manège','Carousel',300,1440,'carou'],['wheel','🎡','Grande roue','Ferris Wheel',930,1452,'wheel'],['sn1','🥤','Buvette','Snack bar',520,1216,'snack'],['sn2','🍿','Pop-corn','Popcorn stand',450,1338,'snack'],['sn3','🍭','Bonbons','Sweet shop',600,1338,'snack'],['sn4','🍦','Glaces','Ice cream stand',745,1338,'snack']]
+   .forEach(d=>CITYS.push({id:d[0],ico:d[1],fr:d[2],en:d[3],dx:d[4],dy:d[5],type:d[6],park:false,go:()=>window.parkGo(d[0])}));
 })();
 const CITYD=CITYB.concat(CITYS);
-const PLAYB={g8:'g8',tet:'arcade',maze:'arcade',space:'arcade',seek:'arcade',rhythm:'arcade',piano:'studio',karaoke:'studio',fix:'garage',shop:'market',chess:'chess',dames:'chess',cards:'cards',duel:'school',story:'park',tv:'tv',m_astro:'observ',flat:'apart'};
+const PLAYB={manege:'g8',roue:'g8',g8:'g8',tet:'arcade',maze:'arcade',space:'arcade',seek:'arcade',rhythm:'arcade',piano:'studio',karaoke:'studio',fix:'garage',shop:'market',chess:'chess',dames:'chess',cards:'cards',duel:'school',story:'park',tv:'tv',m_astro:'observ',flat:'apart'};
 const bName=b=>b[lang==='en'?'en':'fr'];
 const CITY={me:null,ents:new Map(),dogs:new Map(),t:0,raf:0,last:0,ret:false,cool:0,goal:null,grid:null,near:null,lastPush:0,lastSync:0,open:false,pushed:{x:-1,y:-1},cam:0,dogOn:false,ball:null,face:1};
 try{CITY.dogOn=localStorage.getItem('elias_dog')==='1'}catch(e){}
@@ -6791,14 +6793,14 @@ $('#geBack').onclick=()=>{if(GEO.mode==='play'){GEO.mode='menu';$('#bgend').clas
 /* ===== Karaoké : l'enfant chante sur sa mélodie, enregistre sa voix et la publie sur Blocs TV ===== */
 (function(){
 const $q=s=>document.querySelector(s);
-const KV={b64:'',mime:'',ms:0,sig:'',busy:false,url:''};
+const KV={b64:'',mime:'',ms:0,sig:'',busy:false,url:'',hq:null};
 const VX={
  fr:{rec:'🎙️ Je chante !',listen:'▶ Écouter mon chant',redo:'🔁 Recommencer',stopRec:'⏹ Arrêter',mic:'Autorise le micro pour pouvoir chanter.',nomic:'Le micro n’est pas disponible ici (il faut un navigateur récent).',
   ready:'Prépare-toi…',go:'Chante !',done:'Bravo ! Écoute ton chant, puis publie-le.',tip:'Astuce : mets un casque, ta voix sera plus claire !',lyr:'Écris d’abord des paroles, puis appuie sur 🎙️.',empty:'Crée d’abord ta mélodie avec les blocs !',
-  changed:'Tu as changé la mélodie : enregistre ton chant à nouveau.',pubV:'Ton chant est sur la Blocs TV ! 🎙️',noShare:'Ton chant est sur ta tablette. Il est un peu trop long pour être partagé : tes amis entendront la mélodie.',offShare:'Les parents ont coupé le partage des voix : ton chant reste sur ta tablette.',rec:'🎙️ Je chante !',recording:'🔴 Enregistrement…'},
+  changed:'Tu as changé la mélodie : enregistre ton chant à nouveau.',pubV:'Ton chant est sur la Blocs TV ! 🎙️',noShare:'Ton chant est sur ta tablette. Il est un peu trop long pour être partagé : tes amis entendront la mélodie.',offShare:'Les parents ont coupé le partage des voix : ton chant reste sur ta tablette.',rec:'🎙️ Je chante !',recording:'🔴 Enregistrement…',louder:'🔊 Chante plus fort, on ne t’entend pas bien !'},
  en:{rec:'🎙️ I sing!',listen:'▶ Listen to my song',redo:'🔁 Record again',stopRec:'⏹ Stop',mic:'Allow the microphone so you can sing.',nomic:'The microphone is not available here (a recent browser is needed).',
   ready:'Get ready…',go:'Sing!',done:'Well done! Listen to your song, then publish it.',tip:'Tip: wear headphones, your voice will be clearer!',lyr:'Write some lyrics first, then press 🎙️.',empty:'Make your melody with the blocks first!',
-  changed:'You changed the melody: record your song again.',pubV:'Your song is on Blocks TV! 🎙️',noShare:'Your song is on your tablet. It is a bit too long to share: friends will hear the melody.',offShare:'Parents turned voice sharing off: your song stays on your tablet.',recording:'🔴 Recording…'}
+  changed:'You changed the melody: record your song again.',pubV:'Your song is on Blocks TV! 🎙️',noShare:'Your song is on your tablet. It is a bit too long to share: friends will hear the melody.',offShare:'Parents turned voice sharing off: your song stays on your tablet.',recording:'🔴 Recording…',louder:'🔊 Sing louder, I cannot hear you well!'}
 };
 VX.ln=VX.fr;const X=()=>VX[lang]||VX.fr;
 const sig=()=>JSON.stringify([KR.notes,KR.tempo,KR.inst]);
@@ -6827,21 +6829,42 @@ async function record(){
   if(!KR.notes.length){msg(t.empty);return}
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||typeof MediaRecorder==='undefined'){msg(t.nomic);return}
   KR.lyrics=$q('#kLyr').value.slice(0,140);krStage();
-  let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}})}catch(e){msg(t.mic);return}
+  let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:true,channelCount:1}})}catch(e){try{stream=await navigator.mediaDevices.getUserMedia({audio:true})}catch(e2){msg(t.mic);return}}
   KV.busy=true;stopSong();KR.playing=false;window.kvUI();
   const st=$q('#kStage'),ov=document.createElement('div');ov.className='kvov';st.append(ov);
   try{
     for(const n of [3,2,1]){ov.textContent=n;try{beep(n===1?880:660,.12,'square')}catch(e){}await sleep(800);if(!KV.busy)throw 0}
     ov.remove();
-    const mm=pickMime();let rec;try{rec=new MediaRecorder(stream,mm.m?{mimeType:mm.m,audioBitsPerSecond:24000}:{audioBitsPerSecond:24000})}catch(e){rec=new MediaRecorder(stream)}
-    REC=rec;const chunks=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
-    const fin=new Promise(r=>rec.onstop=r);
-    rec.start(400);msg(t.recording);const t0=Date.now();
+    /* la voix passe par un petit studio : filtre des bruits graves, compresseur, gros gain et limiteur */
+    let rs=stream,an=null,aCtx=null;
+    try{const c=auInit();aCtx=c;try{c.resume()}catch(e){}
+      const src=c.createMediaStreamSource(stream),hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=110;
+      const cmp=c.createDynamicsCompressor();cmp.threshold.value=-38;cmp.knee.value=20;cmp.ratio.value=6;cmp.attack.value=.004;cmp.release.value=.22;
+      const gn=c.createGain();gn.gain.value=3;
+      const lim=c.createDynamicsCompressor();lim.threshold.value=-4;lim.knee.value=0;lim.ratio.value=20;lim.attack.value=.001;lim.release.value=.08;
+      const dst=c.createMediaStreamDestination();an=c.createAnalyser();an.fftSize=512;
+      src.connect(hp);hp.connect(cmp);cmp.connect(gn);gn.connect(lim);lim.connect(dst);lim.connect(an);{const mu=c.createGain();mu.gain.value=0;an.connect(mu);mu.connect(c.destination)}rs=dst.stream;
+    }catch(e){rs=stream;an=null}
+    const mm=pickMime();let rec,recH;
+    try{rec=new MediaRecorder(rs,mm.m?{mimeType:mm.m,audioBitsPerSecond:24000}:{audioBitsPerSecond:24000})}catch(e){rec=new MediaRecorder(rs)}
+    try{recH=new MediaRecorder(rs,mm.m?{mimeType:mm.m,audioBitsPerSecond:96000}:{audioBitsPerSecond:96000})}catch(e){recH=null}
+    REC=rec;const chunks=[],chunksH=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+    if(recH)recH.ondataavailable=e=>{if(e.data&&e.data.size)chunksH.push(e.data)};
+    const fin=new Promise(r=>rec.onstop=r),finH=recH?new Promise(r=>recH.onstop=r):Promise.resolve();
+    rec.start(400);if(recH)recH.start(400);msg(t.recording);const t0=Date.now();
+    /* jauge de voix : on voit tout de suite si le micro entend bien */
+    let vu=null,low=0;
+    if(an){const buf=new Uint8Array(an.fftSize);vu=setInterval(()=>{try{an.getByteTimeDomainData(buf);let s=0;for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128;s+=v*v}const lv=Math.min(1,Math.sqrt(s/buf.length)*5);
+      const bx=document.querySelectorAll('#kVu i');bx.forEach((b,i)=>b.classList.toggle('on',lv>(i+.4)/bx.length));
+      low=lv<.12?low+.06:0;if(low>2.2){msg(t.louder)}else if(low===0)msg(t.recording)}catch(e){}},60)}
+    KR.vol=.3;
     const tok=++KR.token;KR.playing=true;
-    await playSongOn(krSong(),st,HERO.id,tok,false);       /* la mélodie joue, les paroles s'allument */
+    try{await playSongOn(krSong(),st,HERO.id,tok,false)}finally{KR.vol=null}       /* la mélodie joue doucement, les paroles s'allument */
     if(KR.token===tok)await sleep(1000);
-    if(rec.state!=='inactive')rec.stop();await fin;
+    if(vu)clearInterval(vu);document.querySelectorAll('#kVu i').forEach(b=>b.classList.remove('on'));
+    if(rec.state!=='inactive')rec.stop();if(recH&&recH.state!=='inactive')recH.stop();await fin;await finH;
     stream.getTracks().forEach(x=>x.stop());KR.playing=false;
+    if(chunksH.length){KV.hq=new Blob(chunksH,{type:(recH&&recH.mimeType)||mm.m||'audio/webm'})}else KV.hq=null;
     const blob=new Blob(chunks,{type:rec.mimeType||mm.m||'audio/webm'});
     const mime=(blob.type||'audio/webm').split(';')[0];
     if(blob.size>2000){KV.b64=await toB64(blob);KV.mime=/^audio\/(webm|mp4|ogg|mpeg|aac|x-m4a)$/.test(mime)?mime:'audio/webm';KV.ms=Date.now()-t0;KV.sig=sig();KV.size=KV.b64.length}
@@ -6849,23 +6872,31 @@ async function record(){
   KV.busy=false;REC=null;window.kvUI();
 }
 /* décodage + lecture synchronisée (WebAudio) avec repli sur <audio> */
-window.kvLoad=async function(b64,mime){
-  const c=auInit();const bin=atob(b64),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+window.kvLoad=async function(b64,mime,blob){
+  const c=auInit();let ab;
+  if(blob&&blob.arrayBuffer){try{ab=await blob.arrayBuffer()}catch(e){ab=null}}
+  if(!ab){const bin=atob(b64),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);ab=u8.buffer}
   try{
-    const buf=await new Promise((ok,ko)=>{const r=c.decodeAudioData(u8.buffer.slice(0),ok,ko);if(r&&r.then)r.then(ok,ko)});
+    const buf=await new Promise((ok,ko)=>{const r=c.decodeAudioData(ab.slice(0),ok,ko);if(r&&r.then)r.then(ok,ko)});
+    /* on remonte la voix : gain calculé pour que le pic atteigne presque le maximum, puis compresseur */
+    let pk=0;{const d=buf.getChannelData(0);for(let i=0;i<d.length;i+=3){const v=Math.abs(d[i]);if(v>pk)pk=v}}
+    const norm=pk>.002?Math.min(10,.92/pk):1;
     let src=null;
-    return {start(){src=c.createBufferSource();src.buffer=buf;const g=c.createGain();g.gain.value=1.4;src.connect(g);g.connect(AU.sg||c.destination);src.start(c.currentTime)},stop(){try{src&&src.stop()}catch(e){}}};
+    return {start(){src=c.createBufferSource();src.buffer=buf;const g=c.createGain();g.gain.value=Math.max(1.5,norm*1.15);
+      const cm=c.createDynamicsCompressor();cm.threshold.value=-20;cm.knee.value=10;cm.ratio.value=5;cm.attack.value=.003;cm.release.value=.15;
+      src.connect(g);g.connect(cm);cm.connect(AU.sg||c.destination);src.start(c.currentTime)},stop(){try{src&&src.stop()}catch(e){}}};
   }catch(e){
-    const a=new Audio('data:'+mime+';base64,'+b64);
+    const a=new Audio('data:'+mime+';base64,'+b64);a.volume=1;
     return {start(){a.play().catch(()=>{})},stop(){try{a.pause()}catch(e){}}};
   }
 };
 async function listen(){
   const t=X();if(!KV.b64)return;
   if(KR.playing){stopSong();KR.playing=false;return}
-  let va=null;try{va=await kvLoad(KV.b64,KV.mime)}catch(e){}
+  let va=null;try{va=await kvLoad(KV.b64,KV.mime,KV.hq)}catch(e){}
   const tok=++KR.token;KR.playing=true;if(va)va.start();
-  await playSongOn(krSong(),$q('#kStage'),HERO.id,tok,!va);
+  KR.vol=va?.35:null;
+  try{await playSongOn(krSong(),$q('#kStage'),HERO.id,tok,!va)}finally{KR.vol=null}
   if(KR.token!==tok&&va)va.stop();else if(va)setTimeout(()=>va.stop(),1300);
   if(KR.token===tok)KR.playing=false;
 }
@@ -6882,6 +6913,111 @@ $q('#kRec').onclick=record;$q('#kListen').onclick=listen;$q('#kRedo').onclick=()
 })();
 
 /*KVEND*/
+
+/*KR2START*/
+(function(){
+const T=(f,e)=>lang==='en'?e:f;
+const $q=s=>document.querySelector(s);
+const L6=(sw,es,pt,de,it,ar)=>({sw,es,pt,de,it,ar});
+try{window.i18nAdd&&window.i18nAdd({
+ 'Melody':L6('Wimbo','Melodía','Melodia','Melodie','Melodia','اللحن'),
+ 'Lyrics':L6('Maneno','Letra','Letra','Text','Testo','الكلمات'),
+ 'Pick a ready-made song':L6('Chagua wimbo tayari','Elige una canción lista','Escolha uma música pronta','Wähle ein fertiges Lied','Scegli una canzone pronta','اختر أغنية جاهزة'),
+ 'Or make your own melody with the blocks':L6('Au tengeneza wimbo wako kwa vitalu','O crea tu propia melodía con los bloques','Ou crie sua própria melodia com os blocos','Oder erfinde deine eigene Melodie mit den Blöcken','Oppure crea la tua melodia con i blocchi','أو ألّف لحنك بالمكعبات'),
+ '⚙️ Settings':L6('⚙️ Mipangilio','⚙️ Ajustes','⚙️ Configurações','⚙️ Einstellungen','⚙️ Impostazioni','⚙️ الإعدادات'),
+ 'Write the words you will sing (one word per note).':L6('Andika maneno utakayoimba (neno moja kwa noti).','Escribe las palabras que cantarás (una por nota).','Escreva as palavras que você vai cantar (uma por nota).','Schreibe die Wörter, die du singst (ein Wort pro Note).','Scrivi le parole che canterai (una per nota).','اكتب الكلمات التي ستغنيها (كلمة لكل نغمة).'),
+ 'Press the big red button and sing!':L6('Bonyeza kitufe kikubwa chekundu na uimbe!','¡Pulsa el botón rojo grande y canta!','Aperte o botão vermelho grande e cante!','Drücke den großen roten Knopf und sing!','Premi il grande pulsante rosso e canta!','اضغط الزر الأحمر الكبير وغنِّ!'),
+ '🔊 Sing louder, I cannot hear you well!':L6('🔊 Imba kwa sauti zaidi, sikusikii vizuri!','🔊 ¡Canta más fuerte, no te oigo bien!','🔊 Cante mais alto, não consigo ouvir bem!','🔊 Sing lauter, ich höre dich nicht gut!','🔊 Canta più forte, non ti sento bene!','🔊 غنِّ بصوت أعلى، لا أسمعك جيدًا!'),
+ 'Your voice':L6('Sauti yako','Tu voz','Sua voz','Deine Stimme','La tua voce','صوتك')
+})}catch(e){}
+const css=document.createElement('style');css.textContent=`
+#karaoke .kpanel{gap:12px;width:min(94vw,520px)}
+#karaoke #kStage{width:min(94vw,430px)}
+#kSteps{display:flex;gap:8px}
+#kSteps button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px;border-radius:18px;background:rgba(255,255,255,.12);color:#fff;font-size:clamp(14px,2.2vw,18px);border:3px solid transparent}
+#kSteps button b{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#fff3;font-size:20px}
+#kSteps button.on{background:#ffd23f;color:#25326b;border-color:#fff}
+#kSteps button.on b{background:#25326b;color:#ffd23f}
+#kSteps button.done b{background:#2ec4b6;color:#fff}
+.kp{display:none;flex-direction:column;gap:12px}.kp.on{display:flex}
+.kh{font-size:clamp(17px,2.6vw,22px);font-weight:800;text-align:center}
+#kModels{justify-content:center}
+#kModels button{font-size:clamp(17px,2.6vw,22px)!important;padding:12px 16px!important;border-radius:18px!important;background:linear-gradient(135deg,#7b6cf6,#e8509f)!important;border:3px solid #fff6!important;box-shadow:0 5px 0 rgba(27,37,89,.26)}
+.kor{text-align:center;opacity:.85;font-size:15px;display:flex;align-items:center;gap:10px}.kor:before,.kor:after{content:"";flex:1;height:2px;background:#fff3}
+#kKeys{gap:8px}.kkey{height:min(17vh,104px)!important;font-size:30px!important}
+#kEdit{display:flex;gap:10px;justify-content:center}
+#kEdit button{background:#fff2;color:#fff;border-radius:16px;padding:10px 18px;font-size:22px;border:2px solid #fff4}
+#kAdv{background:#fff1;border-radius:16px;padding:8px 12px}#kAdv summary{cursor:pointer;font-size:17px;font-weight:700}
+#kLyr{font-size:22px!important;padding:16px 18px!important;border-radius:20px!important;width:100%;box-sizing:border-box}
+#kP3 #kRec{width:100%;padding:22px 12px!important;font-size:clamp(26px,5vw,38px)!important;border-radius:34px!important;background:linear-gradient(#ff4d4d,#c4161c);border:4px solid #fff;box-shadow:0 10px 0 rgba(120,10,15,.45),0 18px 28px -10px rgba(0,0,0,.5)!important}
+#kVu{display:flex;gap:4px;align-items:flex-end;height:46px;justify-content:center}
+#kVu i{display:block;width:5%;max-width:22px;border-radius:5px;background:#ffffff26;height:calc(10px + var(--i)*3.2px);transition:background .05s}
+#kVu i.on{background:#2ee59d;box-shadow:0 0 10px #2ee59d}#kVu i.hot.on{background:#ffd23f}#kVu i.max.on{background:#ff4d4d}
+#kP3 #kVoiceRow{justify-content:center;gap:10px}
+#kP3 #kListen,#kP3 #kRedo{flex:1;padding:16px 10px!important;font-size:clamp(18px,3vw,24px)!important}
+#kP3 .krow{width:100%}
+#kNav{display:flex;gap:10px;align-items:center}
+#kNav button{border-radius:18px;padding:14px 16px;font-size:clamp(18px,2.8vw,24px);box-shadow:0 6px 0 rgba(27,37,89,.26),0 12px 20px -8px rgba(27,37,89,.28);color:#fff}
+#kNav #kPrev{background:#9aa5c7;flex:0 0 auto}#kNav #kNext{background:#3b6ed8;flex:1}#kNav #kPlay{background:#2ec4b6;flex:1}
+#kRecMsg{text-align:center;font-size:clamp(16px,2.4vw,20px)!important;min-height:26px}
+#kCount{text-align:center}
+#kTip{text-align:center}
+`;document.head.appendChild(css);
+/* ---- on réorganise l'écran en 3 étapes ---- */
+const panel=$q('#karaoke .kpanel');
+const steps=document.createElement('div');steps.id='kSteps';
+[[1,'🎵','Mélodie','Melody'],[2,'✏️','Paroles','Lyrics'],[3,'🎙️','Chante !','Sing!']].forEach(([n,ic,fr,en])=>{const b=document.createElement('button');b.dataset.n=n;b.innerHTML=`<b>${ic}</b><span>${T(fr,en)}</span>`;b.onclick=()=>go(n);steps.append(b)});
+const mk=id=>{const d=document.createElement('div');d.id=id;d.className='kp';return d};
+const p1=mk('kP1'),p2=mk('kP2'),p3=mk('kP3');
+const lab=(id,f,e)=>{const d=document.createElement('div');d.id=id;d.className='kh';d.textContent=T(f,e);return d};
+const hModels=lab('kHM','Choisis une chanson toute prête','Pick a ready-made song');
+const hOr=document.createElement('div');hOr.className='kor';hOr.id='kOr';hOr.textContent=T('ou crée la tienne avec les blocs','Or make your own melody with the blocks');
+const edit=document.createElement('div');edit.id='kEdit';
+const bu=document.createElement('button');bu.id='kUndo';bu.textContent='↩';bu.onclick=()=>{KR.notes.pop();krStage()};
+const bc=document.createElement('button');bc.id='kClr';bc.textContent='🗑';bc.onclick=()=>{KR.notes=[];krStage()};
+edit.append(bu,bc);
+const adv=document.createElement('details');adv.id='kAdv';const sm=document.createElement('summary');sm.id='kAdvS';sm.textContent=T('⚙️ Réglages','⚙️ Settings');adv.append(sm,$q('#kSet'));
+p1.append(hModels,$q('#kModels'),hOr,$q('#kKeysL'),$q('#kKeys'),edit,adv);
+const hLy=lab('kHL','Écris les mots que tu vas chanter (un mot par note).','Write the words you will sing (one word per note).');
+p2.append(hLy,$q('#kLyr'),$q('#kCount'));
+const hSing=lab('kHS','Appuie sur le gros bouton rouge et chante !','Press the big red button and sing!');
+const vu=document.createElement('div');vu.id='kVu';for(let i=0;i<14;i++){const b=document.createElement('i');b.style.setProperty('--i',i);if(i>=9)b.className=i>=12?'max':'hot';vu.append(b)}
+const pubRow=document.createElement('div');pubRow.className='krow';pubRow.append($q('#kTitle'),$q('#kPub'));
+p3.append(hSing,$q('#kRec'),vu,$q('#kRecMsg'),$q('#kVoiceRow'),pubRow,$q('#kTip'));
+const hid=document.createElement('div');hid.style.display='none';hid.append($q('#kModelsL'),$q('#kLyrL'));
+const nav=document.createElement('div');nav.id='kNav';
+const prev=document.createElement('button');prev.id='kPrev';prev.textContent='⬅';prev.onclick=()=>go(KS.step-1);
+const next=document.createElement('button');next.id='kNext';next.onclick=()=>go(KS.step+1);
+nav.append(prev,$q('#kPlay'),next);
+/* le vieil emplacement des boutons est supprimé */
+const oldRow=[...panel.querySelectorAll('.krow')].find(r=>!r.contains($q('#kTitle'))&&!r.id);if(oldRow&&!oldRow.querySelector('button'))oldRow.remove();
+panel.innerHTML='';panel.append(steps,p1,p2,p3,nav,hid);
+const KS={step:1};
+function refresh(){
+  steps.querySelectorAll('button').forEach(b=>{const n=+b.dataset.n;b.classList.toggle('on',n===KS.step);b.classList.toggle('done',n<KS.step)});
+  [p1,p2,p3].forEach((p,i)=>p.classList.toggle('on',i+1===KS.step));
+  prev.style.display=KS.step>1?'':'none';next.style.display=KS.step<3?'':'none';
+  next.textContent=(KS.step===1?T('Les paroles ➡','Lyrics ➡'):T('Chanter ➡','Sing ➡'));
+  sm.textContent=T('⚙️ Réglages','⚙️ Settings');hModels.textContent=T('Choisis une chanson toute prête','Pick a ready-made song');hOr.textContent=T('ou crée la tienne avec les blocs','Or make your own melody with the blocks');
+  hLy.textContent=T('Écris les mots que tu vas chanter (un mot par note).','Write the words you will sing (one word per note).');hSing.textContent=T('Appuie sur le gros bouton rouge et chante !','Press the big red button and sing!');
+  steps.querySelectorAll('button').forEach(b=>{const n=+b.dataset.n;b.querySelector('span').textContent=[,T('Mélodie','Melody'),T('Paroles','Lyrics'),T('Chante !','Sing!')][n]});
+}
+function go(n,silent){
+  n=Math.max(1,Math.min(3,n));
+  if(n>1&&!KR.notes.length){KS.step=1;refresh();const c=$q('#kCount');if(c){}try{toast({text:T('Crée d’abord ta mélodie avec les blocs !','Make your melody with the blocks first!')})}catch(e){}return}
+  if(!silent&&KS.step===1&&n>1){}
+  try{stopSong();KR.playing=false;$q('#kPlay').textContent=KRT[lang].play}catch(e){}
+  KS.step=n;refresh();
+  if(n===2){setTimeout(()=>{try{$q('#kLyr').focus()}catch(e){}},50)}
+  if(n===3){KR.lyrics=$q('#kLyr').value.slice(0,140);try{krStage()}catch(e){}window.kvUI&&kvUI()}
+}
+window.kr2Go=n=>{KS.step=1;go(n,true)};
+const _ok=openKaraoke;
+openKaraoke=function(){const was=$q('#karaoke').classList.contains('on');const r=_ok.apply(this,arguments);if(!was){KS.step=1}refresh();return r};
+refresh();
+})();
+/*KR2END*/
+
 /*DSGSTART*/
 /* ===== DESIGN : décors à plusieurs plans (ciel, montagnes, collines, village, prairie) ===== */
 (function(){
@@ -7649,8 +7785,8 @@ const en=()=>lang==='en';
 const T=(f,e)=>en()?e:f;
 const dayKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const hs=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
-const GN={g8:['🎢','Grand 8','Roller Coaster'],tet:['🧱','Blocs en chute','Falling Blocks'],maze:['⭐','Labyrinthe','Star Maze'],space:['🚀','Défense de l’espace','Space Defender'],train:['🚂','Train à vapeur','Steam Train'],race:['🏎️','Course de voitures','Car Race'],haunt:['🏚️','Maison hantée','Haunted House'],rhythm:['🎶','Tape les notes','Tap the notes'],seek:['🔍','Cherche le bloc','Find the block!'],fix:['🔧','Garage','Block Garage'],shop:['🛒','Petit marché','The little market'],pen:['⚽','Penalty','Penalty'],hoop:['🏀','Paniers','Hoops'],motus:['🔤','Motus','Motus'],ladder:['🪜','Change une lettre','Change a letter'],p4:['🔴','Aligne 4','Four in a Row'],chess:['♟️','Échecs','Chess'],cards:['🃏','Cartes','Cards'],geo:['🌍','Géo','Geo'],draw:['🎨','Dessin','Drawing'],duel:['⚔️','Duel','Duel'],read:['📖','Lecture','Reading']};
-const ARC=new Set(['tet','maze','space','train','race','haunt','rhythm','g8']),WORD=new Set(['motus','ladder','p4']),SPORT=new Set(['pen','hoop']);
+const GN={manege:['🎠','Manège','Carousel'],roue:['🎡','Grande roue','Ferris Wheel'],g8:['🎢','Grand 8','Roller Coaster'],tet:['🧱','Blocs en chute','Falling Blocks'],maze:['⭐','Labyrinthe','Star Maze'],space:['🚀','Défense de l’espace','Space Defender'],train:['🚂','Train à vapeur','Steam Train'],race:['🏎️','Course de voitures','Car Race'],haunt:['🏚️','Maison hantée','Haunted House'],rhythm:['🎶','Tape les notes','Tap the notes'],seek:['🔍','Cherche le bloc','Find the block!'],fix:['🔧','Garage','Block Garage'],shop:['🛒','Petit marché','The little market'],pen:['⚽','Penalty','Penalty'],hoop:['🏀','Paniers','Hoops'],motus:['🔤','Motus','Motus'],ladder:['🪜','Change une lettre','Change a letter'],p4:['🔴','Aligne 4','Four in a Row'],chess:['♟️','Échecs','Chess'],cards:['🃏','Cartes','Cards'],geo:['🌍','Géo','Geo'],draw:['🎨','Dessin','Drawing'],duel:['⚔️','Duel','Duel'],read:['📖','Lecture','Reading']};
+const ARC=new Set(['tet','maze','space','train','race','haunt','rhythm','g8','manege','roue']),WORD=new Set(['motus','ladder','p4']),SPORT=new Set(['pen','hoop']);
 const MATHN={build:'🧱',add:'➕',count:'🔢',cmp:'⚖️',merge:'🔗',mult:'✖️',div:'➗'};
 /* ---- chemin des étoiles ---- */
 const STAGES=[['count',-1],['build',-1],['count',2],['add',-2],['cmp',-1],['add',0],['merge',-1],['build',2],['add',3],['cmp',3],['mult',-1],['merge',2],['div',0],['mult',3],['div',3]];
@@ -8408,7 +8544,7 @@ window.parkDraw=function(){
    g+=cano+`<path d="M${mx-100} ${my+12} q16.6 14 33.3 0 q16.6 14 33.3 0 q16.6 14 33.3 0 q16.6 14 33.3 0 q16.6 14 33.3 0 q16.6 14 33.3 0" fill="#ffd23f" stroke="#c99a00" stroke-width="2"/><rect x="${mx-2}" y="${my-72}" width="4" height="26" fill="#6b4423"/><path d="M${mx+2} ${my-72} l24 7 l-24 7z" fill="#ef476f"/>`}
   /* guichet et stands */
   const stand=(x,y,ico,c1)=>`<g><rect x="${x-40}" y="${y}" width="80" height="48" rx="6" fill="#fff6dc" stroke="#8a6a2f" stroke-width="3"/><path d="M${x-46} ${y} H${x+46} L${x+40} ${y-22} H${x-40}Z" fill="${c1}" stroke="rgba(0,0,0,.25)" stroke-width="2"/>${[0,1,2,3].map(i=>`<rect x="${x-40+i*20}" y="${y-22}" width="10" height="22" fill="#fff" opacity=".7"/>`).join('')}<text x="${x}" y="${y+38}" font-size="30" text-anchor="middle">${ico}</text></g>`;
-  g+=stand(520,1140,'🎟️','#ef476f')+stand(450,1262,'🍿','#ff9a3c')+stand(600,1262,'🍭','#7b6cf6')+stand(745,1262,'🍦','#2ec4b6');
+  g+=stand(520,1140,'🥤','#ef476f')+stand(450,1262,'🍿','#ff9a3c')+stand(600,1262,'🍭','#7b6cf6')+stand(745,1262,'🍦','#2ec4b6');
   /* le Grand 8 : rails, piquets et boucle */
   {const f=x=>1715-135*(1-Math.cos(2*Math.PI*(x-40)/340));let pts=[],sup='';for(let x=40;x<=1060;x+=8)pts.push([x,f(x)]);
    for(let x=60;x<=1060;x+=34){sup+=`M${x} ${f(x)+4} V1745 `}
@@ -8426,6 +8562,299 @@ window.parkDraw=function(){
 };
 })();
 /*G8END*/
+/*PKSTART*/
+(function(){
+const T=(f,e)=>lang==='en'?e:f;
+const W=560,H=360;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ================= traductions ================= */
+const L6=(sw,es,pt,de,it,ar)=>({sw,es,pt,de,it,ar});
+const TR={
+ 'Carousel':L6('Mzunguko wa farasi','Tiovivo','Carrossel','Karussell','Giostra','الدوّامة'),
+ 'Ferris Wheel':L6('Gurudumu kubwa','Noria','Roda-gigante','Riesenrad','Ruota panoramica','الدولاب الدوّار'),
+ '🖐 Grab!':L6('🖐 Shika!','🖐 ¡Agarra!','🖐 Pegue!','🖐 Schnapp!','🖐 Prendi!','🖐 أمسك!'),
+ 'Tap “Grab!” when a ring passes near your hand!':L6('Gusa «Shika!» pete linapopita karibu na mkono wako!','Toca «¡Agarra!» cuando una anilla pase cerca de tu mano.','Toque em «Pegue!» quando um anel passar perto da sua mão!','Tippe auf «Schnapp!», wenn ein Ring an deiner Hand vorbeikommt!','Tocca «Prendi!» quando un anello passa vicino alla tua mano!','المس «أمسك!» عندما تمر حلقة قرب يدك!'),
+ 'Tap the balloons of this colour!':L6('Gusa puto za rangi hii!','¡Toca los globos de este color!','Toque nos balões desta cor!','Tippe auf die Ballons in dieser Farbe!','Tocca i palloncini di questo colore!','المس البالونات بهذا اللون!'),
+ 'This colour:':L6('Rangi hii:','Este color:','Esta cor:','Diese Farbe:','Questo colore:','هذا اللون:'),
+ 'Yum!':L6('Tamu!','¡Rico!','Delícia!','Lecker!','Gnam!','لذيذ!'),
+ 'You are not hungry any more! 🤢':L6('Huna njaa tena! 🤢','¡Ya no tienes hambre! 🤢','Você já não tem fome! 🤢','Du hast keinen Hunger mehr! 🤢','Non hai più fame! 🤢','لم تعد جائعًا! 🤢'),
+ 'Energy':L6('Nguvu','Energía','Energia','Energie','Energia','طاقة'),
+ 'Energy gives bonus points in the park games.':L6('Nguvu hukupa pointi za ziada kwenye michezo ya bustani.','La energía da puntos extra en los juegos del parque.','A energia dá pontos extras nos jogos do parque.','Energie gibt Bonuspunkte in den Parkspielen.','L’energia dà punti extra nei giochi del parco.','تمنحك الطاقة نقاطًا إضافية في ألعاب المدينة.'),
+ 'Snack bonus':L6('Bonasi ya vitafunio','Bonus de merienda','Bônus do lanche','Snack-Bonus','Bonus merenda','مكافأة الوجبة'),
+ 'Snack bar':L6('Duka la vitafunio','Bar de aperitivos','Lanchonete','Imbissbude','Chiosco','كشك الوجبات'),
+ 'Popcorn stand':L6('Kibanda cha popcorn','Puesto de palomitas','Barraca de pipoca','Popcornstand','Chiosco dei popcorn','كشك الفشار'),
+ 'Sweet shop':L6('Duka la pipi','Tienda de golosinas','Loja de doces','Süßigkeitenladen','Negozio di dolci','محل الحلويات'),
+ 'Ice cream stand':L6('Kibanda cha aiskrimu','Heladería','Sorveteria','Eisstand','Gelateria','محل الآيس كريم'),
+ 'Juice':L6('Juisi','Zumo','Suco','Saft','Succo','عصير'),
+ 'Water':L6('Maji','Agua','Água','Wasser','Acqua','ماء'),
+ 'Hot dog':L6('Hot dog','Perrito caliente','Cachorro-quente','Hot Dog','Hot dog','هوت دوغ'),
+ 'Pizza slice':L6('Kipande cha pizza','Porción de pizza','Fatia de pizza','Pizzastück','Fetta di pizza','شريحة بيتزا'),
+ 'Apple':L6('Tufaha','Manzana','Maçã','Apfel','Mela','تفاحة'),
+ 'Popcorn':L6('Popcorn','Palomitas','Pipoca','Popcorn','Popcorn','فشار'),
+ 'Pretzel':L6('Pretzel','Pretzel','Pretzel','Brezel','Pretzel','بريتزل'),
+ 'Corn on the cob':L6('Mahindi','Mazorca de maíz','Espiga de milho','Maiskolben','Pannocchia','ذرة'),
+ 'Fries':L6('Chipsi','Patatas fritas','Batata frita','Pommes','Patatine fritte','بطاطس مقلية'),
+ 'Lollipop':L6('Pipi ya fimbo','Piruleta','Pirulito','Lutscher','Lecca-lecca','مصاصة'),
+ 'Candy':L6('Peremende','Caramelo','Bala','Bonbon','Caramella','حلوى'),
+ 'Cupcake':L6('Keki ndogo','Magdalena','Cupcake','Cupcake','Cupcake','كب كيك'),
+ 'Donut':L6('Donati','Dónut','Rosquinha','Donut','Ciambella','دونات'),
+ 'Chocolate bar':L6('Chokoleti','Chocolatina','Barra de chocolate','Schokoriegel','Barretta di cioccolato','لوح شوكولاتة'),
+ 'Vanilla ice cream':L6('Aiskrimu ya vanila','Helado de vainilla','Sorvete de baunilha','Vanilleeis','Gelato alla vaniglia','آيس كريم فانيليا'),
+ 'Chocolate ice cream':L6('Aiskrimu ya chokoleti','Helado de chocolate','Sorvete de chocolate','Schokoladeneis','Gelato al cioccolato','آيس كريم شوكولاتة'),
+ 'Shaved ice':L6('Barafu iliyosagwa','Granizado','Raspadinha','Eisgranita','Granita','ثلج مجروش'),
+ 'Crêpe':L6('Krepu','Crepe','Crepe','Crêpe','Crêpe','كريب'),
+ 'Waffle':L6('Wafli','Gofre','Waffle','Waffel','Waffle','وافل'),
+ 'You can walk around town with it for 1 minute.':L6('Unaweza kutembea nayo mjini kwa dakika 1.','Puedes pasearte por la ciudad con ello durante 1 minuto.','Você pode passear pela cidade com isso por 1 minuto.','Du kannst 1 Minute lang damit durch die Stadt laufen.','Puoi andare in giro per la città con questo per 1 minuto.','يمكنك التجول به في المدينة لمدة دقيقة.'),
+ 'All gone! 😋':L6('Imeisha! 😋','¡Se acabó! 😋','Acabou! 😋','Alles weg! 😋','Finito! 😋','انتهى! 😋')
+};
+try{if(window.i18nAdd)window.i18nAdd(TR)}catch(e){}
+
+/* ================= énergie des gourmandises ================= */
+const SNK={e:0};try{SNK.e=Math.max(0,Math.min(5,parseInt(localStorage.getItem('elias_snk'))||0))}catch(e){}
+const snkSave=()=>{try{localStorage.setItem('elias_snk',SNK.e)}catch(e){}};
+window.snkUse=function(){const n=Math.min(3,SNK.e);SNK.e-=n;snkSave();return n};
+
+const STANDS={
+ sn1:{ico:'🥤',fr:'Buvette',en:'Snack bar',c:'#ef476f',items:[['🥤','Jus','Juice',2,1],['💧','Eau','Water',1,1],['🌭','Hot-dog','Hot dog',4,2],['🍕','Part de pizza','Pizza slice',4,2],['🍎','Pomme','Apple',1,1]]},
+ sn2:{ico:'🍿',fr:'Pop-corn',en:'Popcorn stand',c:'#ff9a3c',items:[['🍿','Pop-corn','Popcorn',2,1],['🥨','Bretzel','Pretzel',2,1],['🌽','Épi de maïs','Corn on the cob',3,2],['🍟','Frites','Fries',3,2]]},
+ sn3:{ico:'🍭',fr:'Bonbons',en:'Sweet shop',c:'#7b6cf6',items:[['🍭','Sucette','Lollipop',1,1],['🍬','Bonbon','Candy',1,1],['🧁','Cupcake','Cupcake',2,1],['🍩','Donut','Donut',2,1],['🍫','Tablette de chocolat','Chocolate bar',2,1]]},
+ sn4:{ico:'🍦',fr:'Glaces',en:'Ice cream stand',c:'#2ec4b6',items:[['🍦','Glace vanille','Vanilla ice cream',3,2],['🍨','Glace chocolat','Chocolate ice cream',3,2],['🍧','Granité','Shaved ice',2,1],['🥞','Crêpe','Crêpe',3,2],['🧇','Gaufre','Waffle',3,2]]}
+};
+(function(){
+  const sc=document.createElement('div');sc.id='snk';sc.className='screen';
+  sc.innerHTML='<div class="top"><button id="snkBack"></button><div class="star" id="snkT"></div><div class="star" id="snkC"></div></div><div id="snkBody"></div><div id="snkFly"></div>';
+  document.getElementById('arcMenu').parentNode.appendChild(sc);
+  const st=document.createElement('style');st.textContent=`
+#snk{background:linear-gradient(#fff3d6,#ffe0b8)}
+#snkBody{display:flex;flex-direction:column;align-items:center;gap:2vh;padding:2vh 3vw;width:100%}
+#snkGrid{display:flex;flex-wrap:wrap;gap:2vh 2vw;justify-content:center;max-width:960px}
+.sncard{background:#fff;border-radius:26px;padding:12px 14px;width:min(40vw,200px);text-align:center;box-shadow:0 7px 0 rgba(27,37,89,.14),0 14px 22px -10px rgba(27,37,89,.3);display:flex;flex-direction:column;align-items:center;gap:6px}
+.sncard .e{font-size:clamp(46px,8vw,70px);line-height:1}
+.sncard b{color:#25326b;font-size:clamp(15px,2.2vw,20px)}
+.sncard button{background:#2a9d8f;color:#fff;border-radius:18px;padding:8px 14px;font-size:clamp(16px,2.4vw,22px);box-shadow:0 5px 0 rgba(27,37,89,.2)}
+.sncard small{color:#7a5a2a}
+#snkEn{font-size:clamp(17px,2.6vw,24px);color:#25326b;text-align:center;font-weight:bold}
+#snkEn small{display:block;font-weight:normal;font-size:.7em;color:#7a5a2a}
+#snkFly{position:fixed;left:0;right:0;top:0;bottom:0;pointer-events:none;overflow:hidden;z-index:30}
+.snfly{position:absolute;left:50%;top:60%;font-size:90px;transform:translate(-50%,0);animation:snfly 1.3s ease-out forwards}
+@keyframes snfly{0%{transform:translate(-50%,0) scale(.6);opacity:1}60%{transform:translate(-50%,-160px) scale(1.5);opacity:1}100%{transform:translate(-50%,-240px) scale(.2);opacity:0}}`;
+  document.head.appendChild(st);
+})();
+/* ce qu'on tient en main en ville pendant 1 minute */
+const HOLD={ico:'',t:0};window.CITYHOLD=HOLD;
+const FOODS=new Set();Object.values(STANDS).forEach(s=>s.items.forEach(i=>FOODS.add(i[0])));
+function paintHold(e,ico,alpha){
+  if(!e||!e.g)return;const b=e.g.querySelector('.bob');if(!b)return;let t=e.g.querySelector('text.hold');
+  if(!ico){if(t)t.remove();return}
+  if(!t){t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('class','hold');t.setAttribute('x','26');t.setAttribute('y','-20');t.setAttribute('font-size','28');t.setAttribute('text-anchor','middle');b.append(t)}
+  if(t.textContent!==ico)t.textContent=ico;t.setAttribute('opacity',alpha)
+}
+setInterval(()=>{
+  try{
+    if(typeof CITY==='undefined'||!CITY.ents)return;
+    if(HOLD.ico&&Date.now()-HOLD.t>=60000){HOLD.ico='';try{pushPresence()}catch(e){}try{cityBubble('me','😋');toast({hero:HERO.id,text:T('Tout est fini ! 😋','All gone! 😋')})}catch(e){}}
+    CITY.ents.forEach((e,id)=>{
+      if(id==='me'){const left=60000-(Date.now()-HOLD.t);paintHold(e,HOLD.ico,left<10000&&Math.floor(Date.now()/280)%2?.3:1)}
+      else if(e.other){const pr=SO.friends&&SO.friends.get(id),ic=pr&&FOODS.has(pr.hd)?pr.hd:'';paintHold(e,ic,1)}
+    });
+  }catch(e){}
+},400);
+let curStand='sn1';
+function energyBar(){let s='';for(let i=0;i<5;i++)s+=i<SNK.e?'⚡':'▫️';return s}
+window.openSnack=function(id){
+  const d=STANDS[id]||STANDS.sn1;curStand=id;
+  $('#snkBack').textContent=L().menu;$('#snkT').textContent=d.ico+' '+(lang==='en'?d.en:d.fr);$('#snkC').textContent='🪙 '+WALLET;
+  const b=$('#snkBody');b.innerHTML='';
+  const g=document.createElement('div');g.id='snkGrid';b.append(g);
+  d.items.forEach(it=>{
+    const c=document.createElement('div');c.className='sncard';
+    c.innerHTML=`<div class="e">${it[0]}</div><b>${esc(lang==='en'?it[2]:it[1])}</b><small>⚡ +${it[4]}</small>`;
+    const bt=document.createElement('button');bt.textContent='🪙 '+it[3]+' · '+BTT2().buy;bt.onclick=()=>buy(it);c.append(bt);g.append(c);
+  });
+  const en=document.createElement('div');en.id='snkEn';b.append(en);renderEn();
+  show('snk');
+};
+function BTT2(){try{return {buy:(typeof BQT==='function'?BQT().buy:null)||T('Acheter','Buy')}}catch(e){return {buy:T('Acheter','Buy')}}}
+function renderEn(){const e=$('#snkEn');if(!e)return;e.innerHTML=`⚡ ${T('Énergie','Energy')} : ${energyBar()}<small>${T('L’énergie donne des points bonus dans les jeux du parc.','Energy gives bonus points in the park games.')}</small><small>${T('Tu peux te promener en ville avec pendant 1 minute.','You can walk around town with it for 1 minute.')}</small>`;$('#snkC').textContent='🪙 '+WALLET}
+function buy(it){
+  if(SNK.e>=5){try{oops()}catch(e){}const m=T('Tu n’as plus faim ! 🤢','You are not hungry any more! 🤢');toast({hero:HERO.id,text:m});speak(m);return}
+  if(WALLET<it[3]){try{oops()}catch(e){}const m=T('Pas assez de pièces ! Joue pour en gagner.','Not enough coins! Play to earn more.');toast({text:m});speak(m);return}
+  if(!spend(it[3]))return;
+  SNK.e=Math.min(5,SNK.e+it[4]);snkSave();HOLD.ico=it[0];HOLD.t=Date.now();try{pushPresence()}catch(e){}try{refreshCoins()}catch(e){}
+  const f=document.createElement('div');f.className='snfly';f.textContent=it[0];$('#snkFly').append(f);setTimeout(()=>f.remove(),1400);
+  sfx('pick');setTimeout(()=>sfx('line'),160);speak(T('Miam !','Yum!'));renderEn();
+}
+$('#snkBack').onclick=()=>{if(CITY.ret&&CITY.me){buildMenu();show('home')}else{buildMenu();show('home')}};
+
+/* ================= sorties du jeu vers la ville ================= */
+function leaveToCity(){
+  AR.run=false;cancelAnimationFrame(AR.raf);clearHolds();musicStop();$('#bgend').classList.remove('on');
+  if(CITY.ret&&CITY.me){buildMenu();show('home')}else openArcade();
+}
+{const ab=$('#aback'),o=ab.onclick;ab.onclick=function(){if(AR.key==='manege'||AR.key==='roue'){leaveToCity();return}return o.apply(this,arguments)}}
+window.parkGo=function(id){
+  if(id==='carou')startArcade('manege');
+  else if(id==='wheel')startArcade('roue');
+  else openSnack(id);
+};
+
+/* ================= Manège : attrape les anneaux ================= */
+const HX=300;
+const MG={
+ init(){
+  const cv=$('#acv');cv.width=W;cv.height=H;AR.score=0;
+  Object.assign(this,{t:0,dur:45,rings:[],nx:.6,hearts:3,pts:0,handT:0,msg:'',msgT:0,pops:[],snk:window.snkUse(),bg:0});
+  cv.onpointerdown=e=>{e.preventDefault();this.grab()};cv.onpointermove=null;
+  const ctl=$('#actl');ctl.className='';
+  const b=holdBtn(T('🖐 Attrape !','🖐 Grab!'),()=>this.grab(),0);b.style.minWidth='230px';ctl.append(b);
+ },
+ key(k){if(k===' '||k==='Enter'||k==='ArrowUp'||k==='ArrowRight')this.grab()},
+ hy(t){return 218+Math.sin(t*2.3)*44},
+ spawn(){
+  const sp=165+this.t*2.4,tt=(W+30-HX)/sp,r=Math.random();
+  const k=r<.17?'bee':r<.30?'red':r<.55?'silver':'gold';
+  const j=(Math.random()-.5)*(k==='gold'?46:k==='red'?26:34);
+  this.rings.push({x:W+30,y:this.hy(this.t+tt)+j,k,v:sp,done:0});
+  this.nx=.8+Math.random()*.55-Math.min(.3,this.t/150);
+ },
+ pop(x,y,s,col){this.pops.push({x,y,t:.9,s,col})},
+ grab(){
+  if(AR.over||this.handT>.2)return;
+  this.handT=.36;sxTone(260,520,.12,'triangle',.04);
+  const hyy=this.hy(this.t);let best=null,bd=1e9;
+  this.rings.forEach(r=>{if(r.done)return;const d=Math.hypot(r.x-HX,r.y-hyy);if(d<bd){bd=d;best=r}});
+  if(!best||bd>36)return;
+  best.done=1;
+  if(best.k==='bee'){this.hearts--;sfx('lose');this.pop(best.x,best.y,lang==='en'?'Ouch!':'Aïe !','#ff4d4d');this.msg=lang==='en'?'Ouch!':'Aïe !';this.msgT=.7;if(this.hearts<=0)this.finish();return}
+  const n=best.k==='red'?5:best.k==='silver'?2:1;this.pts+=n;AR.score=this.pts*10;sfx(n>=5?'win':'line');this.pop(best.x,best.y,'+'+n,'#ffe27a');
+ },
+ finish(){AR.score=this.pts*10+this.snk*10;arcEnd(10)},
+ hud(){return `<span>${'❤️'.repeat(Math.max(0,this.hearts))||'💔'}</span><span>${this.snk?'🍿×'+this.snk+' ':''}⏱ ${Math.max(0,Math.ceil(this.dur-this.t))}</span>`},
+ update(dt){
+  this.t+=dt;this.bg+=dt*(60+this.t*1.4);if(this.handT>0)this.handT-=dt;if(this.msgT>0)this.msgT-=dt;
+  this.pops.forEach(q=>{q.t-=dt;q.y-=34*dt});this.pops=this.pops.filter(q=>q.t>0);
+  this.nx-=dt;if(this.nx<=0&&this.t<this.dur-3)this.spawn();
+  this.rings.forEach(r=>{r.x-=r.v*dt});this.rings=this.rings.filter(r=>r.x>-40&&!r.done);
+  if(this.t>=this.dur&&!AR.over)this.finish();
+ },
+ draw(c){
+  const t=this.t,hyy=this.hy(t),bg=this.bg;
+  /* tente */
+  const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#5b2a86');g.addColorStop(.6,'#a24cc2');g.addColorStop(1,'#ffb3d9');c.fillStyle=g;c.fillRect(0,0,W,H);
+  for(let i=-1;i<12;i++){const x=((i*60-bg*.5)%720+720)%720-60;c.fillStyle=i%2?'rgba(255,255,255,.1)':'rgba(255,255,255,.03)';c.fillRect(x,0,30,H)}
+  /* toit rayé */
+  for(let i=-1;i<10;i++){const x=((i*80-bg*.25)%800+800)%800-80;c.fillStyle=i%2?'#ff7bac':'#fff';c.beginPath();c.moveTo(x,0);c.lineTo(x+80,0);c.lineTo(x+70,38);c.lineTo(x+10,38);c.closePath();c.fill()}
+  c.fillStyle='#ffd23f';for(let i=0;i<16;i++){const x=((i*40-bg*.25)%640+640)%640-40;c.beginPath();c.arc(x,44+Math.sin(i+t*3)*3,5,0,7);c.fill()}
+  /* miroirs et lumières */
+  for(let i=0;i<14;i++){const x=((i*70-bg)%980+980)%980-70;c.fillStyle='rgba(255,255,255,.14)';rr(c,x,70,46,150,10);c.fill();c.fillStyle='rgba(255,255,255,.35)';c.beginPath();c.arc(x+23,96,5,0,7);c.fill()}
+  /* chevaux du fond (passent derrière) */
+  for(let i=0;i<4;i++){const x=((i*170-bg*1.1)%680+680)%680-60,y=200+Math.sin(t*2.3+i*1.6)*30;c.strokeStyle='#ffd23f';c.lineWidth=4;c.beginPath();c.moveTo(x,60);c.lineTo(x,y+30);c.stroke();c.save();c.translate(x,y);c.scale(-1,1);c.font='54px serif';c.textAlign='center';c.globalAlpha=.75;c.fillText('🐴',0,24);c.restore();c.globalAlpha=1}
+  /* sol */
+  c.fillStyle='#7a3a1f';c.fillRect(0,300,W,60);c.fillStyle='#e0a05a';for(let i=0;i<14;i++){const x=((i*80-bg*1.6)%1120+1120)%1120-80;c.fillRect(x,300,40,60)}
+  /* mon cheval */
+  const hx=170;
+  c.strokeStyle='#ffd23f';c.lineWidth=8;c.beginPath();c.moveTo(hx+4,54);c.lineTo(hx+4,hyy+78);c.stroke();c.strokeStyle='#fff6b0';c.lineWidth=2;c.beginPath();c.moveTo(hx+2,54);c.lineTo(hx+2,hyy+78);c.stroke();
+  c.save();c.translate(hx,hyy+26);c.scale(-1,1);c.font='118px serif';c.textAlign='center';c.fillText('🐴',0,26);c.restore();
+  avatar(c,hx+6,hyy-34,HERO,1.15);
+  /* bras et main */
+  const ext=this.handT>0?(1-Math.abs(this.handT/.36*2-1))*26:0;
+  c.strokeStyle=HERO.skin||'#c68642';c.lineWidth=9;c.lineCap='round';c.beginPath();c.moveTo(hx+22,hyy-6);c.lineTo(HX-12+ext,hyy);c.stroke();
+  c.fillStyle=HERO.skin||'#c68642';c.beginPath();c.arc(HX-8+ext,hyy,13,0,7);c.fill();c.strokeStyle='rgba(0,0,0,.25)';c.lineWidth=2;c.stroke();
+  /* anneaux */
+  this.rings.forEach(r=>{
+    if(r.k==='bee'){c.font='40px serif';c.textAlign='center';c.fillText('🐝',r.x,r.y+14+Math.sin(t*14+r.x)*4);return}
+    const col=r.k==='red'?'#e63946':r.k==='silver'?'#c8d1de':'#ffcf2e',rad=r.k==='gold'?18:r.k==='silver'?15:13;
+    c.save();c.shadowColor=col;c.shadowBlur=14;c.strokeStyle=col;c.lineWidth=7;c.beginPath();c.arc(r.x,r.y,rad,0,7);c.stroke();c.restore();c.strokeStyle='rgba(255,255,255,.7)';c.lineWidth=2;c.beginPath();c.arc(r.x,r.y,rad,-2.6,-1.2);c.stroke();
+  });
+  this.pops.forEach(q=>{c.globalAlpha=Math.min(1,q.t*2);c.fillStyle=q.col;c.strokeStyle='#1b2559';c.lineWidth=3;c.font='bold 24px sans-serif';c.textAlign='center';c.strokeText(q.s,q.x,q.y);c.fillText(q.s,q.x,q.y);c.globalAlpha=1});
+  /* barre de temps */
+  c.fillStyle='rgba(20,30,70,.45)';rr(c,40,326,W-80,14,7);c.fill();c.fillStyle='#ffd23f';rr(c,40,326,Math.max(0,(W-80)*(1-t/this.dur)),14,7);c.fill();
+  if(this.msgT>0){bigMsg2(c,this.msg,110)}
+  c.textAlign='left';
+ }
+};
+function bigMsg2(c,s,y){c.fillStyle='#ffd23f';c.strokeStyle='#d62828';c.lineWidth=6;c.font='bold 44px sans-serif';c.textAlign='center';c.strokeText(s,W/2,y);c.fillText(s,W/2,y)}
+function avatar(c,x,y,hero,s){
+  c.save();c.translate(x,y);c.scale(s,s);c.fillStyle=hero.top||'#3b6ed8';rr(c,-16,10,32,24,8);c.fill();c.fillStyle=hero.skin||'#c68642';c.beginPath();c.arc(0,0,16,0,7);c.fill();c.fillStyle=hero.hairC||'#222';c.beginPath();c.arc(0,-3,17,Math.PI,0);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(-6,1,3,0,7);c.arc(6,1,3,0,7);c.fill();c.fillStyle='#222';c.beginPath();c.arc(-6,1,1.4,0,7);c.arc(6,1,1.4,0,7);c.fill();c.strokeStyle='#8a3b2a';c.lineWidth=2;c.beginPath();c.arc(0,6,5,.2,Math.PI-.2);c.stroke();c.restore();
+}
+
+/* ================= Grande roue : éclate les ballons de la bonne couleur ================= */
+const BCOL=['#e63946','#3b6ed8','#2a9d8f','#ffd23f','#ff7bac'];
+const RW={
+ init(){
+  const cv=$('#acv');cv.width=W;cv.height=H;AR.score=0;
+  Object.assign(this,{t:0,dur:48,ba:[],nx:.4,hearts:3,pts:0,tc:0,tcT:0,msg:'',msgT:0,pops:[],snk:window.snkUse(),combo:0,ok:0});
+  this.newTarget();
+  cv.onpointerdown=e=>{e.preventDefault();const r=cv.getBoundingClientRect();this.tap((e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H)};cv.onpointermove=null;
+  const ctl=$('#actl');ctl.className='';
+ },
+ key(k){},
+ alt(){return (1-Math.cos(2*Math.PI*this.t/this.dur))/2},
+ newTarget(){let c;do{c=Math.floor(Math.random()*BCOL.length)}while(c===this.tc&&this.t>0);this.tc=c;this.tcT=8;sfx('pick')},
+ spawn(){
+  const gold=Math.random()<.07,c=gold?-1:Math.random()<.34?this.tc:Math.floor(Math.random()*BCOL.length);
+  this.ba.push({x:40+Math.random()*(W-80),y:H+40,vy:-(52+Math.random()*44-this.t*.0),sw:Math.random()*6,c,gold,r:gold?24:26});
+  this.nx=.38+Math.random()*.4;
+ },
+ pop(x,y,s,col){this.pops.push({x,y,t:.9,s,col})},
+ tap(px,py){
+  if(AR.over)return;
+  let best=null,bd=1e9;this.ba.forEach(b=>{const d=Math.hypot(b.x-px,b.y-py);if(d<b.r+12&&d<bd){bd=d;best=b}});
+  if(!best)return;
+  this.ba=this.ba.filter(b=>b!==best);
+  if(best.gold){this.pts+=3;AR.score=this.pts*10;sfx('win');this.pop(best.x,best.y,'+3 ✨','#ffe27a');return}
+  if(best.c===this.tc){this.combo++;const n=1+(this.combo>=4?1:0);this.pts+=n;this.ok++;AR.score=this.pts*10;sfx('line');this.pop(best.x,best.y,'+'+n,'#fff')}
+  else{this.hearts--;this.combo=0;sfx('lose');this.pop(best.x,best.y,'✖','#ff4d4d');if(this.hearts<=0)this.finish()}
+ },
+ finish(){AR.score=this.pts*10+this.snk*10;arcEnd(10)},
+ hud(){return `<span>${'❤️'.repeat(Math.max(0,this.hearts))||'💔'}</span><span>${this.snk?'🍿×'+this.snk+' ':''}⏱ ${Math.max(0,Math.ceil(this.dur-this.t))}</span>`},
+ update(dt){
+  this.t+=dt;if(this.msgT>0)this.msgT-=dt;this.tcT-=dt;if(this.tcT<=0)this.newTarget();
+  this.pops.forEach(q=>{q.t-=dt;q.y-=34*dt});this.pops=this.pops.filter(q=>q.t>0);
+  this.nx-=dt;if(this.nx<=0&&this.t<this.dur-2)this.spawn();
+  this.ba.forEach(b=>{b.y+=b.vy*dt;b.x+=Math.sin(this.t*1.6+b.sw)*22*dt});this.ba=this.ba.filter(b=>b.y>-50);
+  if(this.t>=this.dur&&!AR.over)this.finish();
+ },
+ draw(c){
+  const a=this.alt(),t=this.t;
+  /* ciel : de plus en plus haut */
+  const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,a>.6?'#2a6fd0':'#4ba9f5');g.addColorStop(.7,'#bfe6ff');g.addColorStop(1,'#f4fbff');c.fillStyle=g;c.fillRect(0,0,W,H);
+  c.fillStyle='#fff3b0';c.beginPath();c.arc(450,70+a*30,26,0,7);c.fill();
+  /* nuages (moyenne altitude) */
+  for(let i=0;i<5;i++){const x=((i*190+t*7)%900)-150,y=60+i*37%110+a*70;c.fillStyle='rgba(255,255,255,.88)';[[0,0,22],[26,-9,27],[56,0,21],[28,6,24]].forEach(([dx,dy,r])=>{c.beginPath();c.arc(x+dx,y+dy,r,0,7);c.fill()})}
+  /* ville au loin */
+  {const oy=a*150,base=300+oy;for(let i=0;i<14;i++){const x=i*46-10,h=40+((i*37)%70);c.fillStyle=i%2?'#8aa4cc':'#9fb7da';c.fillRect(x,base-h,34,h+80);c.fillStyle='rgba(255,255,255,.5)';for(let k=0;k<3;k++)c.fillRect(x+6,base-h+8+k*16,6,8),c.fillRect(x+20,base-h+8+k*16,6,8)}}
+  /* le parc en bas : grandit quand on descend */
+  {const oy=a*320,sc=1-a*.25;c.save();c.translate(0,oy);c.fillStyle='#6cc24a';c.fillRect(0,300,W,200);c.fillStyle='#efe0bd';c.fillRect(0,318,W,60);
+   for(let i=0;i<8;i++){const x=i*80+14;c.font=(46*sc)+'px serif';c.textAlign='center';c.fillText(['🎪','🌳','🎠','🍿','🌳','🎢','🍦','🌳'][i],x+20,314);c.font=(18*sc)+'px serif';c.fillText(['🧒','👧','🧑','👦'][i%4],x+46,345)}
+   c.restore()}
+  /* ballons */
+  this.ba.forEach(b=>{
+    const col=b.gold?'#ffd23f':BCOL[b.c];c.save();c.translate(b.x,b.y);
+    c.strokeStyle='rgba(60,60,60,.5)';c.lineWidth=1.5;c.beginPath();c.moveTo(0,b.r);c.quadraticCurveTo(6,b.r+16,0,b.r+30);c.stroke();
+    const gr=c.createRadialGradient(-8,-10,4,0,0,b.r+4);gr.addColorStop(0,'rgba(255,255,255,.9)');gr.addColorStop(.3,col);gr.addColorStop(1,col);
+    c.fillStyle=gr;c.beginPath();c.ellipse(0,0,b.r-3,b.r+3,0,0,7);c.fill();c.strokeStyle='rgba(0,0,0,.2)';c.lineWidth=2;c.stroke();
+    c.fillStyle=col;c.beginPath();c.moveTo(-4,b.r+2);c.lineTo(4,b.r+2);c.lineTo(0,b.r+8);c.fill();
+    if(b.gold){c.font='20px serif';c.textAlign='center';c.fillText('⭐',0,7)}c.restore();
+  });
+  this.pops.forEach(q=>{c.globalAlpha=Math.min(1,q.t*2);c.fillStyle=q.col;c.strokeStyle='#1b2559';c.lineWidth=3;c.font='bold 24px sans-serif';c.textAlign='center';c.strokeText(q.s,q.x,q.y);c.fillText(q.s,q.x,q.y);c.globalAlpha=1});
+  /* cabine : cadre de fenêtre et le héros */
+  c.strokeStyle='#d6336c';c.lineWidth=18;rr(c,-4,-4,W+8,H+8,34);c.stroke();c.strokeStyle='#ffb3c9';c.lineWidth=4;rr(c,10,10,W-20,H-20,24);c.stroke();
+  c.fillStyle='#d6336c';c.fillRect(0,H-30,W,30);avatar(c,60,H-34,HERO,1.1);
+  /* consigne : la couleur à toucher */
+  c.fillStyle='rgba(255,255,255,.9)';rr(c,W-196,18,176,52,16);c.fill();c.fillStyle='#25326b';c.font='bold 14px sans-serif';c.textAlign='left';c.fillText(T('Cette couleur :','This colour:'),W-186,38);
+  {const col=BCOL[this.tc],cx=W-48,cy=44,pulse=1+Math.sin(t*8)*.06;c.save();c.translate(cx,cy);c.scale(pulse,pulse);c.fillStyle=col;c.beginPath();c.ellipse(0,0,17,20,0,0,7);c.fill();c.strokeStyle='#fff';c.lineWidth=3;c.stroke();c.restore()}
+  c.fillStyle='rgba(255,255,255,.45)';c.fillRect(W-186,60,176*Math.max(0,this.tcT/8),4);
+  /* altitude */
+  c.fillStyle='rgba(20,30,70,.5)';rr(c,22,22,16,200,8);c.fill();c.fillStyle='#ffd23f';rr(c,24,24+196*(1-a)-0,12,196*a+0,6);c.fill();c.font='14px serif';c.textAlign='center';c.fillText('🎡',30,242);
+  c.textAlign='left';
+ }
+};
+GAMES.manege=MG;GAMES.roue=RW;
+})();
+/*PKEND*/
+
 
 /*BRDSTART*/
 (function(){
