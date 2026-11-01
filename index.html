@@ -1309,7 +1309,7 @@ function getVoice(){
     if(/premium|enhanced|siri|neural|natural|optimis/.test(n))sc+=5;
     VPREF[base].forEach((p,i)=>{if(n.includes(p))sc+=4-Math.min(i,3)*.5});
     if(v.lang.toLowerCase().replace('_','-')===(base==='fr'?'fr-fr':'en-gb'))sc+=1;
-    if(v.localService)sc+=.5;if(BAD.test(n))sc-=10;if(!GOODV.test(n))sc-=3;
+    sc+=v.localService?3:-3;if(BAD.test(n))sc-=10;if(!GOODV.test(n))sc-=3;
     const isF=FEM.test(n),isM=!isF&&MAS.test(n),want=(HVOICE[HERO.id]||{g:'m'}).g;
     if(want==='f'){if(isF)sc+=6;else if(isM)sc-=6}else{if(isM)sc+=6;else if(isF)sc-=6}
     if(sc>bs){bs=sc;best=v}});
@@ -3680,7 +3680,7 @@ function voiceByGender(g){
   VOICES.filter(v=>v.lang.toLowerCase().replace('_','-').startsWith(base)).forEach(v=>{
     const n=v.name.toLowerCase();let sc=0;if(/premium|enhanced|siri|neural|natural|optimis/.test(n))sc+=5;
     const isF=FEM.test(n),isM=!isF&&MAS.test(n);if(g==='f'){if(isF)sc+=6;else if(isM)sc-=6}else{if(isM)sc+=6;else if(isF)sc-=6}
-    if(v.localService)sc+=.5;if(BAD.test(n))sc-=10;if(!GOODV.test(n))sc-=3;if(sc>bs){bs=sc;best=v}});
+    sc+=v.localService?3:-3;if(BAD.test(n))sc-=10;if(!GOODV.test(n))sc-=3;if(sc>bs){bs=sc;best=v}});
   return best;
 }
 function speakAs(t,pitch,g){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);const v=voiceByGender(g||'m');if(v){u.voice=v;u.lang=v.lang}else u.lang=L().voice;u.rate=VQ.rate;u.pitch=pitchFor(pitch);speechSynthesis.speak(u)}catch(e){}}
@@ -6107,13 +6107,13 @@ TM.start=function(by,remote,mode,kind){
   try{speechSynthesis.cancel()}catch(e){}
   ['bgend','end','cityP','vm','nmM','rdQuiz','msgr'].forEach(i=>{const x=document.getElementById(i);if(x)x.classList.remove('on')});
   CITY.ret=false;openCity();
-  siren(10);kidsYellStart();setTimeout(()=>{try{speak(TM.by?(TM.mode==='chief'?chiefSay():T().sayBy(TM.by)):KTT(TM.kind).say)}catch(e){}},500);
+  siren(10);kidsYellStart();setTimeout(()=>{try{if(window.pcVoiceOn&&!pcVoiceOn())return;speak(TM.by?(TM.mode==='chief'?chiefSay():T().sayBy(TM.by)):KTT(TM.kind).say)}catch(e){}},500);
   setTimeout(()=>{if(TM.active)siren(6)},12000);
 };
 function end(){
   kidsYellStop();TM.active=false;detach();TM.w5=TM.w1=false;
   try{toast({hero:HERO.id,text:T().end+(lang==='en'?' · The video is on Blocks TV!':' · La vidéo passe sur Blocs TV !'),btns:[{label:'📺',fn:()=>openTV(TM.clip&&TM.clip.id)}]})}catch(e){}
-  setTimeout(()=>{try{speak(T().end.replace(/[💧]/g,''))}catch(e){}},300);
+  setTimeout(()=>{try{if(window.pcVoiceOn&&!pcVoiceOn())return;speak(T().end.replace(/[💧]/g,''))}catch(e){}},300);
 }
 /* appelé à chaque image de la carte */
 /* pouvoir du 1er du classement */
@@ -8854,6 +8854,72 @@ const RW={
 GAMES.manege=MG;GAMES.roue=RW;
 })();
 /*PKEND*/
+
+/*VOXSTART*/
+(function(){
+const T=(f,e)=>lang==='en'?e:f;
+const L6=(sw,es,pt,de,it,ar)=>({sw,es,pt,de,it,ar});
+try{window.i18nAdd&&window.i18nAdd({
+ 'Alert voices':L6('Sauti za tahadhari','Voces de alerta','Vozes de alerta','Alarmstimmen','Voci d’allarme','أصوات التنبيه'),
+ '🔊 Tap here to turn the voices on':L6('🔊 Gusa hapa kuwasha sauti','🔊 Toca aquí para activar las voces','🔊 Toque aqui para ativar as vozes','🔊 Tippe hier, um die Stimmen einzuschalten','🔊 Tocca qui per attivare le voci','🔊 المس هنا لتشغيل الأصوات')
+})}catch(e){}
+/* ---- voix d'alerte de Panic City : oui / non (mémorisé) ---- */
+window.pcVoiceOn=()=>{try{return localStorage.getItem('elias_pcv')!=='0'}catch(e){return true}};
+/* ---- couche de fiabilité de la synthèse vocale ---- */
+const ss=window.speechSynthesis;
+if(ss&&!window.__vox){
+  window.__vox=1;
+  const osp=ss.speak.bind(ss),ocan=ss.cancel.bind(ss);
+  let gen=0,lastCan=0,unl=false,blocked=null,lastAsk=0;
+  const unlock=()=>{if(unl)return;unl=true;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;osp(u)}catch(e){}};
+  /* le navigateur n'autorise la voix qu'après un premier toucher : on la débloque dès le premier geste */
+  ['pointerdown','touchstart','keydown','click'].forEach(ev=>addEventListener(ev,()=>{
+    unlock();
+    if(blocked){const b=blocked;blocked=null;if(Date.now()-b.t<15000)setTimeout(()=>{try{ss.speak(b.u)}catch(e){}},60)}
+  },true));
+  const ask=()=>{if(Date.now()-lastAsk<20000)return;lastAsk=Date.now();try{toast({text:T('🔊 Touche ici pour activer les voix','🔊 Tap here to turn the voices on'),ms:15000,btns:[{label:'🔊',fn:()=>{}}]})}catch(e){}};
+  const localVoice=lang0=>{try{const b=String(lang0||'fr').slice(0,2).toLowerCase();return ss.getVoices().find(v=>v.localService&&v.lang.toLowerCase().startsWith(b))||null}catch(e){return null}};
+  const fallback=(u,my)=>{
+    if(my!==gen)return;
+    try{ocan()}catch(e){}
+    const n=new SpeechSynthesisUtterance(u.text);n.lang=u.lang||(lang==='en'?'en-GB':'fr-FR');n.rate=u.rate||1;n.pitch=u.pitch||1;n.volume=u.volume==null?1:u.volume;
+    const v=localVoice(n.lang);if(v){n.voice=v;n.lang=v.lang}
+    n.addEventListener('error',ev=>{if(ev.error==='not-allowed'){blocked={u:n,t:Date.now()};ask()}});
+    try{ss.paused&&ss.resume();osp(n)}catch(e){}
+  };
+  ss.cancel=function(){gen++;lastCan=Date.now();return ocan()};
+  ss.speak=function(u){
+    if(!u||typeof u.text!=='string')return osp(u);
+    const my=gen;let started=false,retried=false;
+    const go=()=>{
+      if(my!==gen)return;                              /* annulée entre-temps : on ne la dit pas, même en retard */
+      try{if(ss.paused)ss.resume()}catch(e){}
+      u.addEventListener('start',()=>{started=true});
+      u.addEventListener('error',ev=>{
+        if(ev.error==='not-allowed'){blocked={u,t:Date.now()};ask()}
+        else if(ev.error!=='canceled'&&ev.error!=='interrupted'&&!retried){retried=true;fallback(u,my)}
+      });
+      try{osp(u)}catch(e){}
+      setTimeout(()=>{if(!started&&!retried&&my===gen&&!ss.speaking){retried=true;fallback(u,my)}},2400);
+    };
+    const w=70-(Date.now()-lastCan);if(w>0)setTimeout(go,w);else go();
+  };
+  /* file bloquée en pause (bug de certains navigateurs) */
+  setInterval(()=>{try{if(ss.paused&&!ss.pending&&!ss.speaking)ss.resume()}catch(e){}},2500);
+}
+/* ---- bouton « voix d'alerte » dans la ville ---- */
+function mkBtn(parent){
+  if(!parent||document.getElementById('cityPcv'))return;
+  const b=document.createElement('button');b.id='cityPcv';b.style.background='#5e60ce';b.style.color='#fff';
+  const paint=()=>{const on=pcVoiceOn();b.innerHTML='🔊 <span>'+T('Voix d’alerte','Alert voices')+'</span> : <span>'+(on?T('Oui','Yes'):T('Non','No'))+'</span>'};
+  b.onclick=()=>{try{localStorage.setItem('elias_pcv',pcVoiceOn()?'0':'1')}catch(e){}paint();if(!pcVoiceOn()){try{ss&&ss.cancel()}catch(e){}}};
+  paint();parent.append(b);
+}
+const _oc=openCity;
+openCity=function(){const r=_oc.apply(this,arguments);try{mkBtn(document.getElementById('cityBar'))}catch(e){}return r};
+})();
+/*VOXEND*/
+
 
 
 /*BRDSTART*/
