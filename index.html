@@ -5786,6 +5786,7 @@ function flatAdd(c){
       box.innerHTML='';m._key=null;box.append(el(`<h2>${T.parentT}</h2><p style="font-size:.85em">${T.explain}</p>`));
       let r=el(`<div class="srow"><b>${T.textMode}</b></div>`);r.append(B(S.cfg.mode==='free'?T.free:T.phr,'',()=>{S.cfg.mode=S.cfg.mode==='free'?'phrases':'free';S.save();draw()}));box.append(r);
       r=el(`<div class="srow"><b>${T.online}</b></div>`);r.append(B(S.cfg.online?T.on:T.off,S.cfg.online?'g':'r',()=>{S.cfg.online=!S.cfg.online;S.save();draw();toast({text:'🔄'});setTimeout(()=>location.reload(),900)}));box.append(r);
+      try{window.safeStandbyRow&&window.safeStandbyRow(box,B,el,draw)}catch(e){}
       {const on=S.cfg.voices!==false;r=el(`<div class="srow"><b>${lang==='en'?'Share singing voices with the group':'Partager les voix (chants) avec le groupe'}</b></div>`);r.append(B(on?T.on:T.off,on?'g':'r',()=>{S.cfg.voices=!on;S.save();draw()}));box.append(r)}
       {const on=S.cfg.friendAlerts!==false;r=el(`<div class="srow"><b>${T.fa}</b></div>`);r.append(B(on?T.on:T.off,on?'g':'r',()=>{S.cfg.friendAlerts=!on;S.save();draw()}));box.append(r)}
       {const L=S.cfg.limit===undefined?30:S.cfg.limit,OPT=[30,0];r=el(`<div class="srow"><b>${T.lim}</b></div>`);const row=document.createElement('div');row.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:6px';
@@ -8989,6 +8990,52 @@ tvRefresh=function(){
 };
 })();
 /*TVDEND*/
+
+/*SBYSTART*/
+(function(){
+const S=SAFE;const T=(f,e)=>lang==='en'?e:f;
+const L6=(sw,es,pt,de,it,ar)=>({sw,es,pt,de,it,ar});
+try{window.i18nAdd&&window.i18nAdd({
+ 'Message filter':L6('Kichujio cha ujumbe','Filtro de mensajes','Filtro de mensagens','Nachrichtenfilter','Filtro dei messaggi','مرشح الرسائل'),
+ 'Standby: the filter is paused for a while, then turns back on by itself.':L6('Kusubiri: kichujio kinasimamishwa kwa muda, kisha kinawaka tena chenyewe.','En espera: el filtro se pausa un tiempo y se reactiva solo.','Em espera: o filtro fica em pausa por um tempo e volta a ligar sozinho.','Standby: Der Filter pausiert eine Weile und schaltet sich von selbst wieder ein.','In pausa: il filtro si ferma per un po’ e si riattiva da solo.','وضع الانتظار: يتوقف المرشح مؤقتًا ثم يعمل من جديد تلقائيًا.'),
+ 'On standby until {#}':L6('Imesimamishwa hadi {#}','En espera hasta las {#}','Em espera até às {#}','Pausiert bis {#}','In pausa fino alle {#}','في وضع الانتظار حتى {#}'),
+ 'Safety is back on.':L6('Usalama umewashwa tena.','La seguridad vuelve a estar activa.','A segurança voltou a ficar ativa.','Die Sicherheit ist wieder aktiv.','La sicurezza è di nuovo attiva.','عادت الحماية للعمل.'),
+ 'Put on standby (adult)':L6('Weka kusubiri (mtu mzima)','Poner en espera (adulto)','Pôr em espera (adulto)','Pausieren (Erwachsener)','Metti in pausa (adulto)','إيقاف مؤقت (بالغ)')
+})}catch(e){}
+const left=()=>Math.max(0,(S.cfg.standbyUntil||0)-Date.now());
+S.standby=()=>left()>0;
+/* pendant la veille : plus de filtre de mots, plus de pause sécurité, plus de blocage d'emojis */
+const _chk=S.check;S.check=function(t){if(S.standby())return '';return _chk.apply(this,arguments)};
+const _eg=S.emojiGuard;S.emojiGuard=function(){if(S.standby())return false;return _eg.apply(this,arguments)};
+const _en=S.engage;S.engage=function(rec){if(S.standby()){try{S.log.unshift({...rec,t:Date.now()});S.log=S.log.slice(0,30);S.save()}catch(e){}return}return _en.apply(this,arguments)};
+function paint(){const b=document.getElementById('safeBtn');if(!b)return;b.textContent=S.standby()?'🛡️💤':'🛡️';b.title=S.standby()?T('Sécurité des messages en veille','Message safety on standby'):''}
+window.safeSetStandby=function(min){
+  S.cfg.standbyUntil=min>0?Date.now()+min*60000:0;
+  if(min>0){S.locked=false;S.rec=null;try{localStorage.removeItem('elias_mute')}catch(e){}try{S.ui();if(!SO.room)socialInit();else pushPresence()}catch(e){}}
+  S.save();paint();
+};
+window.safeStandbyRow=function(box,B,el,draw){
+  const on=S.standby();
+  const r=el(`<div class="srow"><b>${T('Filtre des messages','Message filter')}</b></div>`);
+  const row=document.createElement('div');row.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:6px';
+  row.append(B(T('Actif','On'),!on?'g':'o',()=>{window.safeSetStandby(0);draw()}));
+  [[30,'30 min'],[120,'2 h'],[1440,'24 h']].forEach(([m,l])=>row.append(B('😴 '+l,'o',()=>{window.safeSetStandby(m);draw()})));
+  r.append(row);
+  r.append(el(`<p style="font-size:.8em;margin:4px 0 0">${T('Veille : le filtre est coupé un moment, puis se remet tout seul.','Standby: the filter is paused for a while, then turns back on by itself.')}</p>`));
+  if(on){const t=new Date(S.cfg.standbyUntil).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});r.append(el(`<p style="font-size:.9em;margin:4px 0 0">😴 ${T('En veille jusqu’à '+t,'On standby until '+t)}</p>`))}
+  box.append(r);
+};
+/* depuis l'écran « Pause sécurité » : un adulte peut mettre la veille tout de suite */
+const _ol=S.openLock;
+S.openLock=function(){
+  _ol.apply(this,arguments);
+  try{const box=document.getElementById('safeBox');if(box&&!box.querySelector('.sbyb')){const b=document.createElement('button');b.className='sb o sbyb';b.textContent='😴 '+T('Mettre en veille (adulte)','Put on standby (adult)');b.onclick=()=>S.askPin(()=>{window.safeSetStandby(120);document.getElementById('safeM').style.display='none'});box.append(b)}}catch(e){}
+};
+setInterval(()=>{try{if(S.cfg.standbyUntil&&!S.standby()){S.cfg.standbyUntil=0;S.save();toast({text:'🛡️ '+T('La sécurité est réactivée.','Safety is back on.')})}paint()}catch(e){}},15000);
+setTimeout(paint,800);
+})();
+/*SBYEND*/
+
 
 
 
