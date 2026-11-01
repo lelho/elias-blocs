@@ -5892,11 +5892,13 @@ window.KYON=()=>KY.on;window.kidsYellStart=kidsYellStart;window.kidsYellStop=kid
 /* parents */
 const PS=[{n:0,skin:'#8d5a3c',hair:'bun',hairC:'#1a110d',top:'#e8509f',girl:true},{n:1,skin:'#6f4430',hair:'short',hairC:'#140d0a',top:'#25326b'},{n:2,skin:'#7a4b33',hair:'bob',hairC:'#9ca3af',top:'#8e44ad',girl:true,glasses:true},{n:3,skin:'#8d5a3c',hair:'spiky',hairC:'#1a110d',top:'#06b67f'}];
 const POS=[[50,210],[1150,210],[50,430],[1150,430]];
+/* les acteurs de l'alerte apparaissent juste hors de l'écran, autour du joueur, où qu'il soit (ville ou parc d'attractions) */
+function nearHero(i){const m=CITY.me||{x:600,y:430},sx=[-1,1,-1,1][i%4],sy=[-1,-1,1,1][i%4];return [Math.max(50,Math.min(WW-50,m.x+sx*(430+Math.random()*100))),Math.max(60,Math.min(WH-60,m.y+sy*(300+Math.random()*80)))]}
 function spawnParents(){
   PS.forEach((p,i)=>{
     const id='par'+i;if(CITY.ents.has(id))return;
     const h={id:'par'+i,name:T().par[i],age:35,skin:p.skin,hair:p.hair,hairC:p.hairC,top:p.top,band:p.top,acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#37474f',shoe:'#222',s:1.12,girl:p.girl,glasses:p.glasses,forceOutfit:'hero',pk:i};
-    const e=mkEnt(id,h,h.name,{x:POS[i][0],y:POS[i][1],speed:150});e.parent=true;e.safe=0;e.caught=0;
+    const np=nearHero(i),e=mkEnt(id,h,h.name,{x:np[0],y:np[1],speed:150});e.parent=true;e.safe=0;e.caught=0;
     const sv=e.g.querySelector('.bob svg');if(sv){sv.setAttribute('x','-36');sv.setAttribute('y','-98');sv.setAttribute('width','72');sv.setAttribute('height','100')}
     e.g.querySelector('.nm').textContent='👨‍👩‍👧 '+h.name;
   });
@@ -5904,7 +5906,7 @@ function spawnParents(){
 function spawnPolice(){
   if(CITY.ents.has('policecar'))return;
   const h={id:'police',name:'',age:35,skin:'#8d5a3c',hair:'short',hairC:'#111',top:'#1d3557',band:'#1d3557',acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#222',shoe:'#222',s:1,forceOutfit:'hero',cop:1};
-  const e=mkEnt('policecar',h,T().polName,{x:600,y:40,speed:260});e.isPolice=true;e.car=true;e.deployed=false;e.t0=Date.now();
+  const pm=CITY.me||{x:600,y:430},e=mkEnt('policecar',h,T().polName,{x:Math.max(80,Math.min(WW-80,pm.x+(pm.x>WW/2?-480:480))),y:Math.max(40,pm.y-440),speed:260});e.isPolice=true;e.car=true;e.deployed=false;e.t0=Date.now();
   const bob=e.g.querySelector('.bob');
   if(bob)bob.innerHTML=`<svg x="-68" y="-84" width="136" height="84" viewBox="0 0 92 56" style="overflow:visible"><circle class="sirL" cx="40" cy="0" r="24" fill="#ff2d2d" opacity=".35"/><circle class="sirR" cx="52" cy="0" r="24" fill="#2d7dff" opacity=".35"/><rect x="4" y="20" width="84" height="22" rx="8" fill="#f4f6fb" stroke="#1d3557" stroke-width="3"/><path d="M20 20 L30 6 H62 L74 20Z" fill="#cfe8ff" stroke="#1d3557" stroke-width="3" stroke-linejoin="round"/><line x1="46" y1="6" x2="46" y2="20" stroke="#1d3557" stroke-width="3"/><rect x="4" y="30" width="84" height="7" fill="#1d3557"/><rect x="38" y="-1" width="16" height="8" rx="3" fill="#1d3557"/><rect class="sirL" x="38" y="-3" width="8" height="7" rx="2" fill="#ff2d2d"/><rect class="sirR" x="46" y="-3" width="8" height="7" rx="2" fill="#2d7dff"/><circle cx="24" cy="44" r="8" fill="#222"/><circle cx="68" cy="44" r="8" fill="#222"/><circle cx="24" cy="44" r="3.5" fill="#ccc"/><circle cx="68" cy="44" r="3.5" fill="#ccc"/><text x="46" y="35" font-size="7" font-weight="900" fill="#fff" text-anchor="middle">POLICE</text></svg>`;
   e.g.querySelector('.nm').textContent=T().polName;
@@ -5995,7 +5997,7 @@ function robotSVG(attrs){return `<svg ${attrs} viewBox="0 0 220 334" overflow="v
 function spawnMonster(){
   if(CITY.ents.has('monster'))return;
   const h={id:'mega',name:'',age:35,skin:'#8d5a3c',hair:'short',hairC:'#111',top:'#1d3557',band:'#1d3557',acc:'#ffd23f',cape:'transparent',cape2:'transparent',legC:'#222',shoe:'#222',s:1,forceOutfit:'hero'};
-  const e=mkEnt('monster',h,'🤖 Robot géant',{x:600,y:-120,speed:70});e.parent=true;e.isMonster=true;e.safe=0;e.caught=0;e.g.classList.add('big');
+  const mm=CITY.me||{x:600,y:430},e=mkEnt('monster',h,'🤖 Robot géant',{x:Math.max(150,Math.min(WW-150,mm.x+(Math.random()-.5)*300)),y:Math.max(-120,mm.y-620),speed:70});e.parent=true;e.isMonster=true;e.safe=0;e.caught=0;e.g.classList.add('big');
   const bob=e.g.querySelector('.bob');
   if(bob)bob.innerHTML=robotSVG('x="-110" y="-330" width="220" height="334"');
   e.g.querySelector('.nm').textContent='🤖 Robot géant';
@@ -6036,7 +6038,7 @@ function monsterThink(e,dt){
   /* cible : le bâtiment le moins abîmé le plus proche ; sinon un point au hasard */
   if(!MON.tgt||Math.hypot(MON.tgt.x-e.x,MON.tgt.y-e.y)<70){
     const cand=CITYB.filter(b=>(MON.dmg.get(b.id)||{lvl:0}).lvl<3&&b!==MON.last);
-    let best=null,bd=1e9;cand.forEach(b=>{const d=Math.hypot(b.x+b.w/2-e.x,b.y+b.h/2-e.y)+Math.random()*260;if(d<bd){bd=d;best=b}});
+    let best=null,bd=1e9;const hm=CITY.me||{x:e.x,y:e.y};cand.forEach(b=>{const d=Math.hypot(b.x+b.w/2-e.x,b.y+b.h/2-e.y)+Math.hypot(b.x+b.w/2-hm.x,b.y+b.h/2-hm.y)*.8+Math.random()*260;if(d<bd){bd=d;best=b}});
     MON.last=MON.cur;MON.cur=best;MON.tgt=best?{x:best.x+best.w/2,y:best.y+best.h+30}:{x:100+Math.random()*1000,y:200+Math.random()*700};
   }
   const dx=MON.tgt.x-e.x,dy=MON.tgt.y-e.y,d=Math.hypot(dx,dy)||1,s=e.speed*dt;
@@ -6106,6 +6108,7 @@ TM.start=function(by,remote,mode,kind){
   try{TVS.playing=false;TVS.token++}catch(e){}
   try{speechSynthesis.cancel()}catch(e){}
   ['bgend','end','cityP','vm','nmM','rdQuiz','msgr'].forEach(i=>{const x=document.getElementById(i);if(x)x.classList.remove('on')});
+  try{if(TM.inCity()&&CITY.me)CITY.spawn={x:CITY.me.x,y:CITY.me.y}}catch(e){}   /* si on est déjà dans la ville, on reste là où on est (parc d'attractions compris) */
   CITY.ret=false;openCity();
   siren(10);kidsYellStart();setTimeout(()=>{try{if(window.pcVoiceOn&&!pcVoiceOn())return;speak(TM.by?(TM.mode==='chief'?chiefSay():T().sayBy(TM.by)):KTT(TM.kind).say)}catch(e){}},500);
   setTimeout(()=>{if(TM.active)siren(6)},12000);
@@ -8919,6 +8922,74 @@ const _oc=openCity;
 openCity=function(){const r=_oc.apply(this,arguments);try{mkBtn(document.getElementById('cityBar'))}catch(e){}return r};
 })();
 /*VOXEND*/
+
+/*TVDSTART*/
+(function(){
+const T=(f,e)=>lang==='en'?e:f;
+const $q=s=>document.querySelector(s);
+const L6=(sw,es,pt,de,it,ar)=>({sw,es,pt,de,it,ar});
+try{window.i18nAdd&&window.i18nAdd({
+ 'Delete this video?':L6('Futa video hii?','¿Borrar este vídeo?','Apagar este vídeo?','Dieses Video löschen?','Eliminare questo video?','حذف هذا الفيديو؟'),
+ 'Video deleted.':L6('Video imefutwa.','Vídeo borrado.','Vídeo apagado.','Video gelöscht.','Video eliminato.','تم حذف الفيديو.'),
+ 'Delete all my videos':L6('Futa video zangu zote','Borrar todos mis vídeos','Apagar todos os meus vídeos','Alle meine Videos löschen','Elimina tutti i miei video','احذف كل فيديوهاتي'),
+ 'Delete all your videos?':L6('Futa video zako zote?','¿Borrar todos tus vídeos?','Apagar todos os seus vídeos?','Alle deine Videos löschen?','Eliminare tutti i tuoi video?','حذف كل فيديوهاتك؟'),
+ 'Show hidden videos again':L6('Onyesha tena video zilizofichwa','Mostrar de nuevo los vídeos ocultos','Mostrar de novo os vídeos ocultos','Versteckte Videos wieder anzeigen','Mostra di nuovo i video nascosti','أظهر الفيديوهات المخفية مجددًا'),
+ 'Delete':L6('Futa','Borrar','Apagar','Löschen','Elimina','حذف')
+})}catch(e){}
+/* vidéos masquées (démos, vidéos des autres, clips…) : mémorisées sur cet appareil */
+const loadHide=()=>{try{return new Set(JSON.parse(localStorage.getItem('elias_tvhide')||'[]'))}catch(e){return new Set()}};
+const saveHide=s=>{try{localStorage.setItem('elias_tvhide',JSON.stringify([...s].slice(-400)))}catch(e){}};
+let HIDE=loadHide();
+const _all=allStories;
+allStories=function(){return _all.apply(this,arguments).filter(s=>!HIDE.has(s.id))};
+const mine=s=>!s.demo&&s.author===HERO.name&&(STORIES.some(x=>x.id===s.id));
+function removeStory(s){
+  const was=allStories();
+  STORIES=STORIES.filter(x=>x.id!==s.id);try{localStorage.setItem('elias_stories',JSON.stringify(STORIES))}catch(e){}
+  SHARED=SHARED.filter(x=>x.id!==s.id);
+  HIDE.add(s.id);saveHide(HIDE);
+  /* si c'est la mienne, on l'enlève aussi de la liste partagée */
+  try{if(DBS&&mine0(s)){const d=DBS.collection('stories').doc(s.id);if(d.delete)d.delete().catch(()=>{})}}catch(e){}
+}
+const mine0=s=>s&&s.author===HERO.name&&!s.demo&&!String(s.id).startsWith('tm');
+function afterDelete(){
+  const L0=allStories();if(TVS.idx>=L0.length)TVS.idx=0;
+  try{toast({hero:HERO.id,text:'🗑 '+T('Vidéo supprimée.','Video deleted.')})}catch(e){}
+  tvRefresh();tvRun();
+}
+function confirmDel(s){
+  const nm=String(s.title||'').replace(/</g,'&lt;');
+  try{toast({hero:HERO.id,ms:12000,text:'🗑 <b>'+nm+'</b><br>'+T('Supprimer cette vidéo ?','Delete this video?'),btns:[
+    {label:'🗑 '+T('Oui','Yes'),fn:()=>{removeStory(s);afterDelete()}},
+    {label:T('Non','No'),fn:()=>{}}]})}catch(e){}
+}
+/* bouton 🗑 dans la barre de la télé */
+const bar=$q('#tvScreen')&&$q('#tvScreen').parentNode.querySelector('.tvbar');
+if(bar&&!$q('#tvDel')){const b=document.createElement('button');b.id='tvDel';b.textContent='🗑';b.title=T('Supprimer','Delete');b.style.background='#7a5af8';
+  b.onclick=()=>{const L0=allStories(),s=L0[TVS.idx];if(s)confirmDel(s)};bar.append(b)}
+/* petite corbeille sur chaque ligne de la liste + liens du bas */
+const css=document.createElement('style');css.textContent='.tvblk .tt{flex:1 1 auto;min-width:0}.tvblk .tvx{margin-left:auto;flex:0 0 auto;font-size:17px;padding:5px 7px;border-radius:10px;background:#0003}.tvblk .tvx:active{background:#0006}#tvTools{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:6px 0 12px}#tvTools button{background:#25326b;color:#fff;border-radius:14px;padding:8px 14px;font-size:15px;box-shadow:0 4px 0 rgba(27,37,89,.2)}';document.head.appendChild(css);
+const _rf=tvRefresh;
+tvRefresh=function(){
+  const r=_rf.apply(this,arguments);
+  try{
+    const L0=allStories(),box=$q('#tvList');if(!box)return r;
+    [...box.querySelectorAll('.tvblk')].forEach((b,i)=>{
+      return;const s=L0[i];if(!s)return;
+      const x=document.createElement('span');x.className='tvx';x.textContent='🗑';x.setAttribute('role','button');
+      x.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();confirmDel(s)});b.append(x);
+    });
+    let tools=$q('#tvTools');if(!tools){tools=document.createElement('div');tools.id='tvTools'}box.append(tools);tools.innerHTML='';
+    const myN=L0.filter(mine).length;
+    if(myN>0){const b=document.createElement('button');b.textContent='🗑 '+T('Supprimer toutes mes vidéos','Delete all my videos');b.onclick=()=>{
+      try{toast({hero:HERO.id,ms:12000,text:'🗑 '+T('Supprimer toutes tes vidéos ?','Delete all your videos?'),btns:[{label:'🗑 '+T('Oui','Yes'),fn:()=>{allStories().filter(mine).forEach(removeStory);afterDelete()}},{label:T('Non','No'),fn:()=>{}}]})}catch(e){}};tools.append(b)}
+    if(HIDE.size>0){const b=document.createElement('button');b.textContent='↺ '+T('Réafficher les vidéos masquées','Show hidden videos again');b.onclick=()=>{HIDE=new Set();saveHide(HIDE);tvRefresh()};tools.append(b)}
+  }catch(e){}
+  return r;
+};
+})();
+/*TVDEND*/
+
 
 
 
