@@ -22,7 +22,10 @@ select{font:600 14px Poppins,sans-serif;padding:6px 10px;border-radius:10px;bord
 <select id="lang"></select>
 <img class="i" src="icon-192.png" alt="">
 <h1 data-t="th_h"></h1><p data-t="th_p"></p>
-<a class="btn" href="play/index.html" data-t="th_open"></a>
+<h3 data-t="th_code"></h3>
+<div id="code" style="font:800 28px Poppins,sans-serif;letter-spacing:1px;background:#eef6ff;border:2px dashed #3b6ed8;border-radius:16px;padding:14px;margin:8px 0;user-select:all;-webkit-user-select:all" data-t="th_wait"></div>
+<p id="save" data-t="th_save" hidden></p>
+<a class="btn" id="open" href="play/index.html" data-t="th_open"></a>
 <button class="btn alt" id="inst" hidden data-t="th_install"></button>
 <h3 data-t="th_steps"></h3><ol id="list"></ol>
 <p class="tip" data-t="th_tip"></p>
@@ -43,4 +46,15 @@ var st='';try{st=localStorage.getItem('pc_lang')||''}catch(e){}
 var n=st||(navigator.language||'en').slice(0,2).toLowerCase();set(I[n]?n:'en');
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;document.getElementById('inst').hidden=false});
 document.getElementById('inst').onclick=function(){if(dp){dp.prompt();dp=null}};
+
+var PASS_API='https://paniccity-pass.thailelho.workers.dev';
+(function(){var sid=new URLSearchParams(location.search).get('session_id'),c=document.getElementById('code');
+ function fail(){c.textContent=I[L].th_err||I.en.th_err;c.style.fontSize='15px'}
+ if(!sid){fail();return}
+ fetch(PASS_API+'/pass?session_id='+encodeURIComponent(sid)).then(function(r){return r.json()}).then(function(d){
+  if(!d.code)return fail();
+  c.removeAttribute('data-t');c.textContent=d.code;document.getElementById('save').hidden=false;
+  document.getElementById('open').href='play/index.html?pass='+encodeURIComponent(d.code);
+  try{localStorage.setItem('pc_access',d.code)}catch(e){}
+ }).catch(fail)})();
 </script></body></html>

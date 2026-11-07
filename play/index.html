@@ -18,18 +18,21 @@ for(var i=0;i<64;i++){var w15=w[i-15],w2=w[i-2],a=hash[0],e=hash[4],t1=hash[7]+(
 for(var i=0;i<8;i++)hash[i]=(hash[i]+old[i])|0}
 for(var i=0;i<8;i++)for(var j=3;j+1;j--){var b=(hash[i]>>(j*8))&255;r+=((b<16)?0:'')+b.toString(16)}return r}
 async function hash(c){var m='pc1:'+c.trim().toUpperCase();try{if(crypto&&crypto.subtle){var d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(m));return Array.from(new Uint8Array(d)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}}catch(e){}return sha(m)}
-async function ok(c){try{return H.indexOf(await hash(c))>=0}catch(e){return false}}
+var PASS_API='https://paniccity-pass.thailelho.workers.dev';
+async function ok(c){try{if(H.indexOf(await hash(c))>=0)return true;
+ var u=c.trim().toUpperCase();if(/^PC-[A-Z0-9]{6}-[A-Z0-9]{6}$/.test(u)){var r=await fetch(PASS_API+'/verify?code='+encodeURIComponent(u));return !!(await r.json()).ok}
+ return false}catch(e){return false}}
 var saved=null;try{saved=localStorage.getItem('pc_access')}catch(e){}
 function boot(){
  var q=new URLSearchParams(location.search).get('pass');
  (async function(){
-  if(saved&&await ok(saved))return;
+  if(saved&&(await ok(saved)||(/^PC-/.test(saved)&&!navigator.onLine)))return;
   if(q&&await ok(q)){try{localStorage.setItem('pc_access',q.trim().toUpperCase())}catch(e){}history.replaceState(null,'',location.pathname);return}
   show()})()}
 function show(){
  var o=document.createElement('div');o.id='accessGate';
  o.style.cssText='position:fixed;inset:0;z-index:2147483647;background:linear-gradient(#8fd3ff,#eaf8ff);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,sans-serif';
- o.innerHTML='<div style="background:#fff;border-radius:24px;padding:28px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(22,41,92,.25);color:#16295c"><img src="../icon-192.png" width="84" height="84" style="border-radius:20px" alt=""><h2 style="margin:10px 0 4px">'+T.h+'</h2><p style="margin:0 0 14px;color:#5b6b8c">'+T.p+'</p><input id="agIn" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="XXX-XXXX-XXXX" style="width:100%;box-sizing:border-box;font:700 18px system-ui;text-align:center;padding:12px;border-radius:14px;border:2px solid #d7e6f2;margin-bottom:10px"><div id="agErr" style="color:#d33;min-height:20px;font-weight:700"></div><button id="agGo" style="border:0;background:#ff6b57;color:#fff;font:800 17px system-ui;padding:12px 30px;border-radius:999px;box-shadow:0 5px 0 #d94b39;cursor:pointer">'+T.b+'</button><p style="margin:16px 0 0"><a href="../" style="color:#16295c;font-weight:700">'+T.buy+'</a></p></div>';
+ o.innerHTML='<div style="background:#fff;border-radius:24px;padding:28px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(22,41,92,.25);color:#16295c"><img src="../icon-192.png" width="84" height="84" style="border-radius:20px" alt=""><h2 style="margin:10px 0 4px">'+T.h+'</h2><p style="margin:0 0 14px;color:#5b6b8c">'+T.p+'</p><input id="agIn" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="PC-XXXXXX-XXXXXX" style="width:100%;box-sizing:border-box;font:700 18px system-ui;text-align:center;padding:12px;border-radius:14px;border:2px solid #d7e6f2;margin-bottom:10px"><div id="agErr" style="color:#d33;min-height:20px;font-weight:700"></div><button id="agGo" style="border:0;background:#ff6b57;color:#fff;font:800 17px system-ui;padding:12px 30px;border-radius:999px;box-shadow:0 5px 0 #d94b39;cursor:pointer">'+T.b+'</button><p style="margin:16px 0 0"><a href="../" style="color:#16295c;font-weight:700">'+T.buy+'</a></p></div>';
  document.body.appendChild(o);
  async function go(){var v=document.getElementById('agIn').value;if(await ok(v)){try{localStorage.setItem('pc_access',v.trim().toUpperCase())}catch(e){}o.remove()}else document.getElementById('agErr').textContent=T.bad}
  document.getElementById('agGo').onclick=go;document.getElementById('agIn').onkeydown=function(e){if(e.key==='Enter')go()}}
