@@ -172,11 +172,11 @@ dialog h3{color:var(--navy);margin-bottom:6px}dialog p{color:var(--mut);margin-b
 
 <dialog id="dlg"><h3 data-t="dlg_h"></h3><p data-t="dlg_p"></p><form method="dialog"><button class="btn sm" data-t="dlg_ok"></button></form></dialog>
 
-<dialog id="pdlg"><h3 data-t="pass_h"></h3><p data-t="pass_p"></p><input id="pin" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="FAM-XXXX-XXXX" style="width:100%;box-sizing:border-box;font:700 17px Poppins,sans-serif;text-align:center;padding:11px;border-radius:12px;border:2px solid #d7e6f2;margin-bottom:12px"><div style="display:flex;gap:8px;justify-content:center"><button class="btn sm" id="pgo" data-t="pass_go"></button></div></dialog>
+<div id="pdlg" style="display:none;position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483000;background:rgba(10,20,50,.6);align-items:center;justify-content:center;padding:16px"><div style="background:#fff;border-radius:22px;padding:24px;max-width:340px;width:100%;box-sizing:border-box;box-shadow:0 20px 60px rgba(0,0,0,.35)"><h3 data-t="pass_h" style="margin-bottom:6px;color:#16295c"></h3><p data-t="pass_p" style="color:#5b6b8c;margin-bottom:14px"></p><input id="pin" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="FAM-XXXX-XXXX" style="width:100%;box-sizing:border-box;font:700 17px Poppins,sans-serif;text-align:center;padding:11px;border-radius:12px;border:2px solid #d7e6f2;margin-bottom:12px"><div style="text-align:center"><button class="btn sm" id="pgo" data-t="pass_go"></button></div></div></div>
 <script src="i18n.js"></script>
 <script>
 /* ===== Réglages à remplir ===== */
-var BUY_URL='';            // lien de paiement Stripe (Payment Link) à 4,99 $
+var BUY_URL='https://buy.stripe.com/9B68wRamP3fH6Oq4In0sU00';            // lien de paiement Stripe (Payment Link) à 4,99 $
 var SUPPORT_EMAIL='';      // optionnel
 /* ============================== */
 var I=window.PC_I18N,L='en',IDX=0;
@@ -221,12 +221,13 @@ function set(l){
   })});
 })();
 
-/* 5 clics sur le logo en haut à gauche : saisie d'un pass famille */
-(function(){var n=0,t=null,lg=document.querySelector('.logo');if(!lg)return;
-lg.addEventListener('click',function(e){n++;clearTimeout(t);t=setTimeout(function(){n=0},10000);if(n>=5){n=0;e.preventDefault();var d=document.getElementById('pdlg');d.showModal();setTimeout(function(){document.getElementById('pin').focus()},50)}});
+/* 5 appuis sur le logo en haut à gauche : saisie d'un pass famille */
+(function(){var n=0,t=null,lg=document.querySelector('.logo'),pd=document.getElementById('pdlg');if(!lg||!pd)return;var last=0;
+function tap(e){var now=Date.now();if(now-last<120)return;last=now;n++;clearTimeout(t);t=setTimeout(function(){n=0},10000);if(n>=5){n=0;pd.style.display='flex';setTimeout(function(){try{document.getElementById('pin').focus()}catch(x){}},80)}}
+lg.addEventListener('pointerup',tap);lg.addEventListener('touchend',tap);lg.addEventListener('click',function(e){e.preventDefault();tap(e)});
 function go(){var v=document.getElementById('pin').value.trim();if(v)location.href='play/index.html?pass='+encodeURIComponent(v)}
 document.getElementById('pgo').onclick=go;document.getElementById('pin').onkeydown=function(e){if(e.key==='Enter')go()};
-document.getElementById('pdlg').addEventListener('click',function(e){if(e.target===this)this.close()})})();
+pd.addEventListener('click',function(e){if(e.target===pd)pd.style.display='none'})})();
 </script>
 </body>
 </html>
