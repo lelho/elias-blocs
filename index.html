@@ -3663,7 +3663,11 @@ function handleMsgs(pr){
     const key=m.to==='all'?'all':pr.id;
     addChat(key,{from:pr.id,name:pr.name,hero:pr.hero,text:m.x,ts:m.ts,me:false});if(typeof cityBubble==='function')cityBubble(pr.id,m.x);
     toast({hero:pr.hero,text:`<b>${pr.name}</b> : ${m.x.replace(/</g,'&lt;')}`,btns:[{label:MST().open,fn:()=>openMsgr(key)}]});
-    if(m.v)setTimeout(()=>speakAs(m.x,pr.vp,pr.vg),300);
+    if(m.v){
+      if(window.GMUTED&&window.GMUTED()){try{toast({text:'🔇 '+(lang==='en'?'The game sound is off, so the voice message is not read. Tap 🔊 to turn it back on.':'Le son du jeu est coupé : la voix du message n’est pas lue. Touche 🔊 pour le remettre.'),ms:6000,btns:[{label:'🔊',fn:()=>{try{gmuteSet('manual',false)}catch(e){}}}]})}catch(e){}}
+      else if(!window.speechSynthesis){try{toast({text:'🔇 '+(lang==='en'?'This device cannot read messages aloud.':'Cet appareil ne peut pas lire les messages à voix haute.'),ms:5000})}catch(e){}}
+      else setTimeout(()=>speakAs(m.x,pr.vp,pr.vg),300);
+    }
   });
 }
 function socialPeers(){
