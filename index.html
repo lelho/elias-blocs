@@ -1030,7 +1030,9 @@ const HEROES=[
  {id:'blocky',name:'Bloc',custom:'numblock',n:3,skin:'#06b67f',hairC:'#04865c',cape:'#ef476f',acc:'#ffd23f',s:1},
  {id:'bolt',name:'Bolt',custom:'robot',skin:'#b8c2cc',hairC:'#37474f',cape:'#ef476f',acc:'#4cc9f0',s:1},
  {id:'drako',name:'Drako',custom:'dino',skin:'#4fbf6a',hairC:'#2d8f4a',cape:'#9b5de5',acc:'#ff9f1c',s:1.02},
- {id:'choco',name:'Choco',custom:'pup',skin:'#d9a066',hairC:'#8d5a3c',cape:'#2f80ed',acc:'#ef476f',s:.9}
+ {id:'choco',name:'Choco',custom:'pup',skin:'#d9a066',hairC:'#8d5a3c',cape:'#2f80ed',acc:'#ef476f',s:.9},
+ {id:'lily',name:'Lily',age:7,skin:'#f6d3b8',hair:'pigtails',hairC:'#e6b422',top:'#ff6fa5',band:'#e0558c',acc:'#ffd23f',cape:'#8e5cf6',cape2:'#7646d8',skirt:'#ffffff',shoe:'#ff6fa5',s:.95,girl:true},
+ {id:'noah',name:'Noah',age:8,skin:'#f3cdb0',hair:'short',hairC:'#7a4a22',top:'#2f80ed',band:'#2468c9',acc:'#ffd23f',cape:'#ff9f1c',cape2:'#e08600',legC:'#2b3a67',shoe:'#fff',s:1}
 ];
 let HERO=HEROES[0];try{HERO=HEROES.find(h=>h.id===localStorage.getItem('elias_hero'))||HEROES[0]}catch(e){}
 const nm=t=>String(t).replace(/Elias/g,HERO.name);
@@ -1312,7 +1314,7 @@ const GOODV=/amelie|amélie|audrey|aurelie|aurélie|marie|thomas|samantha|serena
 let VQ={rate:.88,mode:'child'};try{Object.assign(VQ,JSON.parse(localStorage.getItem('elias_vq')||'{}'))}catch(e){}
 const pitchFor=p=>VQ.mode==='natural'?1.05:Math.max(.8,Math.min(1.3,p||1.2));
 const BAD=/compact|novelty|bad news|bahh|bells|boing|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|albert|fred|junior|ralph|kathy|bubbles/i;
-const HVOICE={elias:{g:'m',p:1.15},eva:{g:'f',p:1.3},soraya:{g:'f',p:1.2},anaya:{g:'f',p:1.3},hezekia:{g:'m',p:1.3},ariana:{g:'f',p:1.3},blocky:{g:'m',p:1.2},bolt:{g:'m',p:.9},drako:{g:'m',p:.85},choco:{g:'f',p:1.3}};
+const HVOICE={elias:{g:'m',p:1.15},eva:{g:'f',p:1.3},soraya:{g:'f',p:1.2},anaya:{g:'f',p:1.3},hezekia:{g:'m',p:1.3},ariana:{g:'f',p:1.3},blocky:{g:'m',p:1.2},bolt:{g:'m',p:.9},drako:{g:'m',p:.85},choco:{g:'f',p:1.3},lily:{g:'f',p:1.3},noah:{g:'m',p:1.15}};
 const FEM=/amelie|amélie|audrey|aurelie|aurélie|marie|julie|virginie|chantal|\bflo\b|sandy|shelley|grandma|samantha|serena|karen|kate|victoria|moira|tessa|fiona|susan|zira|hortense|female|femme|google français/i;
 const MAS=/thomas|daniel|arthur|eddy|reed|rocko|grandpa|oliver|\balex\b|david|\bmark\b|paul|henri|nicolas|jacques|\bmale\b|homme/i;
 const VPREF={fr:['amelie','amélie','audrey','aurelie','marie','google français','thomas'],en:['samantha','serena','karen','google uk english female','kate','daniel']};
@@ -5603,7 +5605,7 @@ let FOWN={};try{FOWN=JSON.parse(localStorage.getItem('elias_fown')||'{}')||{}}ca
 CATF.forEach(c=>{if(!c.p)FOWN[c.k]=1});
 const saveFl=()=>{try{localStorage.setItem('elias_flats',JSON.stringify(FL));localStorage.setItem('elias_fown',JSON.stringify(FOWN))}catch(e){}};
 function flatOf(id){
-  if(!FL[id]){const w=id==='eva'||id==='anaya'||id==='ariana'||id==='soraya';FL[id]={wc:w?4:1,wp:0,fl:0,vw:0,it:[{k:'rug',x:300,y:390,f:0,s:1},{k:'plant',x:70,y:330,f:0,s:1},{k:'paint',x:300,y:140,f:0,s:1}]}}
+  if(!FL[id]){const w=id==='eva'||id==='anaya'||id==='ariana'||id==='soraya'||id==='lily';FL[id]={wc:w?4:1,wp:0,fl:0,vw:0,it:[{k:'rug',x:300,y:390,f:0,s:1},{k:'plant',x:70,y:330,f:0,s:1},{k:'paint',x:300,y:140,f:0,s:1}]}}
   return FL[id];
 }
 function flatEnc(){
