@@ -5832,7 +5832,7 @@ const cnt=document.createElement('div');cnt.id='tmCount';document.body.append(cn
 function cntShow(rem){if(rem===cntLast)return;cntLast=rem;cnt.innerHTML=`<span>🚨 ${lang==='en'?'PANIC CITY':'PANIQUE CITY'} · ${KTT(TM.nextKind).pre}</span><b>${rem}</b>${(TM.nextKind==='monster'||TM.nextKind==='all')?`<button id="tmSil" style="pointer-events:auto;margin-top:10px;background:#fff;color:#25326b;border-radius:18px;padding:10px 20px;font-size:clamp(16px,3vw,24px);font-weight:900;box-shadow:0 5px 0 rgba(27,37,89,.3)">🔕 ${lang==='en'?'Silence 30 min':'Silence 30 min'}</button>${inGroup()?'':`<button id="tmOff" style="pointer-events:auto;margin:10px 0 0 8px;background:#fff;color:#c1121f;border-radius:18px;padding:10px 20px;font-size:clamp(16px,3vw,24px);font-weight:900;box-shadow:0 5px 0 rgba(27,37,89,.3)">⛔ ${lang==='en'?'Turn off':'Désactiver'}</button>`}`:''}`;cnt.classList.add('on');try{beep(rem<=3?1040:700,.14,'square')}catch(e){}}
 function cntHide(){if(cntLast!==-1){cntLast=-1;cnt.classList.remove('on')}}
 const chip=document.createElement('div');chip.id='tmChip';$('#home').append(chip);chip.style.cursor='pointer';chip.title='🔕';chip.onclick=()=>TM.pcMenu();document.addEventListener('click',e=>{if(e.target&&e.target.id==='tmSil')TM.silence(30);if(e.target&&e.target.id==='tmOff')TM.setOff(true)});
-const drawChip=()=>{const l=limitMin();const rem=Math.max(0,Math.ceil((900000-(Date.now()%900000))/1000));const sl=Math.max(0,Math.ceil((TM.silenceUntil-Date.now())/1000));const s=l?(TM.off?'⛔ '+(lang==='en'?'Panic City':'Panique City'):sl>0?`🔕 ${Math.floor(sl/60)}:${String(sl%60).padStart(2,'0')}`:`${KIND_ICO[kindOf(Math.floor(Date.now()/900000)+1)]} ${Math.floor(rem/60)}:${String(rem%60).padStart(2,'0')}`):'';chip.textContent=s;chip.style.display=s?'':'none';const cc=document.getElementById('cityHint');if(cc&&!TM.active&&l)cc.dataset.tm=s};
+const drawChip=()=>{const l=limitMin();const rem=Math.max(0,Math.ceil((900000-(Date.now()%900000))/1000));const sl=Math.max(0,Math.ceil((TM.silenceUntil-Date.now())/1000));const s=l?(TM.offline()?'💤 '+(lang==='en'?'Offline':'Hors ligne'):TM.off?'⛔ '+(lang==='en'?'Panic City':'Panique City'):sl>0?`🔕 ${Math.floor(sl/60)}:${String(sl%60).padStart(2,'0')}`:`${KIND_ICO[kindOf(Math.floor(Date.now()/900000)+1)]} ${Math.floor(rem/60)}:${String(rem%60).padStart(2,'0')}`):'';chip.textContent=s;chip.style.display=s?'':'none';const cc=document.getElementById('cityHint');if(cc&&!TM.active&&l)cc.dataset.tm=s};
 /* sirène */
 function siren(n){try{const c=auInit();if(!c)return;const t=c.currentTime;for(let i=0;i<(n||8);i++)toneAt(AU.sg,t+i*.4,i%2?640:900,.36,'triangle',.09,.05,0)}catch(e){}}
 /* ===== événements de la ville à heures fixes : 5 min parents · 10 min police · 30 min monstre · 1 h tout ===== */
@@ -6079,6 +6079,8 @@ function detach(){
 }
 TM.silenceUntil=(()=>{try{return parseInt(localStorage.getItem('elias_sil'))||0}catch(e){return 0}})();
 TM.silenced=()=>Date.now()<TM.silenceUntil;
+/* hors ligne : aucune action (toucher, clavier, souris) depuis plus de 10 minutes, ou page cachée → aucune alerte ne le concerne */
+TM.IDLE=600000;TM.offline=()=>Date.now()-TM.lastInput>TM.IDLE;
 TM.off=(()=>{try{return localStorage.getItem('elias_pcoff')==='1'}catch(e){return false}})();
 TM.setOff=function(v){TM.off=!!v;try{localStorage.setItem('elias_pcoff',v?'1':'0')}catch(e){}cntHide();drawChip();
   try{toast({hero:HERO.id,text:v?(lang==='en'?'⛔ Panic City is OFF when you are not in the city.':'⛔ Panique City est désactivée quand tu n’es pas dans la ville.'):(lang==='en'?'🔔 Panic City is back on.':'🔔 Panique City est réactivée.')})}catch(e){}};
@@ -6099,7 +6101,7 @@ TM.silence=function(min){
 TM.start=function(by,remote,mode,kind){
   if(TM.active)return;TM.mode=mode||(by?'rank':'time');TM.kind=['parents','police','monster','all'].includes(kind)?kind:'parents';
   /* silence demandé : personne ne dérange. Parents / police : seulement ceux qui sont dans la ville. Monstre et alerte générale : tout le monde (sauf silence) */
-  if(TM.silenced())return;
+  if(TM.silenced()||TM.offline())return;
   if(TM.off&&!TM.inCity())return;
   if((TM.kind==='parents'||TM.kind==='police')&&!TM.inCity())return;
   TM.par=TM.kind==='parents'||TM.kind==='all';TM.pol=TM.kind==='police'||TM.kind==='all';TM.mons=TM.kind==='monster'||TM.kind==='all';
@@ -6274,7 +6276,7 @@ setInterval(()=>{
     if(k>TM.lastK){TM.lastK=k;TM.w1=false;TM.cn5=TM.cn1=false;if(TM.paused)cntHide();else TM.start('',false,'time',kindOf(k))}
     else{
       const rem=Math.ceil(((k+1)*iv-now)/1000);TM.rem=rem;
-      const big=TM.nextKind==='monster'||TM.nextKind==='all',concerned=!TM.silenced()&&(TM.off?TM.inCity():(big||TM.inCity()));
+      const big=TM.nextKind==='monster'||TM.nextKind==='all',concerned=!TM.silenced()&&!TM.offline()&&(TM.off?TM.inCity():(big||TM.inCity()));
       if(rem<=10&&rem>0&&!TM.paused&&concerned)cntShow(rem);else cntHide();
       try{TM.chiefNotify(TM.nextKind,rem)}catch(e){}
       if(!TM.w1&&rem<=60&&rem>12){TM.w1=true;if(concerned)try{toast({hero:HERO.id,text:'🚨 <b>'+(lang==='en'?'Panic City':'Panique City')+'</b> : '+KTT(TM.nextKind).w1,ms:big?20000:8000,btns:big?[{label:lang==='en'?'🔕 Silence 30 min':'🔕 Silence 30 min',fn:()=>TM.silence(30)}]:[]})}catch(e){}}
