@@ -2,6 +2,40 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<script id="accessGateJs">
+/* Accès Panic City : code d'achat ou pass famille. Actif seulement sur paniccity.online. */
+(function(){try{
+if(!/(^|\.)paniccity\.online$/.test(location.hostname))return;
+var H=["d9b8b9094bac3652762f0ce71544cecd57eb03bbb0e87fce741096fc79b27bba", "4ee27d829730b4ed0a029748d3425c6f85779b916b304c7a3044dd82b3c16bd8", "10744c42f8698ec616db7ed7ede204ed18533e173f9e4e51674eb6a00b7c6dec", "2f3e1518881894195df0e2409587227484bad9a5c1c1c94aa080e43bb02ab286", "163e762bb98c1c743731f81bdc868832a1dd1046932e709acdb1508cd7717b87", "a886751d508237a3be7807ddda649aa7550d5144ace34d6e12b252fb9e933123", "54fedc1270cac4d0333cac5759d485648f3cd34c089fde19ac6b624fa72a00fa", "8ecdb690a81acec31d5d74c185ce627178c9eb791df2fd9ae1bf97062ffc454d", "c402741bffea39d38e75570221026a446575fce49a5851a67cc20b99454a4c7a", "caf41f66b09775d728dc999b6e0f50c057a8968cf6179fdfab27857df532d219", "f13819bf62d6df5660aca1f123e57192dc9bf2c0809df346ad7a44f64e6af49b", "ad3bdcf5b8c24fa3f14a7f1341326946896c0fc157a0152af632fe609a332f3d", "253a3e854398648ccf97044e9d0476c6cdfc1234df50f0a73a2f1c6b115d510c"];
+var fr=!/^en/i.test(localStorage.getItem('elias_lang')||navigator.language||'fr')||/^fr/i.test(localStorage.getItem('elias_lang')||'');
+var T=fr?{h:'Entre ton code',p:'Saisis ton code d’accès ou ton pass famille.',b:'Entrer',bad:'Code incorrect',buy:'Pas de code ? Obtenir Panic City'}:{h:'Enter your code',p:'Type your access code or family pass.',b:'Enter',bad:'Wrong code',buy:'No code? Get Panic City'};
+function sha(ascii){function rr(v,a){return(v>>>a)|(v<<(32-a))}var mp=Math.pow,mw=mp(2,32),r='',words=[],al=unescape(encodeURIComponent(ascii)),abl=al.length*8,hash=[],k=[],pc=0,ic={};
+for(var c=2;pc<64;c++){if(!ic[c]){for(var i=0;i<313;i+=c)ic[i]=c;hash[pc]=(mp(c,.5)*mw)|0;k[pc++]=(mp(c,1/3)*mw)|0}}
+al+='\x80';while(al.length%64-56)al+='\x00';for(var i=0;i<al.length;i++){var j=al.charCodeAt(i);words[i>>2]|=j<<((3-i)%4)*8}
+words[words.length]=((abl/mw)|0);words[words.length]=(abl);
+for(var j=0;j<words.length;){var w=words.slice(j,j+=16),old=hash;hash=hash.slice(0,8);
+for(var i=0;i<64;i++){var w15=w[i-15],w2=w[i-2],a=hash[0],e=hash[4],t1=hash[7]+(rr(e,6)^rr(e,11)^rr(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]+(w[i]=(i<16)?w[i]:(w[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0),t2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));hash=[(t1+t2)|0].concat(hash);hash[4]=(hash[4]+t1)|0}
+for(var i=0;i<8;i++)hash[i]=(hash[i]+old[i])|0}
+for(var i=0;i<8;i++)for(var j=3;j+1;j--){var b=(hash[i]>>(j*8))&255;r+=((b<16)?0:'')+b.toString(16)}return r}
+async function hash(c){var m='pc1:'+c.trim().toUpperCase();try{if(crypto&&crypto.subtle){var d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(m));return Array.from(new Uint8Array(d)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}}catch(e){}return sha(m)}
+async function ok(c){try{return H.indexOf(await hash(c))>=0}catch(e){return false}}
+var saved=null;try{saved=localStorage.getItem('pc_access')}catch(e){}
+function boot(){
+ var q=new URLSearchParams(location.search).get('pass');
+ (async function(){
+  if(saved&&await ok(saved))return;
+  if(q&&await ok(q)){try{localStorage.setItem('pc_access',q.trim().toUpperCase())}catch(e){}history.replaceState(null,'',location.pathname);return}
+  show()})()}
+function show(){
+ var o=document.createElement('div');o.id='accessGate';
+ o.style.cssText='position:fixed;inset:0;z-index:2147483647;background:linear-gradient(#8fd3ff,#eaf8ff);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,sans-serif';
+ o.innerHTML='<div style="background:#fff;border-radius:24px;padding:28px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(22,41,92,.25);color:#16295c"><img src="../icon-192.png" width="84" height="84" style="border-radius:20px" alt=""><h2 style="margin:10px 0 4px">'+T.h+'</h2><p style="margin:0 0 14px;color:#5b6b8c">'+T.p+'</p><input id="agIn" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="XXX-XXXX-XXXX" style="width:100%;box-sizing:border-box;font:700 18px system-ui;text-align:center;padding:12px;border-radius:14px;border:2px solid #d7e6f2;margin-bottom:10px"><div id="agErr" style="color:#d33;min-height:20px;font-weight:700"></div><button id="agGo" style="border:0;background:#ff6b57;color:#fff;font:800 17px system-ui;padding:12px 30px;border-radius:999px;box-shadow:0 5px 0 #d94b39;cursor:pointer">'+T.b+'</button><p style="margin:16px 0 0"><a href="../" style="color:#16295c;font-weight:700">'+T.buy+'</a></p></div>';
+ document.body.appendChild(o);
+ async function go(){var v=document.getElementById('agIn').value;if(await ok(v)){try{localStorage.setItem('pc_access',v.trim().toUpperCase())}catch(e){}o.remove()}else document.getElementById('agErr').textContent=T.bad}
+ document.getElementById('agGo').onclick=go;document.getElementById('agIn').onkeydown=function(e){if(e.key==='Enter')go()}}
+if(document.body)boot();else document.addEventListener('DOMContentLoaded',boot);
+}catch(e){}})();
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Panic City">
