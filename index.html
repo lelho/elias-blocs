@@ -20,7 +20,7 @@ a{color:inherit}
 header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid #e3eef7}
 .bar{display:flex;align-items:center;gap:14px;height:62px}
 .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;text-decoration:none;color:var(--navy)}
-.logo img{width:34px;height:34px;border-radius:9px}
+.logo{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}.logo img{width:34px;height:34px;border-radius:9px}
 nav{display:flex;gap:18px;margin-left:18px}
 nav a{text-decoration:none;font-weight:600;font-size:14px;color:var(--mut)}
 nav a:hover{color:var(--navy)}
@@ -223,7 +223,7 @@ function set(l){
 
 /* 5 clics sur le logo en haut à gauche : saisie d'un pass famille */
 (function(){var n=0,t=null,lg=document.querySelector('.logo');if(!lg)return;
-lg.addEventListener('click',function(e){n++;clearTimeout(t);t=setTimeout(function(){n=0},3000);if(n>=5){n=0;e.preventDefault();var d=document.getElementById('pdlg');d.showModal();setTimeout(function(){document.getElementById('pin').focus()},50)}});
+lg.addEventListener('click',function(e){n++;clearTimeout(t);t=setTimeout(function(){n=0},10000);if(n>=5){n=0;e.preventDefault();var d=document.getElementById('pdlg');d.showModal();setTimeout(function(){document.getElementById('pin').focus()},50)}});
 function go(){var v=document.getElementById('pin').value.trim();if(v)location.href='play/index.html?pass='+encodeURIComponent(v)}
 document.getElementById('pgo').onclick=go;document.getElementById('pin').onkeydown=function(e){if(e.key==='Enter')go()};
 document.getElementById('pdlg').addEventListener('click',function(e){if(e.target===this)this.close()})})();
