@@ -634,6 +634,23 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .lite .monfx,.lite .ufol,.lite .ufol2{animation:none!important}
 .lite .cent .nm{stroke-width:0;paint-order:normal}
 </style>
+<style id="phoneFix">/* téléphone en portrait : accueil lisible, bouton héros visible, noms des jeux sans débordement */
+@media (max-width:600px) and (orientation:portrait){
+ #home>*{flex-shrink:0!important}
+ #home{padding-left:8px!important;padding-right:8px!important;padding-top:calc(104px + env(safe-area-inset-top))!important}
+ #dock{left:8px!important;right:8px!important;top:calc(8px + env(safe-area-inset-top))!important;flex-wrap:wrap;gap:6px!important;max-width:calc(100% - 16px)}
+ #dock button,#dock .hbtn2{min-width:44px;min-height:44px;padding:6px 10px!important;font-size:20px!important}
+ #vbtn{top:calc(8px + env(safe-area-inset-top) + 52px)!important;right:8px!important;font-size:16px!important;padding:6px 12px!important}
+ #hbtn{display:block;min-height:46px;padding:10px 18px!important;font-size:18px!important;white-space:normal;line-height:1.15;max-width:92vw}
+ #tmChip{position:static!important;margin:0 auto}
+ #home #rank{font-size:15px!important;padding:6px 12px!important;max-width:94vw}
+ #home #menu{grid-template-columns:1fr 1fr!important;width:100%!important;gap:10px!important}
+ #home #menu button{min-width:0;min-height:64px!important;font-size:16px!important;line-height:1.12;padding:8px 8px 8px 8px!important;gap:8px!important;overflow-wrap:anywhere;hyphens:auto;word-break:break-word}
+ #home #menu button .ic{width:1.9em!important;height:1.9em!important;font-size:1.1em!important;flex:none}
+ #gmuteBtn{width:36px!important;height:36px!important;font-size:16px!important;right:4px!important;bottom:auto!important;top:calc(64px + env(safe-area-inset-top))!important;opacity:.85}
+ body:has(#home.on) #gmuteBtn{top:calc(8px + env(safe-area-inset-top))!important;right:6px!important}
+}
+</style>
 </head>
 <body>
 
@@ -10062,9 +10079,10 @@ function matchEnd(){
   try{addPts(pts,{k:m.game,score:pts})}catch(e){}
   try{setPub({game:m.game,score:m.sc[0],total:m.rounds,result:`${m.names[0]} ${m.sc[0]}-${m.sc[1]} ${m.names[1]}`})}catch(e){}
   const card=el(`<h2>${t.final}</h2><p style="font-size:1.4em;font-weight:900">${esc(m.names[0])} ${m.sc[0]} – ${m.sc[1]} ${esc(m.names[1])}</p><p style="font-size:1.3em">${w<0?t.draw:t.winner(esc(m.names[w]))}</p><p>${t.pts(pts)}</p>`,'wgcard');
-  card.append(B(t.again,'g',()=>{if(m.mode==='net'){stopNet();wgOpen(m.game)}else startMatch()}),B(t.menu,'o',leave));body.append(card);
+  const rb=B(m.mode==='net'?(lang==='en'?'🔁 Rematch':'🔁 Revanche'):t.again,'g',()=>{if(m.mode==='net')netAgain(rb,card);else startMatch()});
+  card.append(rb,B(t.menu,'o',leave));body.append(card);
   try{confetti&&confetti()}catch(e){}
-  if(m.mode==='net')netSend({t:'bye'});
+  if(m.mode==='net'){const net=G.net;if(net&&net.oppAgain)rb.textContent=(lang==='en'?'🔁 Rematch! ':'🔁 Revanche ! ')+esc(net.oppName||'')}
 }
 function soloEnd(res){
   const m=G.m,t=T();KEYH=null;
@@ -10275,7 +10293,20 @@ function onRoomMsg(m){
   }else if(m.t==='ready'){net.oppReady=(net.oppReady||{});net.oppReady[m.r]=1;netMaybeGo()}
   else if(m.t==='prog'&&G.m&&m.r===G.m.r){net.prog=m;drawOpp()}
   else if(m.t==='done'&&G.m&&m.r===G.m.r){net.done[m.r]={ok:!!m.ok,n:Math.max(0,Math.min(99,+m.n||0)),ms:Math.max(0,Math.min(3600000,+m.ms||0))};drawOpp();netMaybeEnd()}
+  else if(m.t==='again'){net.oppAgain=true;if(net.myAgain)netRematch()}
   else if(m.t==='bye'){if(G.m&&G.m.r<G.m.rounds&&!G.m.over){G.m.over=true;}}
+}
+/* revanche directe : les deux joueurs la demandent, la partie recommence tout de suite avec le même adversaire */
+function netAgain(btn,card){
+  const net=G.net;if(!net)return;
+  net.myAgain=true;netSend({t:'again'});btn.disabled=true;btn.textContent=lang==='en'?'⏳ Rematch asked…':'⏳ Revanche demandée…';
+  if(net.oppAgain)return netRematch();
+  clearTimeout(net.agTo);net.agTo=setTimeout(()=>{if(G.net===net&&net.myAgain&&!net.oppAgain){btn.textContent=lang==='en'?'😴 No answer':'😴 Pas de réponse'}},30000);
+}
+function netRematch(){
+  const net=G.net;if(!net)return;clearTimeout(net.agTo);
+  net.gen=(net.gen||0)+1;net.myAgain=net.oppAgain=false;net.done={};net.prog=null;net.oppReady={};net.myReady=undefined;net.running=undefined;net.myDone=null;
+  G.mode='net';G.seed=net.room+'r'+net.gen;startMatch();
 }
 function drawOpp(){
   const net=G.net,m=G.m;if(!net||!m||!G.ui||!G.ui.opp)return;const t=T(),d=net.done[m.r],pr=net.prog;let h=`<b>${esc(net.oppName)}</b>`;
@@ -10316,7 +10347,7 @@ try{
 }catch(e){console.warn('wordgames init',e)}
 setTimeout(()=>{try{initInbox()}catch(e){}},4000);
 window.WGN={getX,h16,myGrp,onlineOK,roomTopic,newRoom,initInbox,esc,openChallenge:function(game){G.mode='open';wgOpen(game)}};
-window.WG={open:wgOpen,ver:WVER,puzzle,wset,bfsPath,pickLadder,G,startMatch};
+window.WG={fin:finishPlayer,open:wgOpen,ver:WVER,puzzle,wset,bfsPath,pickLadder,G,startMatch};
 })();
 
 /*WGEND*/
