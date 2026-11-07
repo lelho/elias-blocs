@@ -79,7 +79,7 @@ details p{color:var(--mut);margin-top:8px}
 .price{font-size:54px;font-weight:800;color:var(--yel);margin:6px 0 18px}
 footer{padding:24px 0;text-align:center;font-size:13px;color:var(--mut)}
 .stick{display:none}
-dialog{border:0;border-radius:20px;padding:24px;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog{margin:auto;border:0;border-radius:20px;padding:24px;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 dialog::backdrop{background:rgba(10,20,50,.55)}
 dialog h3{color:var(--navy);margin-bottom:6px}dialog p{color:var(--mut);margin-bottom:14px}
 @media(max-width:860px){
@@ -172,6 +172,7 @@ dialog h3{color:var(--navy);margin-bottom:6px}dialog p{color:var(--mut);margin-b
 
 <dialog id="dlg"><h3 data-t="dlg_h"></h3><p data-t="dlg_p"></p><form method="dialog"><button class="btn sm" data-t="dlg_ok"></button></form></dialog>
 
+<dialog id="pdlg"><h3 data-t="pass_h"></h3><p data-t="pass_p"></p><input id="pin" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="FAM-XXXX-XXXX" style="width:100%;box-sizing:border-box;font:700 17px Poppins,sans-serif;text-align:center;padding:11px;border-radius:12px;border:2px solid #d7e6f2;margin-bottom:12px"><div style="display:flex;gap:8px;justify-content:center"><button class="btn sm" id="pgo" data-t="pass_go"></button></div></dialog>
 <script src="i18n.js"></script>
 <script>
 /* ===== Réglages à remplir ===== */
@@ -219,6 +220,13 @@ function set(l){
     if(BUY_URL){location.href=BUY_URL}else{document.getElementById('dlg').showModal()}
   })});
 })();
+
+/* 5 clics sur le logo en haut à gauche : saisie d'un pass famille */
+(function(){var n=0,t=null,lg=document.querySelector('.logo');if(!lg)return;
+lg.addEventListener('click',function(e){n++;clearTimeout(t);t=setTimeout(function(){n=0},3000);if(n>=5){n=0;e.preventDefault();var d=document.getElementById('pdlg');d.showModal();setTimeout(function(){document.getElementById('pin').focus()},50)}});
+function go(){var v=document.getElementById('pin').value.trim();if(v)location.href='play/index.html?pass='+encodeURIComponent(v)}
+document.getElementById('pgo').onclick=go;document.getElementById('pin').onkeydown=function(e){if(e.key==='Enter')go()};
+document.getElementById('pdlg').addEventListener('click',function(e){if(e.target===this)this.close()})})();
 </script>
 </body>
 </html>
