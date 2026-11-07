@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Panic City</title>
+<link rel="icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:Poppins,system-ui,sans-serif;background:linear-gradient(180deg,#bfe9ff,#f4fbff);color:#1d2b4f;min-height:100vh;display:grid;place-items:center;padding:20px}
+.box{max-width:560px;background:#fff;border-radius:26px;padding:30px;box-shadow:0 20px 50px rgba(22,41,92,.2);text-align:center}
+img.i{width:84px;border-radius:20px;margin:0 auto 10px}
+h1{color:#16295c;font-size:34px}p{color:#5b6b8c;margin:8px 0 16px}
+.btn{display:inline-block;border:0;cursor:pointer;font:800 17px Poppins,sans-serif;color:#fff;background:#ff6b57;padding:14px 28px;border-radius:999px;text-decoration:none;box-shadow:0 6px 0 #d94b39;margin:4px}
+.btn.alt{background:#16295c;box-shadow:0 6px 0 #0c1a40}
+h3{margin-top:22px;color:#16295c}ol{text-align:left;padding-left:24px;margin-top:8px}li{padding:4px 0}
+select{font:600 14px Poppins,sans-serif;padding:6px 10px;border-radius:10px;border:2px solid #d7e6f2;margin-bottom:12px}
+.tip{font-size:13px;margin-top:20px}
+</style></head>
+<body><div class="box">
+<select id="lang"></select>
+<img class="i" src="icon-192.png" alt="">
+<h1 data-t="th_h"></h1><p data-t="th_p"></p>
+<a class="btn" href="play/index.html" data-t="th_open"></a>
+<button class="btn alt" id="inst" hidden data-t="th_install"></button>
+<h3 data-t="th_steps"></h3><ol id="list"></ol>
+<p class="tip" data-t="th_tip"></p>
+</div>
+<script src="i18n.js"></script>
+<script>
+var I=window.PC_I18N,L='en',dp=null;
+var ua=navigator.userAgent,k=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)?'ios':/Android/.test(ua)?'android':'pc';
+function set(l){L=l;try{localStorage.setItem('pc_lang',l)}catch(e){}
+ document.documentElement.lang=l;
+ document.querySelectorAll('[data-t]').forEach(function(e){e.textContent=I[l][e.dataset.t]||I.en[e.dataset.t]});
+ document.getElementById('list').innerHTML=I[l][k].map(function(s){return '<li>'+s+'</li>'}).join('');
+ document.getElementById('lang').value=l}
+var s=document.getElementById('lang');
+s.innerHTML=Object.keys(I).map(function(x){return '<option value="'+x+'">'+I[x].flag+' '+I[x].name+'</option>'}).join('');
+s.onchange=function(){set(s.value)};
+var st='';try{st=localStorage.getItem('pc_lang')||''}catch(e){}
+var n=st||(navigator.language||'en').slice(0,2).toLowerCase();set(I[n]?n:'en');
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;document.getElementById('inst').hidden=false});
+document.getElementById('inst').onclick=function(){if(dp){dp.prompt();dp=null}};
+</script></body></html>
